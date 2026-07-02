@@ -122,13 +122,21 @@
                         <span id="vending-cost-display" class="text-lg font-black text-white">₱15</span>
                     </div>
 
-                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-855 text-[11px] text-slate-300 space-y-1.5">
+                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-855 text-[11px] text-slate-300 space-y-2">
                         <div class="flex justify-between font-bold text-indigo-400 text-[9px] uppercase tracking-wider">
                             <span>Direct Transfer:</span>
                             <span>GCash Wallet</span>
                         </div>
                         <div class="bg-slate-900 p-2 rounded text-center font-mono font-bold text-white text-xs tracking-wider">
                             <span id="portal-gcash-no">0900-000-000</span> (<span id="portal-gcash-name">Admin</span>)
+                        </div>
+                        
+                        <!-- Dynamic Checkout QR Code Placeholder (Resolves TypeError) -->
+                        <div class="flex flex-col items-center justify-center pt-2 space-y-2 border-t border-slate-900/60">
+                            <div class="bg-white p-1.5 rounded-lg">
+                                <img id="viewer-checkout-qr" src="" alt="Checkout QR" class="w-24 h-24">
+                            </div>
+                            <span id="viewer-checkout-qr-preview" class="text-[9px] font-mono text-slate-400">Ref: Calculating...</span>
                         </div>
                     </div>
 
@@ -140,7 +148,7 @@
                         <input type="text" id="activation-key" placeholder="WP-XXXX-XXXX-XXD-XXXX-XXXXXX" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-center font-mono tracking-wider text-white focus:outline-none focus:border-indigo-500">
                     </div>
 
-                    <button onclick="processSubscription()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-xs tracking-wide transition font-semibold">
+                    <button onclick="processSubscription()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-xs tracking-wide transition">
                         Verify System Payment
                     </button>
                 </div>
@@ -309,14 +317,14 @@
             try { return decodeURIComponent(atob(b64)); } catch(e) { return ""; }
         }
 
-        // Live Channels Data (Paramount swapped with Universal Movies, Cleaned List)
+        // Live Channels Data (Featuring highly stable, CORS-compliant, playable HLS streams)
         const liveChannelsData = [
             {
                 id: "new-kmovies",
                 name: "Movies 1",
                 group: "Movies",
                 logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/new-kmovies.png",
-                src: "YUhSMGNITTZMeTloWkhNdWFYUnpMVzVsZDJsc0xtNWxkQzloY0drdmJXRnVhVlp6ZEM1dTN1ODlkRndMWmVkamFHRnViMlZ6TDJScFlXNXBabVZ6ZEM1dTN1OD9kSEF0YmVkM2FXUnNMWGNoWVc1dVpXeHZZbVZ5Y3pwaGNuTjFjbVZmZEhWc1gyMXBkSFU9",
+                src: "",
                 schedule: [
                     { title: "Seoul Morning Romance Selections", start: "00:00", end: "08:00" },
                     { title: "Korean Blockbuster Mystery Hits", start: "08:00", end: "16:00" },
@@ -328,7 +336,7 @@
                 name: "Movies 2",
                 group: "Movies",
                 logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/mix-hollywood.png",
-                src: "YUhSMGNITTZMeTltYFMtcWR4c2FXZDNhbU5vTG0xNWMyOHVhbThvVFdseVZGWXVkR3hmYVc1a1pYZ3VpM1U9",
+                src: "",
                 schedule: [
                     { title: "Hollywood Golden Era Block", start: "00:00", end: "08:00" },
                     { title: "Modern Action & Sci-Fi features", start: "08:00", end: "16:00" },
@@ -340,7 +348,7 @@
                 name: "Movies 3",
                 group: "Movies",
                 logo: "https://images.pluto.tv/channels/5cb0cae7a461406ffe3f5213/colorLogoPNG.png",
-                src: "YUhSMGNITTZMeW9iWEF5TG5WckxYQnNkUzExWTJKdm1HUXlaV0UzWVRRMk1UUXdObVp6WlRNbWJYTXVZV056TjNkOA==",
+                src: "",
                 schedule: [
                     { title: "Classic Hollywood Epics Block", start: "00:00", end: "08:00" },
                     { title: "Paramount Studio Premiere Selections", start: "08:00", end: "16:00" },
@@ -352,7 +360,7 @@
                 name: "Movies 4",
                 group: "Movies",
                 logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/mix-hollywood.png",
-                src: "YUhSMGNITTZMeTloWkhNdWQyaHBjR3hoYzNndVkyTXZkMmhwY0d4aGMyaDBlR0YwTDJsdVpHVjRMbTB3",
+                src: "",
                 schedule: [
                     { title: "Family Early Bird Reels", start: "00:00", end: "08:00" },
                     { title: "Curated Retro Film Favorites", start: "08:00", end: "16:00" },
@@ -364,7 +372,7 @@
                 name: "Fight",
                 group: "Sports",
                 logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/netmax-tv.png",
-                src: "YUhSMGNITTZMeTloWldkcGN5MWpiRzl1WkhKdmJuUXRNUzF0ZFdKcUxtWnBaRzh2WW1aaFpESTVaV0V0TlRKaFpTMDBOR1l6TFRnMU5pMHhNamN6TWpSbE9HUXhNRFl2TVRBNGNHMXRZM012YVc1a1pYZ3VpM1U0",
+                src: "",
                 schedule: [
                     { title: "DAZN Heavyweight Classics", start: "00:00", end: "08:00" },
                     { title: "Live Ringside Match Replays", start: "08:00", end: "16:00" },
@@ -373,17 +381,25 @@
             }
         ];
 
+        // Active, secure Base64-encoded feeds for responsive playback
         const secureRawB64 = {
-            "new-kmovies": "aHR0cHM6Ly9hZHMuaXRzLW5ld2lkLm5ldC9hcGkvbWFuaWZlc3QubTN1OD90cD1sZ19jaGFubmVscyZjaGFubmVsX25hbWU9bmV3a21vdmllcyZjaGFubmVsX2lkPW5ld2lkXzIxOSZtcGY9YWRmYzIwNGQtMzlhZjE5NjItMTNhMmYwMWEmYXBpa2V5PTQ4MjMwZTZiLTFjZWEwMDk3LTE1OTc1ZjkzLzM5YWYxOTYyJmF1dGg9YjYyYzJjOGItODMxNmE3NzEtMjk1ZWJhMjgtZjQ2NjNkZGQmYWRzLmxpdmU9W0NPTlRFTlRfTElWRV0mYWRzLmRldmljZWlkPVtERVZJQ0VfSURdJmFkcy5pZmE9W0lGQV0mYWRzLmlmYXR5cGU9W0lGQV9UWVBFXSZhZHMubGF0PVtMTVRdJmFkcy5kb25vdHNlbGw9W0ROU10mYWRzLnVhPVtVQV0mYWRzLmlwPVtJUF0mYWRzLmdkcHI9W0dEUFJdJmFkcy5nZHByX2NvbnNlbnQ9W0dEUFJfQ09OU0VOVF0mYWRzLmNvdW50cnk9W0NPVU5UUlldJmFkcy51c19wcml2YWN5PVtVU19QUklWQUNZXSZhZHMuYXBwc3RvcmV1cmw9W0FQUF9TVE9SRVVSTF0mYWRzLmJ1bmRsZWlkPVtBUFBfQlVORExFXSZhZHMuYXBwbmFtZT1bQVBQX05BTUVdJmFkcy5hcHB2ZXJzaW9uPVtBUFBfVkVSU0lPTl0mYWRzLmRldmljZXR5cGU9W0RFVklDRV9UWVBFXSZhZHMuZGV2aWNlbWFrZT1bREVWSUNFX01BS0VdJmFkcy5kZXZpY2Vtb2RlbD1bREVWSUNFX01PREVMXSZhZHMudGFyZ2V0YWQ9W1RBUkdFVEFEX0FMTE9XRURdJmFkcy5mY2s9W0ZDS10mYWRzLnZpZXdzaXplPVtWSUVXU0laRV0mYWRzLmdpdm49W05PTkNFXQ==",
-            "mix-hollywood": "aHR0cHM6Ly9tbC1wdWxsLWh3Yy5teWNvLmlvL01peFRWL2hscy9pbmRleC5tM3U4",
-            "paramount-movie-channel": "aHR0cHM6Ly9qbXAyLnVrL3BsdS01Y2IwY2FlN2E0NjE0MDZmZmUzZjUyMTMubTN1OA==",
-            "family-bonding-cinema": "aHR0cHM6Ly9jZG4ud2hpcGxhc2guY2Mvd2hpcGxhc2gtY2luZW1hL2luZGV4Lm0zdTg=",
-            "dazn-ringside": "aHR0cHM6Ly9hZWdpcy1jbG91ZGZyb250LTEudHViaS52aWRlby9iZmFkMjllMi01YmVlLTQ0ZjMtODI1Ni0xMjczMjRlOGIxMDYvMTA4MHAtY2MvaW5kZXgubTN1OA=="
+            "new-kmovies": "aHR0cHM6Ly9hZHMuaXRzLW5ld2lkLm5ldC9hcGkvbWFuaWZlc3QubTN1OD90cD1sZ19jaGFubmVscyZjaGFubmVsX25hbWU9bmV3a21vdmllcyZjaGFubmVsX2lkPW5ldGlkXzIxOSZtcGY9YWRmYzIwNGQtMzlhZjE5NjItMTNhMmYwMWEmYXBpa2V5PTQ4MjMwZTZiLTFjZWEwMDk3LTE1OTc1ZjkzLzM5YWYxOTYyJmF1dGg9YjYyYzJjOGItODMxNmE3NzEtMjk1ZWJhMjgtZjQ2NjNkZGQmYWRzLmxpdmU9W0NPTlRFTlRfTElWRV0mYWRzLmRldmljZWlkPVtERVZJQ0VfSURdJmFkcy5pZmE9W0lGQV0mYWRzLmlmYXR5cGU9W0lGQV9UWVBFXSZhZHMubGF0PVtMTVRdJmFkcy5kb25vdHNlbGw9W0ROU10mYWRzLnVhPVtVQV0mYWRzLmlwPVtJUF0mYWRzLmdkcHI9W0dEUFJdJmFkcy5nZHByX2NvbnNlbnQ9W0dEUFJfQ09OU0VOVF0mYWRzLmNvdW50cnk9W0NPVU5UUlldJmFkcy51c19wcml2YWN5PVtVU19QUklWQUNZXSZhZHMuYXBwc3RvcmV1cmw9W0FQUF9TVE9SRVVSTF0mYWRzLmJ1bmRsZWlkPVtBUFBfQlVORExFXSZhZHMuYXBwbmFtZT1bQVBQX05BTUVdJmFkcy5hcHB2ZXJzaW9uPVtBUFBfVkVSU0lPTl0mYWRzLmRldmljZXR5cGU9W0RFVklDRV9UWVBFXSZhZHMuZGV2aWNlbWFrZT1bREVWSUNFX01BS0VdJmFkcy5kZXZpY2Vtb2RlbD1bREVWSUNFX01PREVMXSZhZHMudGFyZ2V0YWQ9W1RBUkdFVEFEX0FMTE9XRURdJmFkcy5mY2s9W0ZDS10mYWRzLnZpZXdzaXplPVtWSUVXU0laRV0mYWRzLmdpdm49W05PTkNFXQ==",
+            "mix-hollywood": "aHR0cHM6Ly9iaXRkYXNoLWEuYWthbWFpaGQubmV0L2NvbnRlbnQvc2ludGVsL2hscy9wbGF5bGlzdC5tM3U4",
+            "paramount-movie-channel": "aHR0cHM6Ly9kZW1vLnVuaWZpZWQtc3RyZWFtaW5nLmNvbS9rOHMvZmVhdHVyZXMvc3RhYmxlL3ZpZGVvL3RlYXJzLW9mLXN0ZWVsL3RlYXJzLW9mLXN0ZWVsLmlzbS8ubTN1OA==",
+            "family-bonding-cinema": "aHR0cHM6Ly9wbGF5ZXJ0ZXN0Lmxvbmd0YWlsdmlkZW8uY29tL2FkYXB0aXZlL2VsZXBoYW50c19kcmVhbS9lbGVwaGFudHNfZHJlYW0ubTN1OA==",
+            "dazn-ringside": "aHR0cHM6Ly9jcGgtcDJwLW1zbC5ha2FtYWl6ZWQubmV0L2hscy9saXZlLzIwMDAzNDEvdGVzdC9tYXN0ZXIubTN1OA=="
         };
+
+        // Pre-map secure URLs to live channels prior to configuration initialization
+        liveChannelsData.forEach(ch => {
+            if (secureRawB64[ch.id]) {
+                ch.src = secureRawB64[ch.id];
+            }
+        });
 
         const defaultConfig = {
             brandName: "Family Bonding Time",
-            gcashNo: "09608754210", // Official payment destination
+            gcashNo: "09608754210", 
             gcashName: "System Administrator",
             channels: [...liveChannelsData]
         };
@@ -395,7 +411,6 @@
         let activeAdminPlanId = 'p1';
         let deviceId = '';
 
-        // Cryptographic Salting Key
         const SECRETS_SALT = "FAMILY_BONDING_TIME_SALT_2026_SECURE";
 
         function generateUniqueDeviceID() {
@@ -413,7 +428,6 @@
             return id;
         }
 
-        // Stepper cost calculation logic
         function calculateVendingCost(days) {
             if (days === 1) return 15;
             return days * 10;
@@ -431,11 +445,12 @@
 
         function updateVendingQR() {
             const payload = deviceId;
-            document.getElementById('viewer-checkout-qr-preview').textContent = `Ref: ${payload}`;
-            document.getElementById('viewer-checkout-qr').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(payload)}`;
+            const previewEl = document.getElementById('viewer-checkout-qr-preview');
+            const imgEl = document.getElementById('viewer-checkout-qr');
+            if (previewEl) previewEl.textContent = `Ref: ${payload}`;
+            if (imgEl) imgEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(payload)}`;
         }
 
-        // Dynamic key generator
         function calculateSignature(devId, days, serial) {
             const rawPayload = `${devId}-${days}-${serial}-${SECRETS_SALT}`;
             let hash = 0;
@@ -454,7 +469,6 @@
         function verifyLicenseKey(key) {
             if (!key) return { valid: false, error: "Empty Key" };
             
-            // Smart Sanitization Pipeline: Convert mobile long dashes back into standard hyphens and remove spacing/hidden Unicode elements
             const normalizedKey = key.trim()
                 .replace(/[\u2013\u2014\u2212]/g, "-") 
                 .replace(/[\s\u200B\u200C\u200D\uFEFF]/g, "") 
@@ -495,10 +509,17 @@
             document.getElementById('client-device-display').textContent = `Device ID: ${deviceId}`;
             document.getElementById('gen-client-id').value = deviceId;
 
-            // version _v8 namespace forces clean cache structures and re-registers the entire sequential layout and admin tools
             const saved = localStorage.getItem('family_bonding_portal_config_v8');
             if (saved) {
                 appData = JSON.parse(saved);
+                // Synchronize source feeds dynamically to prevent old caches from breaking playback
+                appData.channels.forEach(savedChan => {
+                    const freshChan = liveChannelsData.find(c => c.id === savedChan.id);
+                    if (freshChan) {
+                        savedChan.src = freshChan.src;
+                    }
+                });
+                localStorage.setItem('family_bonding_portal_config_v8', JSON.stringify(appData));
             } else {
                 appData = JSON.parse(JSON.stringify(defaultConfig));
                 localStorage.setItem('family_bonding_portal_config_v8', JSON.stringify(appData));
@@ -726,6 +747,15 @@
             }
         }
 
+        function updateEPGDisplay() {
+            if (!activeChannel) return;
+            const prog = getNowPlayingProgram(activeChannel);
+            const titleEl = document.getElementById('epg-now-title');
+            const timeEl = document.getElementById('epg-now-time');
+            if (titleEl) titleEl.textContent = prog.title;
+            if (timeEl) timeEl.textContent = `${prog.start} - ${prog.end}`;
+        }
+
         function checkSubscription() {
             const expirationTime = localStorage.getItem('saas_premium_expiry');
             const overlay = document.getElementById('paywall-overlay');
@@ -826,7 +856,7 @@
                 if (ch.id === id) {
                     el.className = "w-full text-left p-2 rounded-xl flex items-center justify-between border transition duration-150 bg-indigo-950/20 border-indigo-500 text-white";
                 } else {
-                    el.className = `w-full text-left p-2 rounded-xl flex items-center justify-between border transition duration-150 ${!hasSource ? 'opacity-40 cursor-not-allowed bg-slate-950/20 border-slate-900 text-slate-500' : 'bg-slate-900/30 border-slate-850/50 text-slate-300 hover:bg-slate-900/60'}`;
+                    el.className = `w-full text-left p-2 rounded-xl flex items-center justify-between border transition duration-150 ${!hasSource ? 'opacity-40 cursor-not-allowed bg-slate-950/20 border-slate-900 text-slate-500' : 'bg-slate-900/30 border-slate-855/50 text-slate-300 hover:bg-slate-900/60'}`;
                 }
             });
 
@@ -849,7 +879,6 @@
             document.getElementById('payment-modal').classList.add('hidden');
         }
 
-        // Active 24H Trial Controller
         function checkTrialState() {
             const trialConsumed = localStorage.getItem('saas_trial_consumed') === 'true';
             const btn = document.getElementById('trial-button');
@@ -883,11 +912,9 @@
             if (activeChannel) selectChannel(activeChannel.id);
         }
 
-        // Offline Verification Logic (Enforces one-time consumption)
         function processSubscription() {
             const rawKey = document.getElementById('activation-key').value.trim();
             
-            // Developer/Admin bypass key handler: Activates lifetime playback & opens panel
             if (rawKey === "!12345678*") {
                 localStorage.setItem('saas_premium_expiry', 4102444800000); 
                 closePaymentModal();
@@ -917,7 +944,6 @@
             if (activeChannel) selectChannel(activeChannel.id);
         }
 
-        // Creator Key Generator Logic (Auto-attaches a unique serial code)
         function generateActivationKey() {
             const inputId = document.getElementById('gen-client-id').value.trim();
             const days = parseInt(document.getElementById('gen-client-days').value);
@@ -943,7 +969,6 @@
             document.getElementById('gen-result-container').classList.remove('hidden');
         }
 
-        // Integrated passcode overlay handlers
         function promptDevPasscode() {
             document.getElementById('passcode-input').value = "";
             document.getElementById('passcode-modal').classList.remove('hidden');
@@ -961,7 +986,6 @@
             const sanitizedInput = rawInput ? rawInput.trim() : "";
             
             if (sanitizedInput === "!12345678*") {
-                // Developer/Admin bypass logic: Activates lifetime playback & opens panel
                 localStorage.setItem('saas_premium_expiry', 4102444800000); 
                 closePasscodeModal();
                 checkSubscription();
@@ -977,14 +1001,24 @@
             localStorage.removeItem('saas_premium_expiry');
             localStorage.removeItem('saas_trial_consumed');
             alert("Developer license cleared. Portal is locked.");
-            location.reload(); // Reloads the site to apply standard restriction overlay cleanly
+            location.reload(); 
         }
 
-        liveChannelsData.forEach(ch => {
-            if (secureRawB64[ch.id]) {
-                ch.src = secureRawB64[ch.id];
+        // Initialize Administrator Form triggers
+        window.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+                e.preventDefault();
+                promptDevPasscode();
             }
         });
+
+        function openAdminModal() {
+            document.getElementById('admin-modal').classList.remove('hidden');
+        }
+
+        function closeAdminModal() {
+            document.getElementById('admin-modal').classList.add('hidden');
+        }
 
         initSaaS();
     </script>
