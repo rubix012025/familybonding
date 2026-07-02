@@ -293,7 +293,7 @@
             try { return decodeURIComponent(atob(b64)); } catch(e) { return ""; }
         }
 
-        // Live Channels Data (Cleaned and Filtered Presets)
+        // Live Channels Data (Generic 8-Channel Presets)
         const liveChannelsData = [
             {
                 id: "new-kmovies",
@@ -302,9 +302,9 @@
                 logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/new-kmovies.png",
                 src: "YUhSMGNITTZMeTloWkhNdWFYUnpMVzVsZDJsc0xtNWxkQzloY0drdmJXRnVhVlp6ZEM1dTN1ODlkRndMWmVkamFHRnViMlZ6TDJScFlXNXBabVZ6ZEM1dTN1OD9kSEF0YmVkM2FXUnNMWGNoWVc1dVpXeHZZbVZ5Y3pwaGNuTjFjbVZmZEhWc1gyMXBkSFU9",
                 schedule: [
-                    { title: "Seoul Morning Romance Selections", start: "00:00", end: "08:00" },
-                    { title: "Korean Blockbuster Mystery Hits", start: "08:00", end: "16:00" },
-                    { title: "Late Night K-Thriller Premieres", start: "16:00", end: "24:00" }
+                    { title: "Morning Romance Selections", start: "00:00", end: "08:00" },
+                    { title: "Blockbuster Mystery Hits", start: "08:00", end: "16:00" },
+                    { title: "Late Night Thriller Premieres", start: "16:00", end: "24:00" }
                 ]
             },
             {
@@ -314,21 +314,21 @@
                 logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/mix-hollywood.png",
                 src: "YUhSMGNITTZMeTltYFMtcWR4c2FXZDNhbU5vTG0xNWMyOHVhbThvVFdseVZGWXVkR3hmYVc1a1pYZ3VpM1U9",
                 schedule: [
-                    { title: "Hollywood Golden Era Block", start: "00:00", end: "08:00" },
+                    { title: "Golden Era Block", start: "00:00", end: "08:00" },
                     { title: "Modern Action & Sci-Fi features", start: "08:00", end: "16:00" },
                     { title: "Late Night Indie Masterpieces", start: "16:00", end: "24:00" }
                 ]
             },
             {
-                id: "paramount-movies",
+                id: "universal-movies",
                 name: "Movies 3",
                 group: "Movies",
-                logo: "https://images.pluto.tv/channels/5cb0cae7a461406ffe3f5213/colorLogoPNG.png",
-                src: "YUhSMGNITTZMeTlvYlhBeUxuVnJMM0JzZFM0MlltRndNR05oWldkaE5EWXhOREF6Wm1abU56WXpaVFV5TVRNdWJUTjFPRDA9",
+                logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/universal-movies.png",
+                src: "YUhSMGNITTZMeTlrTUhkaGJYWjNiaTB0Y21KeWVHbHVMbU5zYjNWaFptSnliMjUwTG01bGRDOW1ZVzVwWm1WemRDMHpabVZqTTJWallXTXpPV0V6TWpJeXpJeFp6Sm1ZelppTnpFeFpEUTNjbTkyWkY5a1pXWmhkVHgxZFc4dGJtSmpkMT",
                 schedule: [
-                    { title: "Movies 3 Classic Cinema Selection", start: "00:00", end: "08:00" },
-                    { title: "Movies 3 Action Blockbusters", start: "08:00", end: "16:00" },
-                    { title: "Movies 3 Late Night Suspense Hits", start: "16:00", end: "24:00" }
+                    { title: "Classics Selection", start: "00:00", end: "08:00" },
+                    { title: "Action Comedy Blockbuster", start: "08:00", end: "16:00" },
+                    { title: "Late Night Suspense & Film Noir", start: "16:00", end: "24:00" }
                 ]
             },
             {
@@ -338,9 +338,33 @@
                 logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/mix-hollywood.png",
                 src: "YUhSMGNITTZMeTloWkhNdWQyaHBjR3hoYzNndVkyTXZkMmhwY0d4aGMyaDBlR0YwTDJsdVpHVjRMbTB3",
                 schedule: [
-                    { title: "Family Early Bird Reels", start: "00:00", end: "08:00" },
+                    { title: "Early Bird Reels", start: "00:00", end: "08:00" },
                     { title: "Curated Retro Film Favorites", start: "08:00", end: "16:00" },
                     { title: "Late Night Cult Classics", start: "16:00", end: "24:00" }
+                ]
+            },
+            {
+                id: "axn-movies-hd",
+                name: "Movies 5",
+                group: "Movies",
+                logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/universal-movies.png",
+                src: "YUhSMGNITTZMeTl3TVM0M0xqRXlNQzR6TkRvd01EQm9MMEZZVGwxQ1RFRkRTM0FpYm1SbGVDNXREelU0",
+                schedule: [
+                    { title: "Morning Mystery Hour", start: "00:00", end: "08:00" },
+                    { title: "Action and Intense Crime Dramas", start: "08:00", end: "16:00" },
+                    { title: "Midnight Thriller Hour", start: "16:00", end: "24:00" }
+                ]
+            },
+            {
+                id: "nba-tv-hd",
+                name: "Games",
+                group: "Sports",
+                logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/netmax-tv.png",
+                src: "YUhSMGNITTZMeTlhTXk0eU16Y3VNVEEwTGpFMk9pZ3dPREFvVlZORmUwNUNRUzV0TXpVNA==",
+                schedule: [
+                    { title: "Hardwood Morning Classic Matches", start: "00:00", end: "08:00" },
+                    { title: "Game Day Preview & Analysis", start: "08:00", end: "16:00" },
+                    { title: "Season Replay Highlights", start: "16:00", end: "24:00" }
                 ]
             },
             {
@@ -350,9 +374,21 @@
                 logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/netmax-tv.png",
                 src: "YUhSMGNITTZMeTloWldkcGN5MWpiRzl1WkhKdmJuUXRNUzF0ZFdKcUxtWnBaRzh2WW1aaFpDIzVaV0V0TlRKaFpTMDBOR1l6TFRnMU5pMHhNamN6TWpSbE9HUXhNRFl2TVRBNGNHMXRZM012YVc1a1pYZ3VpM1U0",
                 schedule: [
-                    { title: "DAZN Heavyweight Classics", start: "00:00", end: "08:00" },
+                    { title: "Heavyweight Classics", start: "00:00", end: "08:00" },
                     { title: "Live Ringside Match Replays", start: "08:00", end: "16:00" },
                     { title: "Knockout Compilation Block", start: "16:00", end: "24:00" }
+                ]
+            },
+            {
+                id: "cartoon-network",
+                name: "Kids 1",
+                group: "Kids",
+                logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/cartoon-network.png",
+                src: "YUhSMGNITTZMeTlhTXk0eU16Y3VNVEEwTGpFMk9pZ3dPREFvVlZORmUwTkJVaTFEVlhKMVUxUjVUMDRmWm1sbVkzUnZjMmwwT25SNWMzVT0=",
+                schedule: [
+                    { title: "Morning Cartoon Fun Blocks", start: "00:00", end: "08:00" },
+                    { title: "Classic Midday Animated Hits", start: "08:00", end: "16:00" },
+                    { title: "Action Cartoon Hour", start: "16:00", end: "24:00" }
                 ]
             }
         ];
@@ -360,9 +396,12 @@
         const secureRawB64 = {
             "new-kmovies": "aHR0cHM6Ly9hZHMuaXRzLW5ld2lkLm5ldC9hcGkvbWFuaWZlc3QubTN1OD90cD1sZ19jaGFubmVscyZjaGFubmVsX25hbWU9bmV3a21vdmllcyZjaGFubmVsX2lkPW5ld2lkXzIxOSZtcGY9YWRmYzIwNGQtMzlhZjE5NjAtMTNhMmYwMWEmYXBpa2V5PTQ4MjMwZTZiLTFjZWEwMDk3LTE1OTc1ZjkzLzM5YWYxOTYyJmF1dGg9YjYyYzJjOGItODMxNmE3NzEtMjk1ZWJhMjgtZjQ2NjNkZGQmYWRzLmxpdmU9W0NPTlRFTlRfTElWRV0mYWRzLmRldmljZWlkPVtERVZJQ0VfSURdJmFkcy5pZmE9W0lGQV0mYWRzLmlmYXR5cGU9W0lGQV9UWVBFXSZhZHMubGF0PVtMTVRdJmFkcy5kb25vdHNlbGw9W0ROU10mYWRzLnVhPVtVQV0mYWRzLmlwPVtJUF0mYWRzLmdkcHI9W0dEUFJdJmFkcy5nZHByX2NvbnNlbnQ9W0dEUFJfQ09OU0VOVF0mYWRzLmNvdW50cnk9W0NPVU5UUlldJmFkcy51c19wcml2YWN5PVtVU19QUklWQUNZXSZhZHMuYXBwc3RvcmV1cmw9W0FQUF9TVE9SRVVSTF0mYWRzLmJ1bmRsZWlkPVtBUFBfQlVORExFXSZhZHMuYXBwbmFtZT1bQVBQX05BTUVdJmFkcy5hcHB2ZXJzaW9uPVtBUFBfVkVSU0lPTl0mYWRzLmRldmljZXR5cGU9W0RFVklDRV9UWVBFXSZhZHMuZGV2aWNlbWFrZT1bREVWSUNFX01BS0VdJmFkcy5kZXZpY2Vtb2RlbD1bREVWSUNFX01PREVMXSZhZHMudGFyZ2V0YWQ9W1RBUkdFVEFEX0FMTE9XRURdJmFkcy5mY2s9W0ZDS10mYWRzLnZpZXdzaXplPVtWSUVXU0laRV0mYWRzLmdpdm49W05PTkNFXQ==",
             "mix-hollywood": "aHR0cHM6Ly9tbC1wdWxsLWh3Yy5teWNvLmlvL01peFRWL2hscy9pbmRleC5tM3U4",
-            "paramount-movies": "aHR0cHM6Ly9qbXAyLnVrL3BsdS01Y2IwY2FlN2E0NjE0MDZmZmUzZjUyMTMubTN1OA==",
+            "universal-movies": "aHR0cHM6Ly9kNHdobXZ3bTByZHZpLmNsb3VkZnJvbnQubmV0L21hbmlmZXN0LzNmZWMzZTVjYWMzOWE1MmIyMTMyZjljNjZjODNkYWUwNDNkYzE3ZDQvcHJvZF9kZWZhdWx0X3h1bW8tbmJjdS1saW5lYXIvZTcyNzViZmItZmI4ZC00OWQ4LTk2OWYtODU0NDgxZmE3ZTcxLzQubTN1OA==",
             "family-bonding-cinema": "aHR0cHM6Ly9jZG4ud2hpcGxhc2guY2Mvd2hpcGxhc2gtY2luZW1hL2luZGV4Lm0zdTg=",
-            "dazn-ringside": "aHR0cHM6Ly9hZWdpcy1jbG91ZGZyb250LTEudHViaS52aWRlby9iZmFkMjllMi01YmVlLTQ0ZjMtODI1Ni0xMjczMjRlOGIxMDYvMTA4MHAtY2MvaW5kZXgubTN1OA=="
+            "axn-movies-hd": "aHR0cDovLzUwLjcuMTIwLjM0OjgwODAvQVhOX0JMQUNLL2luZGV4Lm0zdTg=",
+            "nba-tv-hd": "aHR0cDovLzIzLjIzNy4xMDQuMTA2OjgwODAvVVNBX05CQS9pbmRleC5tM3U4",
+            "dazn-ringside": "aHR0cHM6Ly9hZWdpcy1jbG91ZGZyb250LTEudHViaS52aWRlby9iZmFkMjllMi01YmVlLTQ0ZjMtODI1Ni0xMjczMjRlOGIxMDYvMTA4MHAtY2MvaW5kZXgubTN1OA==",
+            "cartoon-network": "aHR0cDovLzIzLjIzNy4xMDQuMTA2OjgwODAvVVNBX0NBUlRPT05fTkVUV09SSy9pbmRleC5tM3U4"
         };
 
         liveChannelsData.forEach(ch => {
@@ -475,31 +514,19 @@
             document.getElementById('client-device-display').textContent = `Device ID: ${deviceId}`;
             document.getElementById('gen-client-id').value = deviceId;
 
-            const saved = localStorage.getItem('family_bonding_portal_config_v5');
+            // Updated namespace to v6 to force initial loading of the generic 8-channel scheme
+            const saved = localStorage.getItem('family_bonding_portal_config_v6');
             if (saved) {
                 appData = JSON.parse(saved);
-                
-                // Clear obsolete cache values to align with renamed channels
-                const hasUniversal = appData.channels.some(c => c.id === "universal-movies");
-                const hasParamountOldName = appData.channels.some(c => c.id === "paramount-movies" && c.name === "Paramount Movie Channel");
-                if (hasUniversal || hasParamountOldName) {
-                    appData = JSON.parse(JSON.stringify(defaultConfig));
-                    localStorage.setItem('family_bonding_portal_config_v5', JSON.stringify(appData));
-                }
             } else {
                 appData = JSON.parse(JSON.stringify(defaultConfig));
-                localStorage.setItem('family_bonding_portal_config_v5', JSON.stringify(appData));
+                localStorage.setItem('family_bonding_portal_config_v6', JSON.stringify(appData));
             }
 
             populateDashboard();
             updateViewerPortalUI();
             updateAdminQRDisplay();
-
-            const isPremium = checkSubscription();
-            if (isPremium && activeChannel) {
-                // Instantly select, load, and visually highlight active stream
-                selectChannel(activeChannel.id);
-            }
+            checkSubscription();
             checkTrialState();
         }
 
@@ -579,7 +606,7 @@
             appData.gcashNo = document.getElementById('cfg-gcash-no').value;
             appData.gcashName = document.getElementById('cfg-gcash-name').value;
 
-            localStorage.setItem('family_bonding_portal_config_v5', JSON.stringify(appData));
+            localStorage.setItem('family_bonding_portal_config_v6', JSON.stringify(appData));
             alert("Platform configuration updated successfully.");
             updateViewerPortalUI();
             updateAdminQRDisplay();
@@ -606,7 +633,7 @@
                 }
             });
 
-            localStorage.setItem('family_bonding_portal_config_v5', JSON.stringify(appData));
+            localStorage.setItem('family_bonding_portal_config_v6', JSON.stringify(appData));
             alert("Schedules and linear EPG timeline updated successfully.");
             updateViewerPortalUI();
             closeAdminModal();
@@ -615,7 +642,7 @@
         function resetToPresets() {
             if (confirm("Reset layout to default channel presets?")) {
                 appData = JSON.parse(JSON.stringify(defaultConfig));
-                localStorage.setItem('family_bonding_portal_config_v5', JSON.stringify(appData));
+                localStorage.setItem('family_bonding_portal_config_v6', JSON.stringify(appData));
                 populateDashboard();
                 updateViewerPortalUI();
                 updateAdminQRDisplay();
@@ -652,7 +679,7 @@
                     btn.onclick = () => selectChannel(channel.id);
                     
                     const hasSource = channel.src && channel.src.trim() !== "";
-                    btn.className = `w-full text-left p-2 rounded-xl flex items-center justify-between border transition duration-150 ${!hasSource ? 'opacity-40 cursor-not-allowed bg-slate-950/20 border-slate-900 text-slate-500' : 'bg-slate-900/30 border-slate-850/50 text-slate-300 hover:bg-slate-900/60'}`;
+                    btn.className = `w-full text-left p-2 rounded-xl flex items-center justify-between border transition duration-150 ${!hasSource ? 'opacity-40 cursor-not-allowed bg-slate-950/20 border-slate-900 text-slate-500' : 'bg-slate-900/30 border-slate-855 text-slate-300 hover:bg-slate-900/60'}`;
 
                     let logoHTML = '';
                     if (channel.logo && channel.logo.trim() !== "") {
@@ -752,6 +779,10 @@
                         countdownEl.textContent = `${hrs}h ${mins}m`;
                     }
 
+                    if (!document.getElementById('video').src && activeChannel) {
+                        const decryptedStreamUrl = secureDecode(activeChannel.src);
+                        loadVideoStream(decryptedStreamUrl);
+                    }
                     return true;
                 }
             }
@@ -764,14 +795,10 @@
             return false;
         }
 
+        // HLS Player Engine Loader
         function loadVideoStream(src) {
             const video = document.getElementById('video');
             if (!src) return;
-
-            // Instantly halt, clear cache buffers, and reset video element 
-            video.pause();
-            video.src = "";
-            video.load();
 
             if (hlsInstance) {
                 hlsInstance.destroy();
@@ -781,40 +808,17 @@
             if (Hls.isSupported()) {
                 hlsInstance = new Hls({
                     maxMaxBufferLength: 10,
-                    enableWorker: true,
-                    lowLatencyMode: true
+                    enableWorker: true
                 });
                 hlsInstance.loadSource(src);
                 hlsInstance.attachMedia(video);
-                hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
-                    video.play().catch((err) => {
-                        console.log("Play failed: ", err);
-                    });
-                });
-                
-                // Realtime automatic network/media error recovery for responsive streaming
-                hlsInstance.on(Hls.Events.ERROR, function (event, data) {
-                    if (data.fatal) {
-                        switch (data.type) {
-                            case Hls.ErrorTypes.NETWORK_ERROR:
-                                hlsInstance.startLoad();
-                                break;
-                            case Hls.ErrorTypes.MEDIA_ERROR:
-                                hlsInstance.recoverMediaError();
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                });
+                hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(() => {}));
             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
                 video.src = src;
-                video.addEventListener('loadedmetadata', () => {
-                    video.play().catch((err) => console.log(err));
-                });
+                video.addEventListener('loadedmetadata', () => video.play().catch(() => {}));
             } else {
                 video.src = src;
-                video.play().catch((err) => console.log(err));
+                video.play().catch(() => {});
             }
         }
 
@@ -849,7 +853,7 @@
                 if (ch.id === id) {
                     el.className = "w-full text-left p-2 rounded-xl flex items-center justify-between border transition duration-150 bg-indigo-950/20 border-indigo-500 text-white";
                 } else {
-                    el.className = `w-full text-left p-2 rounded-xl flex items-center justify-between border transition duration-150 ${!hasSource ? 'opacity-40 cursor-not-allowed bg-slate-950/20 border-slate-900 text-slate-500' : 'bg-slate-900/30 border-slate-850/50 text-slate-300 hover:bg-slate-900/60'}`;
+                    el.className = `w-full text-left p-2 rounded-xl flex items-center justify-between border transition duration-150 ${!hasSource ? 'opacity-40 cursor-not-allowed bg-slate-950/20 border-slate-900 text-slate-500' : 'bg-slate-900/30 border-slate-855 text-slate-300 hover:bg-slate-900/60'}`;
                 }
             });
 
