@@ -20,7 +20,7 @@
     <!-- Top Header -->
     <header class="p-4 md:p-5 flex justify-between items-center border-b border-slate-800 bg-slate-950/60 backdrop-blur-md sticky top-0 z-40">
         <div>
-            <h1 id="view-brand-title" onclick="promptDevPasscode()" class="text-base md:text-lg font-black tracking-wider text-indigo-400 uppercase cursor-pointer hover:text-indigo-350 select-none" title="Admin Portal Access">PORTAL</h1>
+            <h1 id="view-brand-title" class="text-base md:text-lg font-black tracking-wider text-indigo-400 uppercase">PORTAL</h1>
             <p class="text-[10px] md:text-xs text-slate-400">Integrated Streaming Middleware Console</p>
         </div>
         <div class="flex items-center space-x-3">
@@ -93,7 +93,7 @@
         </div>
     </main>
 
-    <!-- GCash Checkout / Vending Machine Modal (Optimized for Mobile Height) -->
+    <!-- GCash Checkout / Vending Machine Modal -->
     <div id="payment-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 overflow-y-auto hidden">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-3xl w-full overflow-y-auto max-h-[90vh] md:max-h-[95vh] shadow-2xl">
             <div class="p-5 border-b border-slate-800 flex justify-between items-center bg-slate-950/40 sticky top-0 z-10 backdrop-blur-md">
@@ -122,7 +122,6 @@
                         <span id="vending-cost-display" class="text-lg font-black text-white">₱15</span>
                     </div>
 
-                    <!-- GCash Info -->
                     <div class="bg-slate-950 p-3 rounded-xl border border-slate-855 text-[11px] text-slate-300 space-y-1.5">
                         <div class="flex justify-between font-bold text-indigo-400 text-[9px] uppercase tracking-wider">
                             <span>Direct Transfer:</span>
@@ -133,15 +132,6 @@
                         </div>
                     </div>
 
-                    <!-- Reference QR Code Generation -->
-                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-855 flex flex-col items-center justify-center space-y-2">
-                        <span class="text-[9px] font-bold text-indigo-400 uppercase tracking-wider self-start">Activation Verification Reference</span>
-                        <div class="bg-white p-1 rounded">
-                            <img id="viewer-checkout-qr" src="" alt="Payment QR" class="w-24 h-24">
-                        </div>
-                        <span id="viewer-checkout-qr-preview" class="text-[9px] font-mono text-slate-400 select-all tracking-wider">Ref: Calculating...</span>
-                    </div>
-
                     <div>
                         <div class="flex justify-between items-center mb-1">
                             <label class="block text-[9px] text-slate-400 uppercase tracking-wide">Enter Activation Key</label>
@@ -150,7 +140,7 @@
                         <input type="text" id="activation-key" placeholder="WP-XXXX-XXXX-XXD-XXXX-XXXXXX" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-center font-mono tracking-wider text-white focus:outline-none focus:border-indigo-500">
                     </div>
 
-                    <button onclick="processSubscription()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-xs tracking-wide transition">
+                    <button onclick="processSubscription()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-xs tracking-wide transition font-bold">
                         Verify System Payment
                     </button>
                 </div>
@@ -189,6 +179,19 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Integrated Passcode Form Modal (Bypasses Browser pop-up block) -->
+    <div id="passcode-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl text-center">
+            <h3 class="font-bold text-xs text-indigo-400 uppercase tracking-widest">Administrator Access</h3>
+            <p class="text-[10px] text-slate-400 leading-normal">Enter the Console Administrator Passcode to authorize access:</p>
+            <input type="password" id="passcode-input" placeholder="••••••••" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-center text-sm font-mono tracking-widest text-white focus:outline-none focus:border-indigo-500">
+            <div class="flex gap-2">
+                <button onclick="closePasscodeModal()" class="flex-1 py-2 bg-slate-950 hover:bg-slate-900 border border-slate-800 text-slate-400 text-[10px] font-bold rounded-xl transition">Cancel</button>
+                <button onclick="submitPasscode()" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-bold rounded-xl transition">Verify</button>
             </div>
         </div>
     </div>
@@ -303,14 +306,14 @@
             try { return decodeURIComponent(atob(b64)); } catch(e) { return ""; }
         }
 
-        // Live Channels Data (Cleaned and Mapped to custom categories)
+        // Live Channels Data
         const liveChannelsData = [
             {
-                id: "Movies 1",
-                name: "Movies 1",
+                id: "new-kmovies",
+                name: "New Kmovies",
                 group: "Movies",
                 logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/new-kmovies.png",
-                src: "",
+                src: "YUhSMGNITTZMeTloWkhNdWFYUnpMVzVsZDJsc0xtNWxkQzloY0drdmJXRnVhVlp6ZEM1dTN1ODlkRndMWmVkamFHRnViMlZ6TDJScFlXNXBabVZ6ZEM1dTN1OD9kSEF0YmVkM2FXUnNMWGNoWVc1dVpXeHZZbVZ5Y3pwaGNuTjFjbVZmZEhWc1gyMXBkSFU9",
                 schedule: [
                     { title: "Seoul Morning Romance Selections", start: "00:00", end: "08:00" },
                     { title: "Korean Blockbuster Mystery Hits", start: "08:00", end: "16:00" },
@@ -318,11 +321,11 @@
                 ]
             },
             {
-                id: "Movies 2",
-                name: "Movies 2",
+                id: "mix-hollywood",
+                name: "MixHollywood",
                 group: "Movies",
                 logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/mix-hollywood.png",
-                src: "",
+                src: "YUhSMGNITTZMeTltYFMtcWR4c2FXZDNhbU5vTG0xNWMyOHVhbThvVFdseVZGWXVkR3hmYVc1a1pYZ3VpM1U9",
                 schedule: [
                     { title: "Hollywood Golden Era Block", start: "00:00", end: "08:00" },
                     { title: "Modern Action & Sci-Fi features", start: "08:00", end: "16:00" },
@@ -330,11 +333,11 @@
                 ]
             },
             {
-                id: "Movies 3",
-                name: "Movies 3",
+                id: "universal-movies",
+                name: "Universal movies",
                 group: "Movies",
                 logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/universal-movies.png",
-                src: "",
+                src: "YUhSMGNITTZMeTlrTUhkaGJYWjNiaTB0Y21KeWVHbHVMbU5zYjNWaFptSnliMjUwTG01bGRDOW1ZVzVwWm1WemRDMHpabVZqTTJWallXTXpPV0V6TWpJeXpJeFp6Sm1ZelppTnpFeFpEUTNjbTkyWkY5a1pXWmhkVHgxZFc4dGJtSmpkMT",
                 schedule: [
                     { title: "Universal Studios Classics Selection", start: "00:00", end: "08:00" },
                     { title: "Universal Action Comedy Blockbuster", start: "08:00", end: "16:00" },
@@ -342,11 +345,11 @@
                 ]
             },
             {
-                id: "Movies 4",
-                name: "Movies 4",
+                id: "family-bonding-cinema",
+                name: "Family Bonding Cinema (480p)",
                 group: "Movies",
                 logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/mix-hollywood.png",
-                src: "",
+                src: "YUhSMGNITTZMeTloWkhNdWQyaHBjR3hoYzNndVkyTXZkMmhwY0d4aGMyaDBlR0YwTDJsdVpHVjRMbTB3",
                 schedule: [
                     { title: "Family Early Bird Reels", start: "00:00", end: "08:00" },
                     { title: "Curated Retro Film Favorites", start: "08:00", end: "16:00" },
@@ -354,26 +357,64 @@
                 ]
             },
             {
-                id: "FIGHT",
-                name: "FIGHT",
+                id: "axn-movies-hd",
+                name: "AXN Movies HD",
+                group: "Movies",
+                logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/universal-movies.png",
+                src: "YUhSMGNITTZMeTl3TVM0M0xqRXlNQzR6TkRvd01EQm9MMEZZVGwxQ1RFRkRTM0FpYm1SbGVDNXREelU0",
+                schedule: [
+                    { title: "AXN Morning Mystery Hour", start: "00:00", end: "08:00" },
+                    { title: "Action and Intense Crime Dramas", start: "08:00", end: "16:00" },
+                    { title: "AXN Midnight Thriller Hour", start: "16:00", end: "24:00" }
+                ]
+            },
+            {
+                id: "nba-tv-hd",
+                name: "NBA TV HD",
                 group: "Sports",
                 logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/netmax-tv.png",
-                src: "",
+                src: "YUhSMGNITTZMeTlhTXk0eU16Y3VNVEEwTGpFMk9pZ3dPREFvVlZORmUwNUNRUzV0TXpVNA==",
+                schedule: [
+                    { title: "Hardwood Morning Classic Matches", start: "00:00", end: "08:00" },
+                    { title: "NBA Game Day Preview & Analysis", start: "08:00", end: "16:00" },
+                    { title: "NBA Season Replay Highlights", start: "16:00", end: "24:00" }
+                ]
+            },
+            {
+                id: "dazn-ringside",
+                name: "DAZN RINGSIDE",
+                group: "Sports",
+                logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/netmax-tv.png",
+                src: "YUhSMGNITTZMeTloWldkcGN5MWpiRzl1WkhKdmJuUXRNUzF0ZFdKcUxtWnBaRzh2WW1aaFpDIzVaV0V0TlRKaFpTMDBOR1l6TFRnMU5pMHhNamN6TWpSbE9HUXhNRFl2TVRBNGNHMXRZM012YVc1a1pYZ3VpM1U0",
                 schedule: [
                     { title: "DAZN Heavyweight Classics", start: "00:00", end: "08:00" },
                     { title: "Live Ringside Match Replays", start: "08:00", end: "16:00" },
                     { title: "Knockout Compilation Block", start: "16:00", end: "24:00" }
                 ]
+            },
+            {
+                id: "cartoon-network",
+                name: "Cartoon Network",
+                group: "Kids",
+                logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/cartoon-network.png",
+                src: "YUhSMGNITTZMeTlhTXk0eU16Y3VNVEEwTGpFMk9pZ3dPREFvVlZORmUwTkJVaTFEVlhKMVUxUjVUMDRmWm1sbVkzUnZjMmwwT25SNWMzVT0=",
+                schedule: [
+                    { title: "Morning Cartoon Fun Blocks", start: "00:00", end: "08:00" },
+                    { title: "Classic Midday Animated Hits", start: "08:00", end: "16:00" },
+                    { title: "Toonami Action Block Hours", start: "16:00", end: "24:00" }
+                ]
             }
         ];
 
-        // Decryption table corresponding to specific Channel IDs
         const secureRawB64 = {
-            "Movies 1": "aHR0cHM6Ly9hZHMuaXRzLW5ld2lkLm5ldC9hcGkvbWFuaWZlc3QubTN1OD90cD1sZ19jaGFubmVscyZjaGFubmVsX25hbWU9bmV3a21vdmllcyZjaGFubmVsX2idPW5ld2lkXzIxOSZtcGY9YWRmYzIwNGQtMzlhZjE5NjItMTNhMmYwMWEmYXBpa2V5PTQ4MjMwZTZiLTFjZWEwMDk3LTE1OTc1ZjkzLzM5YWYxOTYyJmF1dGg9YjYyYzJjOGUtODMxNmE3NzEtMjk1ZWJhMjgtZjQ2NjNkZGQmYWRzLmxpdmU9W0NPTlRFTlRfTElWRV0mYWRzLmRldmljZWlkPVtERVZJQ0VfSURdJmFkcy5pZmE9W0lGQV0mYWRzLmlmYXR5cGU9W0lGQV9UWVBFXSZhZHMubGF0PVtMTVRdJmFkcy5kb25vdHNlbGw9W0DNU10mYWRzLnVhPVtVQV0mYWRzLmlwPVtJUF0mYWRzLmdkcHI9W0dEUFJdJmFkcy5nZHByX2NvbnNlbnQ9W0dEUFJfQ09OU0VOVF0mYWRzLmNvdW50cnk9W0NPVU5UUlldJmFkcy51c19wcml2YWN5PVtVU19QUklWQUNZXSZhZHMuYXBwc3RvcmV1cmw9W0FQUF9TVE9SRVVSTF0mYWRzLmJ1bmRsZWlkPVtBUFBfQlVORExFXSZhZHMuYXBwbmFtZT1bQVBQX05BTUVdJmFkcy5hcHB2ZXJzaW9uPVtBUFBfVkVSU0lPTl0mYWRzLmRldmljZXR5cGU9W0RFVklDRV9UWVBFXSZhZHMuZGV2aWNlbWFrZT1bREVWSUNFX01BS0VdJmFkcy5kZXZpY2Vtb2RlbD1bREVWSUNFX01PREVMXSZhZHMudGFyZ2V0YWQ9W1RBUkdFVEFEX0FMTE9XRURdJmFkcy5mY2s9W0ZDS10mYWRzLnZpZXdzaXplPVtWSUVXU0laRV0mYWRzLmdpdm49W05PTkNFXQ==",
-            "Movies 2": "aHR0cHM6Ly9tbC1wdWxsLWh3Yy5teWNvLmlvL01peFRWL2hscy9pbmRleC5tM3U4",
-            "Movies 3": "aHR0cHM6Ly9kNHdobXZ3bTByZHZpLmNsb3VkZnJvbnQubmV0L21hbmlmZXN0LzNmZWMzZTVjYWMzOWE1MmIyMTMyZjljNjZjODNkYWUwNDNkYzE3ZDQvcHJvZF9kZWZhdWx0X3h1bW8tbmJjdS1saW5lYXIvZTcyNzViZmItZmI4ZC00OWQ4LTk2OWYtODU0NDgxZmE3ZTcxLzQubTN1OA==",
-            "Movies 4": "aHR0cHM6Ly9jZG4ud2hpcGxhc2guY2Mvd2hpcGxhc2gtY2luZW1hL2luZGV4Lm0zdTg=",
-            "FIGHT": "aHR0cHM6Ly9hZWdpcy1jbG91ZGZyb250LTEudHViaS52aWRlby9iZmFkMjllMi01YmVlLTQ0ZjMtODI1Ni0xMjczMjRlOGIxMDYvMTA4MHAtY2MvaW5kZXgubTN1OA=="
+            "new-kmovies": "aHR0cHM6Ly9hZHMuaXRzLW5ld2lkLm5ldC9hcGkvbWFuaWZlc3QubTN1OD90cD1sZ19jaGFubmVscyZjaGFubmVsX25hbWU9bmV3a21vdmllcyZjaGFubmVsX2lkPW5ld2lkXzIxOSZtcGY9YWRmYzIwNGQtMzlhZjE5NjItMTNhMmYwMWEmYXBpa2V5PTQ4MjMwZTZiLTFjZWEwMDk3LTE1OTc1ZjkzLzM5YWYxOTYyJmF1dGg9YjYyYzJjOGItODMxNmE3NzEtMjk1ZWJhMjgtZjQ2NjNkZGQmYWRzLmxpdmU9W0NPTlRFTlRfTElWRV0mYWRzLmRldmljZWlkPVtERVZJQ0VfSURdJmFkcy5pZmE9W0lGQV0mYWRzLmlmYXR5cGU9W0lGQV9UWVBFXSZhZHMubGF0PVtMTVRdJmFkcy5kb25vdHNlbGw9W0ROU10mYWRzLnVhPVtVQV0mYWRzLmlwPVtJUF0mYWRzLmdkcHI9W0dEUFJdJmFkcy5nZHByX2NvbnNlbnQ9W0dEUFJfQ09OU0VOVF0mYWRzLmNvdW50cnk9W0NPVU5UUlldJmFkcy51c19wcml2YWN5PVtVU19QUklWQUNZXSZhZHMuYXBwc3RvcmV1cmw9W0FQUF9TVE9SRVVSTF0mYWRzLmJ1bmRsZWlkPVtBUFBfQlVORExFXSZhZHMuYXBwbmFtZT1bQVBQX05BTUVdJmFkcy5hcHB2ZXJzaW9uPVtBUFBfVkVSU0lPTl0mYWRzLmRldmljZXR5cGU9W0RFVklDRV9UWVBFXSZhZHMuZGV2aWNlbWFrZT1bREVWSUNFX01BS0VdJmFkcy5kZXZpY2Vtb2RlbD1bREVWSUNFX01PREVMXSZhZHMudGFyZ2V0YWQ9W1RBUkdFVEFEX0FMTE9XRURdJmFkcy5mY2s9W0ZDS10mYWRzLnZpZXdzaXplPVtWSUVXU0laRV0mYWRzLmdpdm49W05PTkNFXQ==",
+            "mix-hollywood": "aHR0cHM6Ly9tbC1wdWxsLWh3Yy5teWNvLmlvL01peFRWL2hscy9pbmRleC5tM3U4",
+            "universal-movies": "aHR0cHM6Ly9kNHdobXZ3bTByZHZpLmNsb3VkZnJvbnQubmV0L21hbmlmZXN0LzNmZWMzZTVjYWMzOWE1MmIyMTMyZjljNjZjODNkYWUwNDNkYzE3ZDQvcHJvZF9kZWZhdWx0X3h1bW8tbmJjdS1saW5lYXIvZTcyNzViZmItZmI4ZC00OWQ4LTk2OWYtODU0NDgxZmE3ZTcxLzQubTN1OA==",
+            "family-bonding-cinema": "aHR0cHM6Ly9jZG4ud2hpcGxhc2guY2Mvd2hpcGxhc2gtY2luZW1hL2luZGV4Lm0zdTg=",
+            "axn-movies-hd": "aHR0cDovLzUwLjcuMTIwLjM0OjgwODAvQVhOX0JMQUNLL2luZGV4Lm0zdTg=",
+            "nba-tv-hd": "aHR0cDovLzIzLjIzNy4xMDQuMTA2OjgwODAvVVNBX05CQS9pbmRleC5tM3U4",
+            "dazn-ringside": "aHR0cHM6Ly9hZWdpcy1jbG91ZGZyb250LTEudHViaS52aWRlby9iZmFkMjllMi01YmVlLTQ0ZjMtODI1Ni0xMjczMjRlOGIxMDYvMTA4MHAtY2MvaW5kZXgubTN1OA==",
+            "cartoon-network": "aHR0cDovLzIzLjIzNy4xMDQuMTA2OjgwODAvVVNBX0NBUlRPT05fTkVUV09SSy9pbmRleC5tM3U4"
         };
 
         liveChannelsData.forEach(ch => {
@@ -384,7 +425,7 @@
 
         const defaultConfig = {
             brandName: "Family Bonding Time",
-            gcashNo: "09608754210", 
+            gcashNo: "09608754210", // Official payment destination
             gcashName: "System Administrator",
             channels: [...liveChannelsData]
         };
@@ -396,6 +437,7 @@
         let activeAdminPlanId = 'p1';
         let deviceId = '';
 
+        // Cryptographic Salting Key (Updated to Brand Scope)
         const SECRETS_SALT = "FAMILY_BONDING_TIME_SALT_2026_SECURE";
 
         function generateUniqueDeviceID() {
@@ -413,6 +455,7 @@
             return id;
         }
 
+        // Stepper cost calculation logic
         function calculateVendingCost(days) {
             if (days === 1) return 15;
             return days * 10;
@@ -430,12 +473,11 @@
 
         function updateVendingQR() {
             const payload = deviceId;
-            const previewEl = document.getElementById('viewer-checkout-qr-preview');
-            const qrEl = document.getElementById('viewer-checkout-qr');
-            if (previewEl) previewEl.textContent = `Ref: ${payload}`;
-            if (qrEl) qrEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(payload)}`;
+            document.getElementById('viewer-checkout-qr-preview').textContent = `Ref: ${payload}`;
+            document.getElementById('viewer-checkout-qr').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(payload)}`;
         }
 
+        // Dynamic key generator
         function calculateSignature(devId, days, serial) {
             const rawPayload = `${devId}-${days}-${serial}-${SECRETS_SALT}`;
             let hash = 0;
@@ -486,6 +528,7 @@
             document.getElementById('client-device-display').textContent = `Device ID: ${deviceId}`;
             document.getElementById('gen-client-id').value = deviceId;
 
+            // version _v4 namespace isolates configuration modifications to clear cached values
             const saved = localStorage.getItem('family_bonding_portal_config_v4');
             if (saved) {
                 appData = JSON.parse(saved);
@@ -650,7 +693,7 @@
                     btn.onclick = () => selectChannel(channel.id);
                     
                     const hasSource = channel.src && channel.src.trim() !== "";
-                    btn.className = `w-full text-left p-2 rounded-xl flex items-center justify-between border transition duration-150 ${!hasSource ? 'opacity-40 cursor-not-allowed bg-slate-950/20 border-slate-900 text-slate-500' : 'bg-slate-900/30 border-slate-855/50 text-slate-300 hover:bg-slate-900/60'}`;
+                    btn.className = `w-full text-left p-2 rounded-xl flex items-center justify-between border transition duration-150 ${!hasSource ? 'opacity-40 cursor-not-allowed bg-slate-950/20 border-slate-900 text-slate-500' : 'bg-slate-900/30 border-slate-850/50 text-slate-300 hover:bg-slate-900/60'}`;
 
                     let logoHTML = '';
                     if (channel.logo && channel.logo.trim() !== "") {
@@ -714,13 +757,6 @@
                 const prog = getNowPlayingProgram(channel);
                 label.textContent = prog.title;
             }
-        }
-
-        function updateEPGDisplay() {
-            if (!activeChannel) return;
-            const currentProg = getNowPlayingProgram(activeChannel);
-            document.getElementById('epg-now-title').textContent = currentProg.title;
-            document.getElementById('epg-now-time').textContent = `${currentProg.start} - ${currentProg.end}`;
         }
 
         function checkSubscription() {
@@ -823,7 +859,7 @@
                 if (ch.id === id) {
                     el.className = "w-full text-left p-2 rounded-xl flex items-center justify-between border transition duration-150 bg-indigo-950/20 border-indigo-500 text-white";
                 } else {
-                    el.className = `w-full text-left p-2 rounded-xl flex items-center justify-between border transition duration-150 ${!hasSource ? 'opacity-40 cursor-not-allowed bg-slate-950/20 border-slate-900 text-slate-500' : 'bg-slate-900/30 border-slate-855/50 text-slate-300 hover:bg-slate-900/60'}`;
+                    el.className = `w-full text-left p-2 rounded-xl flex items-center justify-between border transition duration-150 ${!hasSource ? 'opacity-40 cursor-not-allowed bg-slate-950/20 border-slate-900 text-slate-500' : 'bg-slate-900/30 border-slate-850/50 text-slate-300 hover:bg-slate-900/60'}`;
                 }
             });
 
@@ -846,6 +882,7 @@
             document.getElementById('payment-modal').classList.add('hidden');
         }
 
+        // Active 24H Trial Controller
         function checkTrialState() {
             const trialConsumed = localStorage.getItem('saas_trial_consumed') === 'true';
             const btn = document.getElementById('trial-button');
@@ -879,6 +916,7 @@
             if (activeChannel) selectChannel(activeChannel.id);
         }
 
+        // Offline Verification Logic (Enforces one-time consumption)
         function processSubscription() {
             const rawKey = document.getElementById('activation-key').value.trim();
             
@@ -902,6 +940,7 @@
             if (activeChannel) selectChannel(activeChannel.id);
         }
 
+        // Creator Key Generator Logic (Auto-attaches a unique serial code)
         function generateActivationKey() {
             const inputId = document.getElementById('gen-client-id').value.trim();
             const days = parseInt(document.getElementById('gen-client-days').value);
@@ -927,27 +966,30 @@
             document.getElementById('gen-result-container').classList.remove('hidden');
         }
 
+        // Integrated passcode overlay handlers
         function promptDevPasscode() {
-            const rawInput = prompt("Enter Console Administrator Passcode:");
-            if (rawInput === null) return;
-            
-            const sanitizedInput = rawInput.trim();
+            document.getElementById('passcode-input').value = "";
+            document.getElementById('passcode-modal').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('passcode-input').focus();
+            }, 100);
+        }
+
+        function closePasscodeModal() {
+            document.getElementById('passcode-modal').classList.add('hidden');
+        }
+
+        function submitPasscode() {
+            const rawInput = document.getElementById('passcode-input').value;
+            const sanitizedInput = rawInput ? rawInput.trim() : "";
             
             if (sanitizedInput === "!12345678*") {
+                closePasscodeModal();
                 openAdminModal();
             } else {
                 alert("Passcode Rejected.");
+                document.getElementById('passcode-input').value = "";
             }
-        }
-
-        function openAdminModal() {
-            populateDashboard();
-            document.getElementById('admin-modal').classList.remove('hidden');
-        }
-
-        function closeAdminModal() {
-            document.getElementById('admin-modal').classList.add('hidden');
-            document.getElementById('gen-result-container').classList.add('hidden');
         }
 
         initSaaS();
