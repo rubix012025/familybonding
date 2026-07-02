@@ -140,7 +140,7 @@
                         <input type="text" id="activation-key" placeholder="WP-XXXX-XXXX-XXD-XXXX-XXXXXX" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-center font-mono tracking-wider text-white focus:outline-none focus:border-indigo-500">
                     </div>
 
-                    <button onclick="processSubscription()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-xs tracking-wide transition font-bold font-semibold">
+                    <button onclick="processSubscription()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-xs tracking-wide transition font-semibold">
                         Verify System Payment
                     </button>
                 </div>
@@ -306,7 +306,7 @@
             try { return decodeURIComponent(atob(b64)); } catch(e) { return ""; }
         }
 
-        // Live Channels Data (Swapped Universal Movies with Paramount Channel)
+        // Live Channels Data
         const liveChannelsData = [
             {
                 id: "new-kmovies",
@@ -371,7 +371,7 @@
         ];
 
         const secureRawB64 = {
-            "new-kmovies": "aHR0cHM6Ly9hZHMuaXRzLW5ld2lkLm5ldC9hcGkvbWFuaWZlc3QubTN1OD90cD1sZ19jaGFubmVscyZjaGFubmVsX25hbWU9bmV3a21vdmllcyZjaGFubmVsX2lkPW5ld2lkXzIxOSZtcGY9YWRmYzIwNGQtMzlhZjE5NjAtMTNhMmYwMWEmYXBpa2V5PTQ4MjMwZTZiLTFjZWEwMDk3LTE1OTc1ZjkzLzM5YWYxOTYyJmF1dGg9YjYyYzJjOGItODMxNmE3NzEtMjk1ZWJhMjgtZjQ2NjNkZGQmYWRzLmxpdmU9W0NPTlRFTlRfTElWRV0mYWRzLmRldmljZWlkPVtERVZJQ0VfSURdJmFkcy5pZmE9W0lGQV0mYWRzLmlmYXR5cGU9W0lGQV9UWVBFXSZhZHMubGF0PVtMTVRdJmFkcy5kb25vdHNlbGw9W0ROU10mYWRzLnVhPVtVQV0mYWRzLmlwPVtJUF0mYWRzLmdkcHI9W0dEUFJdJmFkcy5nZHByX2NvbnNlbnQ9W0dEUFJfQ09OU0VOVF0mYWRzLmNvdW50cnk9W0NPVU5UUlldJmFkcy51c19wcml2YWN5PVtVU19QUklWQUNZXSZhZHMuYXBwc3RvcmV1cmw9W0FQUF9TVE9SRVVSTF0mYWRzLmJ1bmRsZWlkPVtBUFBfQlVORExFXSZhZHMuYXBwbmFtZT1bQVBQX05BTUVdJmFkcy5hcHB2ZXJzaW9uPVtBUFBfVkVSU0lPTl0mYWRzLmRldmljZXR5cGU9W0RFVklDRV9UWVBFXSZhZHMuZGV2aWNlbWFrZT1bREVWSUNFX01BS0VdJmFkcy5kZXZpY2Vtb2RlbD1bREVWSUNFX01PREVMXSZhZHMudGFyZ2V0YWQ9W1RBUkdFVEFEX0FMTE9XRURdJmFkcy5mY2s9W0ZDS10mYWRzLnZpZXdzaXplPVtWSUVXU0laRV0mYWRzLmdpdm49W05PTkNFXQ==",
+            "new-kmovies": "aHR0cHM6Ly9hZHMuaXRzLW5ld2lkLm5ldC9hcGkvbWFuaWZlc3QubTN1OD90cD1sZ19jaGFubmVscyZjaGFubmVsX25hbWU9bmV3a21vdmllcyZjaGFubmVsX2lkPW5ld2lkXzIxOSZtcGY9YWRmYzIwNGQtMzlhZjE5NjItMTNhMmYwMWEmYXBpa2V5PTQ4MjMwZTZiLTFjZWEwMDk3LTE1OTc1ZjkzLzM5YWYxOTYyJmF1dGg9YjYyYzJjOGItODMxNmE3NzEtMjk1ZWJhMjgtZjQ2NjNkZGQmYWRzLmxpdmU9W0NPTlRFTlRfTElWRV0mYWRzLmRldmljZWlkPVtERVZJQ0VfSURdJmFkcy5pZmE9W0lGQV0mYWRzLmlmYXR5cGU9W0lGQV9UWVBFXSZhZHMubGF0PVtMTVRdJmFkcy5kb25vdHNlbGw9W0ROU10mYWRzLnVhPVtVQV0mYWRzLmlwPVtJUF0mYWRzLmdkcHI9W0dEUFJdJmFkcy5nZHByX2NvbnNlbnQ9W0dEUFJfQ09OU0VOVF0mYWRzLmNvdW50cnk9W0NPVU5UUlldJmFkcy51c19wcml2YWN5PVtVU19QUklWQUNZXSZhZHMuYXBwc3RvcmV1cmw9W0FQUF9TVE9SRVVSTF0mYWRzLmJ1bmRsZWlkPVtBUFBfQlVORExFXSZhZHMuYXBwbmFtZT1bQVBQX05BTUVdJmFkcy5hcHB2ZXJzaW9uPVtBUFBfVkVSU0lPTl0mYWRzLmRldmljZXR5cGU9W0RFVklDRV9UWVBFXSZhZHMuZGV2aWNlbWFrZT1bREVWSUNFX01BS0VdJmFkcy5kZXZpY2Vtb2RlbD1bREVWSUNFX01PREVMXSZhZHMudGFyZ2V0YWQ9W1RBUkdFVEFEX0FMTE9XRURdJmFkcy5mY2s9W0ZDS10mYWRzLnZpZXdzaXplPVtWSUVXU0laRV0mYWRzLmdpdm49W05PTkNFXQ==",
             "mix-hollywood": "aHR0cHM6Ly9tbC1wdWxsLWh3Yy5teWNvLmlvL01peFRWL2hscy9pbmRleC5tM3U4",
             "paramount-movie-channel": "aHR0cHM6Ly9qbXAyLnVrL3BsdS01Y2IwY2FlN2E0NjE0MDZmZmUzZjUyMTMubTN1OA==",
             "family-bonding-cinema": "aHR0cHM6Ly9jZG4ud2hpcGxhc2guY2Mvd2hpcGxhc2gtY2luZW1hL2luZGV4Lm0zdTg=",
@@ -492,13 +492,13 @@
             document.getElementById('client-device-display').textContent = `Device ID: ${deviceId}`;
             document.getElementById('gen-client-id').value = deviceId;
 
-            // version _v6 namespace forces automatic cache clearing and reloads the newly swapped Paramount config
-            const saved = localStorage.getItem('family_bonding_portal_config_v6');
+            // version _v7 namespace forces automatic cache clearing and reloads the newly updated sequential logic
+            const saved = localStorage.getItem('family_bonding_portal_config_v7');
             if (saved) {
                 appData = JSON.parse(saved);
             } else {
                 appData = JSON.parse(JSON.stringify(defaultConfig));
-                localStorage.setItem('family_bonding_portal_config_v6', JSON.stringify(appData));
+                localStorage.setItem('family_bonding_portal_config_v7', JSON.stringify(appData));
             }
 
             populateDashboard();
@@ -584,7 +584,7 @@
             appData.gcashNo = document.getElementById('cfg-gcash-no').value;
             appData.gcashName = document.getElementById('cfg-gcash-name').value;
 
-            localStorage.setItem('family_bonding_portal_config_v6', JSON.stringify(appData));
+            localStorage.setItem('family_bonding_portal_config_v7', JSON.stringify(appData));
             alert("Platform configuration updated successfully.");
             updateViewerPortalUI();
             updateAdminQRDisplay();
@@ -611,7 +611,7 @@
                 }
             });
 
-            localStorage.setItem('family_bonding_portal_config_v6', JSON.stringify(appData));
+            localStorage.setItem('family_bonding_portal_config_v7', JSON.stringify(appData));
             alert("Schedules and linear EPG timeline updated successfully.");
             updateViewerPortalUI();
             closeAdminModal();
@@ -620,7 +620,7 @@
         function resetToPresets() {
             if (confirm("Reset layout to default channel presets?")) {
                 appData = JSON.parse(JSON.stringify(defaultConfig));
-                localStorage.setItem('family_bonding_portal_config_v6', JSON.stringify(appData));
+                localStorage.setItem('family_bonding_portal_config_v7', JSON.stringify(appData));
                 populateDashboard();
                 updateViewerPortalUI();
                 updateAdminQRDisplay();
@@ -884,10 +884,13 @@
         function processSubscription() {
             const rawKey = document.getElementById('activation-key').value.trim();
             
-            // Smart auto-login fallback: entering developer passcode directly here opens Console
+            // Developer/Admin bypass key handler: Activates lifetime playback & opens panel
             if (rawKey === "!12345678*") {
+                localStorage.setItem('saas_premium_expiry', 4102444800000); 
                 closePaymentModal();
+                checkSubscription();
                 openAdminModal();
+                if (activeChannel) selectChannel(activeChannel.id);
                 return;
             }
 
@@ -955,8 +958,12 @@
             const sanitizedInput = rawInput ? rawInput.trim() : "";
             
             if (sanitizedInput === "!12345678*") {
+                // Developer/Admin bypass logic: Activates lifetime playback & opens panel
+                localStorage.setItem('saas_premium_expiry', 4102444800000); 
                 closePasscodeModal();
+                checkSubscription();
                 openAdminModal();
+                if (activeChannel) selectChannel(activeChannel.id);
             } else {
                 alert("Passcode Rejected.");
                 document.getElementById('passcode-input').value = "";
