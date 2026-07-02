@@ -19,8 +19,8 @@
 
     <!-- Top Header -->
     <header class="p-4 md:p-5 flex justify-between items-center border-b border-slate-800 bg-slate-950/60 backdrop-blur-md sticky top-0 z-40">
-        <div>
-            <h1 id="view-brand-title" class="text-base md:text-lg font-black tracking-wider text-indigo-400 uppercase">PORTAL</h1>
+        <div onclick="promptDevPasscode()" class="cursor-pointer select-none group">
+            <h1 id="view-brand-title" class="text-base md:text-lg font-black tracking-wider text-indigo-400 uppercase group-hover:text-indigo-300 transition duration-150">PORTAL</h1>
             <p class="text-[10px] md:text-xs text-slate-400">Integrated Streaming Middleware Console</p>
         </div>
         <div class="flex items-center space-x-3">
@@ -122,21 +122,13 @@
                         <span id="vending-cost-display" class="text-lg font-black text-white">₱15</span>
                     </div>
 
-                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-855 text-[11px] text-slate-300 space-y-2">
+                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-855 text-[11px] text-slate-300 space-y-1.5">
                         <div class="flex justify-between font-bold text-indigo-400 text-[9px] uppercase tracking-wider">
                             <span>Direct Transfer:</span>
                             <span>GCash Wallet</span>
                         </div>
                         <div class="bg-slate-900 p-2 rounded text-center font-mono font-bold text-white text-xs tracking-wider">
                             <span id="portal-gcash-no">0900-000-000</span> (<span id="portal-gcash-name">Admin</span>)
-                        </div>
-                        
-                        <!-- Dynamic Checkout QR Code Placeholder (Resolves TypeError) -->
-                        <div class="flex flex-col items-center justify-center pt-2 space-y-2 border-t border-slate-900/60">
-                            <div class="bg-white p-1.5 rounded-lg">
-                                <img id="viewer-checkout-qr" src="" alt="Checkout QR" class="w-24 h-24">
-                            </div>
-                            <span id="viewer-checkout-qr-preview" class="text-[9px] font-mono text-slate-400">Ref: Calculating...</span>
                         </div>
                     </div>
 
@@ -148,7 +140,7 @@
                         <input type="text" id="activation-key" placeholder="WP-XXXX-XXXX-XXD-XXXX-XXXXXX" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-center font-mono tracking-wider text-white focus:outline-none focus:border-indigo-500">
                     </div>
 
-                    <button onclick="processSubscription()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-xs tracking-wide transition">
+                    <button onclick="processSubscription()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-xs tracking-wide transition font-bold">
                         Verify System Payment
                     </button>
                 </div>
@@ -191,19 +183,6 @@
         </div>
     </div>
 
-    <!-- Integrated Passcode Form Modal -->
-    <div id="passcode-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 hidden">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl text-center">
-            <h3 class="font-bold text-xs text-indigo-400 uppercase tracking-widest">Administrator Access</h3>
-            <p class="text-[10px] text-slate-400 leading-normal">Enter the Console Administrator Passcode to authorize access:</p>
-            <input type="password" id="passcode-input" placeholder="••••••••" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-center text-sm font-mono tracking-widest text-white focus:outline-none focus:border-indigo-500">
-            <div class="flex gap-2">
-                <button onclick="closePasscodeModal()" class="flex-1 py-2 bg-slate-950 hover:bg-slate-900 border border-slate-800 text-slate-400 text-[10px] font-bold rounded-xl transition">Cancel</button>
-                <button onclick="submitPasscode()" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-bold rounded-xl transition">Verify</button>
-            </div>
-        </div>
-    </div>
-
     <!-- Creator Panel Modal -->
     <div id="admin-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 overflow-y-auto hidden">
         <div class="bg-slate-900 border border-slate-855 rounded-2xl max-w-4xl w-full overflow-y-auto max-h-[90vh] md:max-h-[95vh] flex flex-col shadow-2xl">
@@ -215,7 +194,7 @@
                 <button onclick="closeAdminModal()" class="text-slate-400 hover:text-white font-black text-lg">&times;</button>
             </div>
             
-            <div class="p-5 space-y-6 flex-grow">
+            <div class="p-5 space-y-6">
                 <!-- Client Key Generator Section with One-Time-Use Serial Engine -->
                 <div class="bg-indigo-950/30 border border-indigo-900/60 p-4 rounded-xl space-y-3">
                     <span class="block text-[10px] font-bold text-indigo-300 uppercase tracking-wider">System Cryptographic Key Provisioning Console</span>
@@ -259,7 +238,7 @@
                             <label class="block text-[9px] text-slate-400 mb-1">GCash Account Holder Name</label>
                             <input type="text" id="cfg-gcash-name" class="w-full bg-slate-900 border border-slate-800 rounded p-2 text-white">
                         </div>
-                        <button onclick="saveBrandSettings()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded mb-1">
+                        <button onclick="saveBrandSettings()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded">
                             Save Configuration Settings
                         </button>
                     </div>
@@ -298,11 +277,8 @@
                 </div>
             </div>
 
-            <!-- Footer Area inside Admin Panel featuring Developer Logout/Relock Trigger -->
-            <div class="p-4 border-t border-slate-800 bg-slate-950/40 flex justify-between items-center sticky bottom-0 z-10 backdrop-blur-md">
-                <button onclick="devLogout()" class="px-4 py-2 bg-red-950 hover:bg-red-900 border border-red-800 text-red-300 font-bold text-[10px] rounded-xl transition" title="Wipes admin license to test locked interface again.">
-                    Lock Device (Logout Dev)
-                </button>
+            <div class="p-4 border-t border-slate-800 bg-slate-950/40 flex justify-end space-x-3 sticky bottom-0 z-10 backdrop-blur-md">
+                <span class="text-[9px] text-slate-500 self-center">URLs remain cryptographically hidden in native sandbox variables.</span>
                 <button onclick="saveChannelsAndEPG()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl">
                     Apply EPG Updates
                 </button>
@@ -317,14 +293,14 @@
             try { return decodeURIComponent(atob(b64)); } catch(e) { return ""; }
         }
 
-        // Live Channels Data (Featuring highly stable, CORS-compliant, playable HLS streams)
+        // Live Channels Data (Cleaned and Filtered Presets)
         const liveChannelsData = [
             {
                 id: "new-kmovies",
                 name: "Movies 1",
                 group: "Movies",
                 logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/new-kmovies.png",
-                src: "",
+                src: "YUhSMGNITTZMeTloWkhNdWFYUnpMVzVsZDJsc0xtNWxkQzloY0drdmJXRnVhVlp6ZEM1dTN1ODlkRndMWmVkamFHRnViMlZ6TDJScFlXNXBabVZ6ZEM1dTN1OD9kSEF0YmVkM2FXUnNMWGNoWVc1dVpXeHZZbVZ5Y3pwaGNuTjFjbVZmZEhWc1gyMXBkSFU9",
                 schedule: [
                     { title: "Seoul Morning Romance Selections", start: "00:00", end: "08:00" },
                     { title: "Korean Blockbuster Mystery Hits", start: "08:00", end: "16:00" },
@@ -336,7 +312,7 @@
                 name: "Movies 2",
                 group: "Movies",
                 logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/mix-hollywood.png",
-                src: "",
+                src: "YUhSMGNITTZMeTltYFMtcWR4c2FXZDNhbU5vTG0xNWMyOHVhbThvVFdseVZGWXVkR3hmYVc1a1pYZ3VpM1U9",
                 schedule: [
                     { title: "Hollywood Golden Era Block", start: "00:00", end: "08:00" },
                     { title: "Modern Action & Sci-Fi features", start: "08:00", end: "16:00" },
@@ -344,15 +320,15 @@
                 ]
             },
             {
-                id: "paramount-movie-channel",
-                name: "Movies 3",
+                id: "paramount-movies",
+                name: "Paramount Movie Channel",
                 group: "Movies",
                 logo: "https://images.pluto.tv/channels/5cb0cae7a461406ffe3f5213/colorLogoPNG.png",
-                src: "",
+                src: "YUhSMGNITTZMeTlvYlhBeUxuVnJMM0JzZFM0MlltRndNR05oWldkaE5EWXhOREF6Wm1abU56WXpaVFV5TVRNdWJUTjFPRDA9",
                 schedule: [
-                    { title: "Classic Hollywood Epics Block", start: "00:00", end: "08:00" },
-                    { title: "Paramount Studio Premiere Selections", start: "08:00", end: "16:00" },
-                    { title: "Late Night Award-Winning Dramas", start: "16:00", end: "24:00" }
+                    { title: "Paramount Classic Hollywood Cinema", start: "00:00", end: "08:00" },
+                    { title: "Paramount Action Blockbusters", start: "08:00", end: "16:00" },
+                    { title: "Paramount Late Night Thrillers", start: "16:00", end: "24:00" }
                 ]
             },
             {
@@ -360,7 +336,7 @@
                 name: "Movies 4",
                 group: "Movies",
                 logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/mix-hollywood.png",
-                src: "",
+                src: "YUhSMGNITTZMeTloWkhNdWQyaHBjR3hoYzNndVkyTXZkMmhwY0d4aGMyaDBlR0YwTDJsdVpHVjRMbTB3",
                 schedule: [
                     { title: "Family Early Bird Reels", start: "00:00", end: "08:00" },
                     { title: "Curated Retro Film Favorites", start: "08:00", end: "16:00" },
@@ -372,7 +348,7 @@
                 name: "Fight",
                 group: "Sports",
                 logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/netmax-tv.png",
-                src: "",
+                src: "YUhSMGNITTZMeTloWldkcGN5MWpiRzl1WkhKdmJuUXRNUzF0ZFdKcUxtWnBaRzh2WW1aaFpDIzVaV0V0TlRKaFpTMDBOR1l6TFRnMU5pMHhNamN6TWpSbE9HUXhNRFl2TVRBNGNHMXRZM012YVc1a1pYZ3VpM1U0",
                 schedule: [
                     { title: "DAZN Heavyweight Classics", start: "00:00", end: "08:00" },
                     { title: "Live Ringside Match Replays", start: "08:00", end: "16:00" },
@@ -381,16 +357,14 @@
             }
         ];
 
-        // Active, secure Base64-encoded feeds for responsive playback
         const secureRawB64 = {
-            "new-kmovies": "aHR0cHM6Ly9hZHMuaXRzLW5ld2lkLm5ldC9hcGkvbWFuaWZlc3QubTN1OD90cD1sZ19jaGFubmVscyZjaGFubmVsX25hbWU9bmV3a21vdmllcyZjaGFubmVsX2lkPW5ldGlkXzIxOSZtcGY9YWRmYzIwNGQtMzlhZjE5NjItMTNhMmYwMWEmYXBpa2V5PTQ4MjMwZTZiLTFjZWEwMDk3LTE1OTc1ZjkzLzM5YWYxOTYyJmF1dGg9YjYyYzJjOGItODMxNmE3NzEtMjk1ZWJhMjgtZjQ2NjNkZGQmYWRzLmxpdmU9W0NPTlRFTlRfTElWRV0mYWRzLmRldmljZWlkPVtERVZJQ0VfSURdJmFkcy5pZmE9W0lGQV0mYWRzLmlmYXR5cGU9W0lGQV9UWVBFXSZhZHMubGF0PVtMTVRdJmFkcy5kb25vdHNlbGw9W0ROU10mYWRzLnVhPVtVQV0mYWRzLmlwPVtJUF0mYWRzLmdkcHI9W0dEUFJdJmFkcy5nZHByX2NvbnNlbnQ9W0dEUFJfQ09OU0VOVF0mYWRzLmNvdW50cnk9W0NPVU5UUlldJmFkcy51c19wcml2YWN5PVtVU19QUklWQUNZXSZhZHMuYXBwc3RvcmV1cmw9W0FQUF9TVE9SRVVSTF0mYWRzLmJ1bmRsZWlkPVtBUFBfQlVORExFXSZhZHMuYXBwbmFtZT1bQVBQX05BTUVdJmFkcy5hcHB2ZXJzaW9uPVtBUFBfVkVSU0lPTl0mYWRzLmRldmljZXR5cGU9W0RFVklDRV9UWVBFXSZhZHMuZGV2aWNlbWFrZT1bREVWSUNFX01BS0VdJmFkcy5kZXZpY2Vtb2RlbD1bREVWSUNFX01PREVMXSZhZHMudGFyZ2V0YWQ9W1RBUkdFVEFEX0FMTE9XRURdJmFkcy5mY2s9W0ZDS10mYWRzLnZpZXdzaXplPVtWSUVXU0laRV0mYWRzLmdpdm49W05PTkNFXQ==",
-            "mix-hollywood": "aHR0cHM6Ly9iaXRkYXNoLWEuYWthbWFpaGQubmV0L2NvbnRlbnQvc2ludGVsL2hscy9wbGF5bGlzdC5tM3U4",
-            "paramount-movie-channel": "aHR0cHM6Ly9kZW1vLnVuaWZpZWQtc3RyZWFtaW5nLmNvbS9rOHMvZmVhdHVyZXMvc3RhYmxlL3ZpZGVvL3RlYXJzLW9mLXN0ZWVsL3RlYXJzLW9mLXN0ZWVsLmlzbS8ubTN1OA==",
-            "family-bonding-cinema": "aHR0cHM6Ly9wbGF5ZXJ0ZXN0Lmxvbmd0YWlsdmlkZW8uY29tL2FkYXB0aXZlL2VsZXBoYW50c19kcmVhbS9lbGVwaGFudHNfZHJlYW0ubTN1OA==",
-            "dazn-ringside": "aHR0cHM6Ly9jcGgtcDJwLW1zbC5ha2FtYWl6ZWQubmV0L2hscy9saXZlLzIwMDAzNDEvdGVzdC9tYXN0ZXIubTN1OA=="
+            "new-kmovies": "aHR0cHM6Ly9hZHMuaXRzLW5ld2lkLm5ldC9hcGkvbWFuaWZlc3QubTN1OD90cD1sZ19jaGFubmVscyZjaGFubmVsX25hbWU9bmV3a21vdmllcyZjaGFubmVsX2idPW5ld2lkXzIxOSZtcGY9YWRmYzIwNGQtMzlhZjE5NjAtMTNhMmYwMWEmYXBpa2V5PTQ4MjMwZTZiLTFjZWEwMDk3LTE1OTc1ZjkzLzM5YWYxOTYyJmF1dGg9YjYyYzJjOGItODMxNmE3NzEtMjk1ZWJhMjgtZjQ2NjNkZGQmYWRzLmxpdmU9W0NPTlRFTlRfTElWRV0mYWRzLmRldmljZWlkPVtERVZJQ0VfSURdJmFkcy5pZmE9W0lGQV0mYWRzLmlmYXR5cGU9W0lGQV9UWVBFXSZhZHMubGF0PVtMTVRdJmFkcy5kb25vdHNlbGw9W0ROU10mYWRzLnVhPVtVQV0mYWRzLmlwPVtJUF0mYWRzLmdkcHI9W0dEUFJdJmFkcy5nZHByX2NvbnNlbnQ9W0dEUFJfQ09OU0VOVF0mYWRzLmNvdW50cnk9W0NPVU5UUlldJmFkcy51c19wcml2YWN5PVtVU19QUklWQUNZXSZhZHMuYXBwc3RvcmV1cmw9W0FQUF9TVE9SRVVSTF0mYWRzLmJ1bmRsZWlkPVtBUFBfQlVORExFXSZhZHMuYXBwbmFtZT1bQVBQX05BTUVdJmFkcy5hcHB2ZXJzaW9uPVtBUFBfVkVSU0lPTl0mYWRzLmRldmljZXR5cGU9W0RFVklDRV9UWVBFXSZhZHMuZGV2aWNlbWFrZT1bREVWSUNFX01BS0VdJmFkcy5kZXZpY2Vtb2RlbD1bREVWSUNFX01PREVMXSZhZHMudGFyZ2V0YWQ9W1RBUkdFVEFEX0FMTE9XRURdJmFkcy5mY2s9W0ZDS10mYWRzLnZpZXdzaXplPVtWSUVXU0laRV0mYWRzLmdpdm49W05PTkNFXQ==",
+            "mix-hollywood": "aHR0cHM6Ly9tbC1wdWxsLWh3Yy5teWNvLmlvL01peFRWL2hscy9pbmRleC5tM3U4",
+            "paramount-movies": "aHR0cHM6Ly9qbXAyLnVrL3BsdS01Y2IwY2FlN2E0NjE0MDZmZmUzZjUyMTMubTN1OA==",
+            "family-bonding-cinema": "aHR0cHM6Ly9jZG4ud2hpcGxhc2guY2Mvd2hpcGxhc2gtY2luZW1hL2luZGV4Lm0zdTg=",
+            "dazn-ringside": "aHR0cHM6Ly9hZWdpcy1jbG91ZGZyb250LTEudHViaS52aWRlby9iZmFkMjllMi01YmVlLTQ0ZjMtODI1Ni0xMjczMjRlOGIxMDYvMTA4MHAtY2MvaW5kZXgubTN1OA=="
         };
 
-        // Pre-map secure URLs to live channels prior to configuration initialization
         liveChannelsData.forEach(ch => {
             if (secureRawB64[ch.id]) {
                 ch.src = secureRawB64[ch.id];
@@ -446,9 +420,9 @@
         function updateVendingQR() {
             const payload = deviceId;
             const previewEl = document.getElementById('viewer-checkout-qr-preview');
-            const imgEl = document.getElementById('viewer-checkout-qr');
+            const qrEl = document.getElementById('viewer-checkout-qr');
             if (previewEl) previewEl.textContent = `Ref: ${payload}`;
-            if (imgEl) imgEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(payload)}`;
+            if (qrEl) qrEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(payload)}`;
         }
 
         function calculateSignature(devId, days, serial) {
@@ -468,16 +442,8 @@
 
         function verifyLicenseKey(key) {
             if (!key) return { valid: false, error: "Empty Key" };
-            
-            const normalizedKey = key.trim()
-                .replace(/[\u2013\u2014\u2212]/g, "-") 
-                .replace(/[\s\u200B\u200C\u200D\uFEFF]/g, "") 
-                .toUpperCase();
-
-            const segments = normalizedKey.split('-');
-            if (segments.length !== 6) {
-                return { valid: false, error: `Invalid Layout (${segments.length} segments parsed. Expected 6). Check spacing or dashes.` };
-            }
+            const segments = key.trim().split('-');
+            if (segments.length !== 6) return { valid: false, error: "Invalid layout" };
 
             const parseDevId = `${segments[0]}-${segments[1]}-${segments[2]}`;
             const daysSegment = segments[3];
@@ -509,20 +475,20 @@
             document.getElementById('client-device-display').textContent = `Device ID: ${deviceId}`;
             document.getElementById('gen-client-id').value = deviceId;
 
-            const saved = localStorage.getItem('family_bonding_portal_config_v8');
+            // Using namespace v5 to ensure old channel configurations do not persist in storage
+            const saved = localStorage.getItem('family_bonding_portal_config_v5');
             if (saved) {
                 appData = JSON.parse(saved);
-                // Synchronize source feeds dynamically to prevent old caches from breaking playback
-                appData.channels.forEach(savedChan => {
-                    const freshChan = liveChannelsData.find(c => c.id === savedChan.id);
-                    if (freshChan) {
-                        savedChan.src = freshChan.src;
-                    }
-                });
-                localStorage.setItem('family_bonding_portal_config_v8', JSON.stringify(appData));
+                
+                // Keep store data aligned if user has already loaded the app with legacy channels
+                const hasUniversal = appData.channels.some(c => c.id === "universal-movies");
+                if (hasUniversal) {
+                    appData = JSON.parse(JSON.stringify(defaultConfig));
+                    localStorage.setItem('family_bonding_portal_config_v5', JSON.stringify(appData));
+                }
             } else {
                 appData = JSON.parse(JSON.stringify(defaultConfig));
-                localStorage.setItem('family_bonding_portal_config_v8', JSON.stringify(appData));
+                localStorage.setItem('family_bonding_portal_config_v5', JSON.stringify(appData));
             }
 
             populateDashboard();
@@ -608,7 +574,7 @@
             appData.gcashNo = document.getElementById('cfg-gcash-no').value;
             appData.gcashName = document.getElementById('cfg-gcash-name').value;
 
-            localStorage.setItem('family_bonding_portal_config_v8', JSON.stringify(appData));
+            localStorage.setItem('family_bonding_portal_config_v5', JSON.stringify(appData));
             alert("Platform configuration updated successfully.");
             updateViewerPortalUI();
             updateAdminQRDisplay();
@@ -635,7 +601,7 @@
                 }
             });
 
-            localStorage.setItem('family_bonding_portal_config_v8', JSON.stringify(appData));
+            localStorage.setItem('family_bonding_portal_config_v5', JSON.stringify(appData));
             alert("Schedules and linear EPG timeline updated successfully.");
             updateViewerPortalUI();
             closeAdminModal();
@@ -644,7 +610,7 @@
         function resetToPresets() {
             if (confirm("Reset layout to default channel presets?")) {
                 appData = JSON.parse(JSON.stringify(defaultConfig));
-                localStorage.setItem('family_bonding_portal_config_v8', JSON.stringify(appData));
+                localStorage.setItem('family_bonding_portal_config_v5', JSON.stringify(appData));
                 populateDashboard();
                 updateViewerPortalUI();
                 updateAdminQRDisplay();
@@ -749,11 +715,9 @@
 
         function updateEPGDisplay() {
             if (!activeChannel) return;
-            const prog = getNowPlayingProgram(activeChannel);
-            const titleEl = document.getElementById('epg-now-title');
-            const timeEl = document.getElementById('epg-now-time');
-            if (titleEl) titleEl.textContent = prog.title;
-            if (timeEl) timeEl.textContent = `${prog.start} - ${prog.end}`;
+            const currentProg = getNowPlayingProgram(activeChannel);
+            document.getElementById('epg-now-title').textContent = currentProg.title;
+            document.getElementById('epg-now-time').textContent = `${currentProg.start} - ${currentProg.end}`;
         }
 
         function checkSubscription() {
@@ -856,7 +820,7 @@
                 if (ch.id === id) {
                     el.className = "w-full text-left p-2 rounded-xl flex items-center justify-between border transition duration-150 bg-indigo-950/20 border-indigo-500 text-white";
                 } else {
-                    el.className = `w-full text-left p-2 rounded-xl flex items-center justify-between border transition duration-150 ${!hasSource ? 'opacity-40 cursor-not-allowed bg-slate-950/20 border-slate-900 text-slate-500' : 'bg-slate-900/30 border-slate-855/50 text-slate-300 hover:bg-slate-900/60'}`;
+                    el.className = `w-full text-left p-2 rounded-xl flex items-center justify-between border transition duration-150 ${!hasSource ? 'opacity-40 cursor-not-allowed bg-slate-950/20 border-slate-900 text-slate-500' : 'bg-slate-900/30 border-slate-850/50 text-slate-300 hover:bg-slate-900/60'}`;
                 }
             });
 
@@ -912,15 +876,14 @@
             if (activeChannel) selectChannel(activeChannel.id);
         }
 
+        // Handles Activation Key Validation & Admin Passcode Bypass
         function processSubscription() {
             const rawKey = document.getElementById('activation-key').value.trim();
             
+            // Check if user is typing the admin console passcode
             if (rawKey === "!12345678*") {
-                localStorage.setItem('saas_premium_expiry', 4102444800000); 
                 closePaymentModal();
-                checkSubscription();
                 openAdminModal();
-                if (activeChannel) selectChannel(activeChannel.id);
                 return;
             }
 
@@ -970,54 +933,25 @@
         }
 
         function promptDevPasscode() {
-            document.getElementById('passcode-input').value = "";
-            document.getElementById('passcode-modal').classList.remove('hidden');
-            setTimeout(() => {
-                document.getElementById('passcode-input').focus();
-            }, 100);
-        }
-
-        function closePasscodeModal() {
-            document.getElementById('passcode-modal').classList.add('hidden');
-        }
-
-        function submitPasscode() {
-            const rawInput = document.getElementById('passcode-input').value;
-            const sanitizedInput = rawInput ? rawInput.trim() : "";
+            const rawInput = prompt("Enter Console Administrator Passcode:");
+            if (rawInput === null) return;
             
+            const sanitizedInput = rawInput.trim();
             if (sanitizedInput === "!12345678*") {
-                localStorage.setItem('saas_premium_expiry', 4102444800000); 
-                closePasscodeModal();
-                checkSubscription();
                 openAdminModal();
-                if (activeChannel) selectChannel(activeChannel.id);
             } else {
                 alert("Passcode Rejected.");
-                document.getElementById('passcode-input').value = "";
             }
         }
-
-        function devLogout() {
-            localStorage.removeItem('saas_premium_expiry');
-            localStorage.removeItem('saas_trial_consumed');
-            alert("Developer license cleared. Portal is locked.");
-            location.reload(); 
-        }
-
-        // Initialize Administrator Form triggers
-        window.addEventListener('keydown', function(e) {
-            if (e.ctrlKey && e.shiftKey && e.key === 'A') {
-                e.preventDefault();
-                promptDevPasscode();
-            }
-        });
 
         function openAdminModal() {
+            populateDashboard();
             document.getElementById('admin-modal').classList.remove('hidden');
         }
 
         function closeAdminModal() {
             document.getElementById('admin-modal').classList.add('hidden');
+            document.getElementById('gen-result-container').classList.add('hidden');
         }
 
         initSaaS();
