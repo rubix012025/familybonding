@@ -93,10 +93,10 @@
         </div>
     </main>
 
-    <!-- GCash Checkout / Vending Machine Modal -->
-    <div id="payment-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 hidden">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-3xl w-full overflow-hidden shadow-2xl">
-            <div class="p-5 border-b border-slate-800 flex justify-between items-center bg-slate-950/40">
+    <!-- GCash Checkout / Vending Machine Modal (Optimized for Mobile Height) -->
+    <div id="payment-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 overflow-y-auto hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-3xl w-full overflow-y-auto max-h-[90vh] md:max-h-[95vh] shadow-2xl">
+            <div class="p-5 border-b border-slate-800 flex justify-between items-center bg-slate-950/40 sticky top-0 z-10 backdrop-blur-md">
                 <h3 class="font-bold text-sm md:text-base text-indigo-400">Portal Activation Console</h3>
                 <button onclick="closePaymentModal()" class="text-slate-400 hover:text-white text-lg font-bold">&times;</button>
             </div>
@@ -140,17 +140,17 @@
                         <input type="text" id="activation-key" placeholder="WP-XXXX-XXXX-XXD-XXXX-XXXXXX" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-center font-mono tracking-wider text-white focus:outline-none focus:border-indigo-500">
                     </div>
 
-                    <button onclick="processSubscription()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-xs tracking-wide transition">
+                    <button onclick="processSubscription()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-xs tracking-wide transition font-bold">
                         Verify System Payment
                     </button>
                 </div>
 
-                <!-- Right Column (Disclaimer, Verification Waiting Notice & Free Trial Actions) -->
+                <!-- Right Column (Disclaimer, Waiting Notice & Free Trial Actions) -->
                 <div class="p-5 bg-slate-950/30 flex flex-col justify-between space-y-4">
                     <div class="space-y-3">
                         <span class="text-[10px] font-bold text-slate-400 block uppercase tracking-wide">02. Activation Information</span>
                         
-                        <!-- Automated Pipeline Notice -->
+                        <!-- Automated Pipeline Notice (Updated to 1 Hour Allowance) -->
                         <div class="bg-amber-950/25 border border-amber-900/40 p-3 rounded-xl text-[10px] text-amber-300 leading-normal flex items-start space-x-2.5">
                             <svg class="w-4 h-4 text-amber-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
@@ -162,7 +162,7 @@
                         </div>
 
                         <!-- Legal Disclaimer -->
-                        <div class="bg-slate-950/80 border border-slate-850 p-3 rounded-xl text-[9px] text-slate-450 leading-normal space-y-1">
+                        <div class="bg-slate-950/80 border border-slate-855 p-3 rounded-xl text-[9px] text-slate-450 leading-normal space-y-1">
                             <strong class="text-slate-400">Legal Disclaimer:</strong> 
                             <p class="text-slate-500">This platform operates strictly as a web-based streaming middleware interface. We do not own, manage, host, or distribute any proprietary media files, streams, or broadcast signals. All channels shown here are dynamic directories mapped from publicly available, third-party network streams. Access is completed under full user discretion.</p>
                         </div>
@@ -183,10 +183,10 @@
         </div>
     </div>
 
-    <!-- Creator Panel Modal -->
-    <div id="admin-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 hidden">
-        <div class="bg-slate-900 border border-slate-855 rounded-2xl max-w-4xl w-full overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="p-5 border-b border-slate-800 flex justify-between items-center bg-slate-950/60">
+    <!-- Creator Panel Modal (Optimized for Mobile Height) -->
+    <div id="admin-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 overflow-y-auto hidden">
+        <div class="bg-slate-900 border border-slate-855 rounded-2xl max-w-4xl w-full overflow-y-auto max-h-[90vh] md:max-h-[95vh] flex flex-col shadow-2xl">
+            <div class="p-5 border-b border-slate-800 flex justify-between items-center bg-slate-950/60 sticky top-0 z-10 backdrop-blur-md">
                 <div class="flex items-center space-x-2">
                     <span class="bg-indigo-600 text-white font-extrabold px-1.5 py-0.5 rounded text-[9px] tracking-wide">ADMIN CONSOLE</span>
                     <h3 class="font-bold text-slate-100">Platform Brand, Custom Keys & EPG Console</h3>
@@ -194,7 +194,7 @@
                 <button onclick="closeAdminModal()" class="text-slate-400 hover:text-white font-black text-lg">&times;</button>
             </div>
             
-            <div class="overflow-y-auto p-5 space-y-6">
+            <div class="p-5 space-y-6">
                 <!-- Client Key Generator Section with One-Time-Use Serial Engine -->
                 <div class="bg-indigo-950/30 border border-indigo-900/60 p-4 rounded-xl space-y-3">
                     <span class="block text-[10px] font-bold text-indigo-300 uppercase tracking-wider">System Cryptographic Key Provisioning Console</span>
@@ -277,7 +277,7 @@
                 </div>
             </div>
 
-            <div class="p-4 border-t border-slate-800 bg-slate-950/40 flex justify-end space-x-3">
+            <div class="p-4 border-t border-slate-800 bg-slate-950/40 flex justify-end space-x-3 sticky bottom-0 z-10 backdrop-blur-md">
                 <span class="text-[9px] text-slate-500 self-center">URLs remain cryptographically hidden in native sandbox variables.</span>
                 <button onclick="saveChannelsAndEPG()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl">
                     Apply EPG Updates
@@ -372,7 +372,7 @@
                 name: "DAZN RINGSIDE",
                 group: "Sports",
                 logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/netmax-tv.png",
-                src: "YUhSMGNITTZMeTloWldkcGN5MWpiRzl1WkhKdmJuUXRNUzF0ZFdKcUxtWnBaRzh2WW1aaFpESTVaV0V0TlRKaFpTMDBOR1l6TFRnMU5pMHhNamN6TWpSbE9HUXhNRFl2TVRBNGNHMXRZM012YVc1a1pYZ3VpM1U0",
+                src: "YUhSMGNITTZMeTloWldkcGN5MWpiRzl1WkhKdmJuUXRNUzF0ZFdKcUxtWnBaRzh2WW1aaFpDIzVaV0V0TlRKaFpTMDBOR1l6TFRnMU5pMHhNamN6TWpSbE9HUXhNRFl2TVRBNGNHMXRZM012YVc1a1pYZ3VpM1U0",
                 schedule: [
                     { title: "DAZN Heavyweight Classics", start: "00:00", end: "08:00" },
                     { title: "Live Ringside Match Replays", start: "08:00", end: "16:00" },
@@ -961,10 +961,15 @@
         }
 
         function promptDevPasscode() {
-            const code = prompt("Enter Console Administrator Passcode:");
-            if (code === "!12345678*") {
+            const rawInput = prompt("Enter Console Administrator Passcode:");
+            if (rawInput === null) return;
+            
+            // Normalize mobile keyboard autocorrect characters and spaces
+            const sanitizedInput = rawInput.trim();
+            
+            if (sanitizedInput === "!12345678*") {
                 openAdminModal();
-            } else if (code !== null) {
+            } else {
                 alert("Passcode Rejected.");
             }
         }
