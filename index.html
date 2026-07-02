@@ -140,7 +140,7 @@
                         <input type="text" id="activation-key" placeholder="WP-XXXX-XXXX-XXD-XXXX-XXXXXX" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-center font-mono tracking-wider text-white focus:outline-none focus:border-indigo-500">
                     </div>
 
-                    <button onclick="processSubscription()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-xs tracking-wide transition font-bold">
+                    <button onclick="processSubscription()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-xs tracking-wide transition font-bold font-semibold">
                         Verify System Payment
                     </button>
                 </div>
@@ -183,7 +183,7 @@
         </div>
     </div>
 
-    <!-- Integrated Passcode Form Modal (Bypasses Browser pop-up block) -->
+    <!-- Integrated Passcode Form Modal -->
     <div id="passcode-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 hidden">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl text-center">
             <h3 class="font-bold text-xs text-indigo-400 uppercase tracking-widest">Administrator Access</h3>
@@ -385,7 +385,7 @@
                 name: "DAZN RINGSIDE",
                 group: "Sports",
                 logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/netmax-tv.png",
-                src: "YUhSMGNITTZMeTloWldkcGN5MWpiRzl1WkhKdmJuUXRNUzF0ZFdKcUxtWnBaRzh2WW1aaFpDIzVaV0V0TlRKaFpTMDBOR1l6TFRnMU5pMHhNamN6TWpSbE9HUXhNRFl2TVRBNGNHMXRZM012YVc1a1pYZ3VpM1U0",
+                src: "YUhSMGNITTZMeTloWldkcGN5MWpiRzl1WkhKdmJuUXRNUzF0ZFdKcUxtWnBaRzh2WW1aaFpESTVaV0V0TlRKaFpTMDBOR1l6TFRnMU5pMHhNamN6TWpSbE9HUXhNRFl2TVRBNGNHMXRZM012YVc1a1pYZ3VpM1U0",
                 schedule: [
                     { title: "DAZN Heavyweight Classics", start: "00:00", end: "08:00" },
                     { title: "Live Ringside Match Replays", start: "08:00", end: "16:00" },
@@ -407,7 +407,7 @@
         ];
 
         const secureRawB64 = {
-            "new-kmovies": "aHR0cHM6Ly9hZHMuaXRzLW5ld2lkLm5ldC9hcGkvbWFuaWZlc3QubTN1OD90cD1sZ19jaGFubmVscyZjaGFubmVsX25hbWU9bmV3a21vdmllcyZjaGFubmVsX2lkPW5ld2lkXzIxOSZtcGY9YWRmYzIwNGQtMzlhZjE5NjItMTNhMmYwMWEmYXBpa2V5PTQ4MjMwZTZiLTFjZWEwMDk3LTE1OTc1ZjkzLzM5YWYxOTYyJmF1dGg9YjYyYzJjOGItODMxNmE3NzEtMjk1ZWJhMjgtZjQ2NjNkZGQmYWRzLmxpdmU9W0NPTlRFTlRfTElWRV0mYWRzLmRldmljZWlkPVtERVZJQ0VfSURdJmFkcy5pZmE9W0lGQV0mYWRzLmlmYXR5cGU9W0lGQV9UWVBFXSZhZHMubGF0PVtMTVRdJmFkcy5kb25vdHNlbGw9W0ROU10mYWRzLnVhPVtVQV0mYWRzLmlwPVtJUF0mYWRzLmdkcHI9W0dEUFJdJmFkcy5nZHByX2NvbnNlbnQ9W0dEUFJfQ09OU0VOVF0mYWRzLmNvdW50cnk9W0NPVU5UUlldJmFkcy51c19wcml2YWN5PVtVU19QUklWQUNZXSZhZHMuYXBwc3RvcmV1cmw9W0FQUF9TVE9SRVVSTF0mYWRzLmJ1bmRsZWlkPVtBUFBfQlVORExFXSZhZHMuYXBwbmFtZT1bQVBQX05BTUVdJmFkcy5hcHB2ZXJzaW9uPVtBUFBfVkVSU0lPTl0mYWRzLmRldmljZXR5cGU9W0RFVklDRV9UWVBFXSZhZHMuZGV2aWNlbWFrZT1bREVWSUNFX01BS0VdJmFkcy5kZXZpY2Vtb2RlbD1bREVWSUNFX01PREVMXSZhZHMudGFyZ2V0YWQ9W1RBUkdFVEFEX0FMTE9XRURdJmFkcy5mY2s9W0ZDS10mYWRzLnZpZXdzaXplPVtWSUVXU0laRV0mYWRzLmdpdm49W05PTkNFXQ==",
+            "new-kmovies": "aHR0cHM6Ly9hZHMuaXRzLW5ld2lkLm5ldC9hcGkvbWFuaWZlc3QubTN1OD90cD1sZ19jaGFubmVscyZjaGFubmVsX25hbWU9bmV3a21vdmllcyZjaGFubmVsX2lkPW5ld2lkXzIxOSZtcGY9YWRmYzIwNGQtMzlhZjE5NjAtMTNhMmYwMWEmYXBpa2V5PTQ4MjMwZTZiLTFjZWEwMDk3LTE1OTc1ZjkzLzM5YWYxOTYyJmF1dGg9YjYyYzJjOGItODMxNmE3NzEtMjk1ZWJhMjgtZjQ2NjNkZGQmYWRzLmxpdmU9W0NPTlRFTlRfTElWRV0mYWRzLmRldmljZWlkPVtERVZJQ0VfSURdJmFkcy5pZmE9W0lGQV0mYWRzLmlmYXR5cGU9W0lGQV9UWVBFXSZhZHMubGF0PVtMTVRdJmFkcy5kb25vdHNlbGw9W0ROU10mYWRzLnVhPVtVQV0mYWRzLmlwPVtJUF0mYWRzLmdkcHI9W0dEUFJdJmFkcy5nZHByX2NvbnNlbnQ9W0dEUFJfQ09OU0VOVF0mYWRzLmNvdW50cnk9W0NPVU5UUlldJmFkcy51c19wcml2YWN5PVtVU19QUklWQUNZXSZhZHMuYXBwc3RvcmV1cmw9W0FQUF9TVE9SRVVSTF0mYWRzLmJ1bmRsZWlkPVtBUFBfQlVORExFXSZhZHMuYXBwbmFtZT1bQVBQX05BTUVdJmFkcy5hcHB2ZXJzaW9uPVtBUFBfVkVSU0lPTl0mYWRzLmRldmljZXR5cGU9W0RFVklDRV9UWVBFXSZhZHMuZGV2aWNlbWFrZT1bREVWSUNFX01BS0VdJmFkcy5kZXZpY2Vtb2RlbD1bREVWSUNFX01PREVMXSZhZHMudGFyZ2V0YWQ9W1RBUkdFVEFEX0FMTE9XRURdJmFkcy5mY2s9W0ZDS10mYWRzLnZpZXdzaXplPVtWSUVXU0laRV0mYWRzLmdpdm49W05PTkNFXQ==",
             "mix-hollywood": "aHR0cHM6Ly9tbC1wdWxsLWh3Yy5teWNvLmlvL01peFRWL2hscy9pbmRleC5tM3U4",
             "universal-movies": "aHR0cHM6Ly9kNHdobXZ3bTByZHZpLmNsb3VkZnJvbnQubmV0L21hbmlmZXN0LzNmZWMzZTVjYWMzOWE1MmIyMTMyZjljNjZjODNkYWUwNDNkYzE3ZDQvcHJvZF9kZWZhdWx0X3h1bW8tbmJjdS1saW5lYXIvZTcyNzViZmItZmI4ZC00OWQ4LTk2OWYtODU0NDgxZmE3ZTcxLzQubTN1OA==",
             "family-bonding-cinema": "aHR0cHM6Ly9jZG4ud2hpcGxhc2guY2Mvd2hpcGxhc2gtY2luZW1hL2luZGV4Lm0zdTg=",
@@ -415,19 +415,6 @@
             "nba-tv-hd": "aHR0cDovLzIzLjIzNy4xMDQuMTA2OjgwODAvVVNBX05CQS9pbmRleC5tM3U4",
             "dazn-ringside": "aHR0cHM6Ly9hZWdpcy1jbG91ZGZyb250LTEudHViaS52aWRlby9iZmFkMjllMi01YmVlLTQ0ZjMtODI1Ni0xMjczMjRlOGIxMDYvMTA4MHAtY2MvaW5kZXgubTN1OA==",
             "cartoon-network": "aHR0cDovLzIzLjIzNy4xMDQuMTA2OjgwODAvVVNBX0NBUlRPT05fTkVUV09SSy9pbmRleC5tM3U4"
-        };
-
-        liveChannelsData.forEach(ch => {
-            if (secureRawB64[ch.id]) {
-                ch.src = secureRawB64[ch.id];
-            }
-        });
-
-        const defaultConfig = {
-            brandName: "Family Bonding Time",
-            gcashNo: "09608754210", // Official payment destination
-            gcashName: "System Administrator",
-            channels: [...liveChannelsData]
         };
 
         let appData = {};
@@ -495,8 +482,17 @@
 
         function verifyLicenseKey(key) {
             if (!key) return { valid: false, error: "Empty Key" };
-            const segments = key.trim().split('-');
-            if (segments.length !== 6) return { valid: false, error: "Invalid layout" };
+            
+            // Smart Sanitization Pipeline: Convert mobile long dashes back into standard hyphens and remove spacing/hidden Unicode elements
+            const normalizedKey = key.trim()
+                .replace(/[\u2013\u2014\u2212]/g, "-") 
+                .replace(/[\s\u200B\u200C\u200D\uFEFF]/g, "") 
+                .toUpperCase();
+
+            const segments = normalizedKey.split('-');
+            if (segments.length !== 6) {
+                return { valid: false, error: `Invalid Layout (${segments.length} segments parsed. Expected 6). Check spacing or dashes.` };
+            }
 
             const parseDevId = `${segments[0]}-${segments[1]}-${segments[2]}`;
             const daysSegment = segments[3];
@@ -991,6 +987,12 @@
                 document.getElementById('passcode-input').value = "";
             }
         }
+
+        liveChannelsData.forEach(ch => {
+            if (secureRawB64[ch.id]) {
+                ch.src = secureRawB64[ch.id];
+            }
+        });
 
         initSaaS();
     </script>
