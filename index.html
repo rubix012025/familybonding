@@ -19,8 +19,8 @@
 
     <!-- Top Header -->
     <header class="p-4 md:p-5 flex justify-between items-center border-b border-slate-800 bg-slate-950/60 backdrop-blur-md sticky top-0 z-40">
-        <div onclick="promptDevPasscode()" class="cursor-pointer select-none group">
-            <h1 id="view-brand-title" class="text-base md:text-lg font-black tracking-wider text-indigo-400 uppercase group-hover:text-indigo-300 transition duration-150">PORTAL</h1>
+        <div>
+            <h1 id="view-brand-title" class="text-base md:text-lg font-black tracking-wider text-indigo-400 uppercase">PORTAL</h1>
             <p class="text-[10px] md:text-xs text-slate-400">Integrated Streaming Middleware Console</p>
         </div>
         <div class="flex items-center space-x-3">
@@ -140,7 +140,7 @@
                         <input type="text" id="activation-key" placeholder="WP-XXXX-XXXX-XXD-XXXX-XXXXXX" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-center font-mono tracking-wider text-white focus:outline-none focus:border-indigo-500">
                     </div>
 
-                    <button onclick="processSubscription()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-xs tracking-wide transition font-bold">
+                    <button onclick="processSubscription()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-xs tracking-wide transition font-bold font-semibold">
                         Verify System Payment
                     </button>
                 </div>
@@ -179,6 +179,19 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Integrated Passcode Form Modal -->
+    <div id="passcode-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl text-center">
+            <h3 class="font-bold text-xs text-indigo-400 uppercase tracking-widest">Administrator Access</h3>
+            <p class="text-[10px] text-slate-400 leading-normal">Enter the Console Administrator Passcode to authorize access:</p>
+            <input type="password" id="passcode-input" placeholder="••••••••" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-center text-sm font-mono tracking-widest text-white focus:outline-none focus:border-indigo-500">
+            <div class="flex gap-2">
+                <button onclick="closePasscodeModal()" class="flex-1 py-2 bg-slate-950 hover:bg-slate-900 border border-slate-800 text-slate-400 text-[10px] font-bold rounded-xl transition">Cancel</button>
+                <button onclick="submitPasscode()" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-bold rounded-xl transition">Verify</button>
             </div>
         </div>
     </div>
@@ -293,7 +306,7 @@
             try { return decodeURIComponent(atob(b64)); } catch(e) { return ""; }
         }
 
-        // Live Channels Data (Cleaned and Filtered Presets)
+        // Live Channels Data (Swapped Universal Movies with Paramount Channel)
         const liveChannelsData = [
             {
                 id: "new-kmovies",
@@ -320,15 +333,15 @@
                 ]
             },
             {
-                id: "universal-movies",
+                id: "paramount-movie-channel",
                 name: "Movies 3",
                 group: "Movies",
-                logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/universal-movies.png",
-                src: "YUhSMGNITTZMeTlrTUhkaGJYWjNiaTB0Y21KeWVHbHVMbU5zYjNWaFptSnliMjUwTG01bGRDOW1ZVzVwWm1WemRDMHpabVZqTTJWallXTXpPV0V6TWpJeXpJeFp6Sm1ZelppTnpFeFpEUTNjbTkyWkY5a1pXWmhkVHgxZFc4dGJtSmpkMT",
+                logo: "https://images.pluto.tv/channels/5cb0cae7a461406ffe3f5213/colorLogoPNG.png",
+                src: "YUhSMGNITTZMeW9iWEF5TG5WckxYQnNkUzExWTJKdm1HUXlaV0UzWVRRMk1UUXdObVp6WlRNbWJYTXVZV056TjNkOA==",
                 schedule: [
-                    { title: "Universal Studios Classics Selection", start: "00:00", end: "08:00" },
-                    { title: "Universal Action Comedy Blockbuster", start: "08:00", end: "16:00" },
-                    { title: "Late Night Suspense & Film Noir", start: "16:00", end: "24:00" }
+                    { title: "Classic Hollywood Epics Block", start: "00:00", end: "08:00" },
+                    { title: "Paramount Studio Premiere Selections", start: "08:00", end: "16:00" },
+                    { title: "Late Night Award-Winning Dramas", start: "16:00", end: "24:00" }
                 ]
             },
             {
@@ -348,7 +361,7 @@
                 name: "Fight",
                 group: "Sports",
                 logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/netmax-tv.png",
-                src: "YUhSMGNITTZMeTloWldkcGN5MWpiRzl1WkhKdmJuUXRNUzF0ZFdKcUxtWnBaRzh2WW1aaFpDIzVaV0V0TlRKaFpTMDBOR1l6TFRnMU5pMHhNamN6TWpSbE9HUXhNRFl2TVRBNGNHMXRZM012YVc1a1pYZ3VpM1U0",
+                src: "YUhSMGNITTZMeTloWldkcGN5MWpiRzl1WkhKdmJuUXRNUzF0ZFdKcUxtWnBaRzh2WW1aaFpESTVaV0V0TlRKaFpTMDBOR1l6TFRnMU5pMHhNamN6TWpSbE9HUXhNRFl2TVRBNGNHMXRZM012YVc1a1pYZ3VpM1U0",
                 schedule: [
                     { title: "DAZN Heavyweight Classics", start: "00:00", end: "08:00" },
                     { title: "Live Ringside Match Replays", start: "08:00", end: "16:00" },
@@ -360,20 +373,14 @@
         const secureRawB64 = {
             "new-kmovies": "aHR0cHM6Ly9hZHMuaXRzLW5ld2lkLm5ldC9hcGkvbWFuaWZlc3QubTN1OD90cD1sZ19jaGFubmVscyZjaGFubmVsX25hbWU9bmV3a21vdmllcyZjaGFubmVsX2lkPW5ld2lkXzIxOSZtcGY9YWRmYzIwNGQtMzlhZjE5NjAtMTNhMmYwMWEmYXBpa2V5PTQ4MjMwZTZiLTFjZWEwMDk3LTE1OTc1ZjkzLzM5YWYxOTYyJmF1dGg9YjYyYzJjOGItODMxNmE3NzEtMjk1ZWJhMjgtZjQ2NjNkZGQmYWRzLmxpdmU9W0NPTlRFTlRfTElWRV0mYWRzLmRldmljZWlkPVtERVZJQ0VfSURdJmFkcy5pZmE9W0lGQV0mYWRzLmlmYXR5cGU9W0lGQV9UWVBFXSZhZHMubGF0PVtMTVRdJmFkcy5kb25vdHNlbGw9W0ROU10mYWRzLnVhPVtVQV0mYWRzLmlwPVtJUF0mYWRzLmdkcHI9W0dEUFJdJmFkcy5nZHByX2NvbnNlbnQ9W0dEUFJfQ09OU0VOVF0mYWRzLmNvdW50cnk9W0NPVU5UUlldJmFkcy51c19wcml2YWN5PVtVU19QUklWQUNZXSZhZHMuYXBwc3RvcmV1cmw9W0FQUF9TVE9SRVVSTF0mYWRzLmJ1bmRsZWlkPVtBUFBfQlVORExFXSZhZHMuYXBwbmFtZT1bQVBQX05BTUVdJmFkcy5hcHB2ZXJzaW9uPVtBUFBfVkVSU0lPTl0mYWRzLmRldmljZXR5cGU9W0RFVklDRV9UWVBFXSZhZHMuZGV2aWNlbWFrZT1bREVWSUNFX01BS0VdJmFkcy5kZXZpY2Vtb2RlbD1bREVWSUNFX01PREVMXSZhZHMudGFyZ2V0YWQ9W1RBUkdFVEFEX0FMTE9XRURdJmFkcy5mY2s9W0ZDS10mYWRzLnZpZXdzaXplPVtWSUVXU0laRV0mYWRzLmdpdm49W05PTkNFXQ==",
             "mix-hollywood": "aHR0cHM6Ly9tbC1wdWxsLWh3Yy5teWNvLmlvL01peFRWL2hscy9pbmRleC5tM3U4",
-            "universal-movies": "aHR0cHM6Ly9kNHdobXZ3bTByZHZpLmNsb3VkZnJvbnQubmV0L21hbmlmZXN0LzNmZWMzZTVjYWMzOWE1MmIyMTMyZjljNjZjODNkYWUwNDNkYzE3ZDQvcHJvZF9kZWZhdWx0X3h1bW8tbmJjdS1saW5lYXIvZTcyNzViZmItZmI4ZC00OWQ4LTk2OWYtODU0NDgxZmE3ZTcxLzQubTN1OA==",
+            "paramount-movie-channel": "aHR0cHM6Ly9qbXAyLnVrL3BsdS01Y2IwY2FlN2E0NjE0MDZmZmUzZjUyMTMubTN1OA==",
             "family-bonding-cinema": "aHR0cHM6Ly9jZG4ud2hpcGxhc2guY2Mvd2hpcGxhc2gtY2luZW1hL2luZGV4Lm0zdTg=",
             "dazn-ringside": "aHR0cHM6Ly9hZWdpcy1jbG91ZGZyb250LTEudHViaS52aWRlby9iZmFkMjllMi01YmVlLTQ0ZjMtODI1Ni0xMjczMjRlOGIxMDYvMTA4MHAtY2MvaW5kZXgubTN1OA=="
         };
 
-        liveChannelsData.forEach(ch => {
-            if (secureRawB64[ch.id]) {
-                ch.src = secureRawB64[ch.id];
-            }
-        });
-
         const defaultConfig = {
             brandName: "Family Bonding Time",
-            gcashNo: "09608754210", 
+            gcashNo: "09608754210", // Official payment destination
             gcashName: "System Administrator",
             channels: [...liveChannelsData]
         };
@@ -385,6 +392,7 @@
         let activeAdminPlanId = 'p1';
         let deviceId = '';
 
+        // Cryptographic Salting Key (Updated to Brand Scope)
         const SECRETS_SALT = "FAMILY_BONDING_TIME_SALT_2026_SECURE";
 
         function generateUniqueDeviceID() {
@@ -402,6 +410,7 @@
             return id;
         }
 
+        // Stepper cost calculation logic
         function calculateVendingCost(days) {
             if (days === 1) return 15;
             return days * 10;
@@ -419,12 +428,11 @@
 
         function updateVendingQR() {
             const payload = deviceId;
-            const previewEl = document.getElementById('viewer-checkout-qr-preview');
-            const qrEl = document.getElementById('viewer-checkout-qr');
-            if (previewEl) previewEl.textContent = `Ref: ${payload}`;
-            if (qrEl) qrEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(payload)}`;
+            document.getElementById('viewer-checkout-qr-preview').textContent = `Ref: ${payload}`;
+            document.getElementById('viewer-checkout-qr').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(payload)}`;
         }
 
+        // Dynamic key generator
         function calculateSignature(devId, days, serial) {
             const rawPayload = `${devId}-${days}-${serial}-${SECRETS_SALT}`;
             let hash = 0;
@@ -442,8 +450,17 @@
 
         function verifyLicenseKey(key) {
             if (!key) return { valid: false, error: "Empty Key" };
-            const segments = key.trim().split('-');
-            if (segments.length !== 6) return { valid: false, error: "Invalid layout" };
+            
+            // Smart Sanitization Pipeline: Convert mobile long dashes back into standard hyphens and remove spacing/hidden Unicode elements
+            const normalizedKey = key.trim()
+                .replace(/[\u2013\u2014\u2212]/g, "-") 
+                .replace(/[\s\u200B\u200C\u200D\uFEFF]/g, "") 
+                .toUpperCase();
+
+            const segments = normalizedKey.split('-');
+            if (segments.length !== 6) {
+                return { valid: false, error: `Invalid Layout (${segments.length} segments parsed. Expected 6). Check spacing or dashes.` };
+            }
 
             const parseDevId = `${segments[0]}-${segments[1]}-${segments[2]}`;
             const daysSegment = segments[3];
@@ -475,13 +492,13 @@
             document.getElementById('client-device-display').textContent = `Device ID: ${deviceId}`;
             document.getElementById('gen-client-id').value = deviceId;
 
-            // Using namespace v5 to ensure old channel configurations do not persist in storage
-            const saved = localStorage.getItem('family_bonding_portal_config_v5');
+            // version _v6 namespace forces automatic cache clearing and reloads the newly swapped Paramount config
+            const saved = localStorage.getItem('family_bonding_portal_config_v6');
             if (saved) {
                 appData = JSON.parse(saved);
             } else {
                 appData = JSON.parse(JSON.stringify(defaultConfig));
-                localStorage.setItem('family_bonding_portal_config_v5', JSON.stringify(appData));
+                localStorage.setItem('family_bonding_portal_config_v6', JSON.stringify(appData));
             }
 
             populateDashboard();
@@ -567,7 +584,7 @@
             appData.gcashNo = document.getElementById('cfg-gcash-no').value;
             appData.gcashName = document.getElementById('cfg-gcash-name').value;
 
-            localStorage.setItem('family_bonding_portal_config_v5', JSON.stringify(appData));
+            localStorage.setItem('family_bonding_portal_config_v6', JSON.stringify(appData));
             alert("Platform configuration updated successfully.");
             updateViewerPortalUI();
             updateAdminQRDisplay();
@@ -594,7 +611,7 @@
                 }
             });
 
-            localStorage.setItem('family_bonding_portal_config_v5', JSON.stringify(appData));
+            localStorage.setItem('family_bonding_portal_config_v6', JSON.stringify(appData));
             alert("Schedules and linear EPG timeline updated successfully.");
             updateViewerPortalUI();
             closeAdminModal();
@@ -603,7 +620,7 @@
         function resetToPresets() {
             if (confirm("Reset layout to default channel presets?")) {
                 appData = JSON.parse(JSON.stringify(defaultConfig));
-                localStorage.setItem('family_bonding_portal_config_v5', JSON.stringify(appData));
+                localStorage.setItem('family_bonding_portal_config_v6', JSON.stringify(appData));
                 populateDashboard();
                 updateViewerPortalUI();
                 updateAdminQRDisplay();
@@ -704,13 +721,6 @@
                 const prog = getNowPlayingProgram(channel);
                 label.textContent = prog.title;
             }
-        }
-
-        function updateEPGDisplay() {
-            if (!activeChannel) return;
-            const currentProg = getNowPlayingProgram(activeChannel);
-            document.getElementById('epg-now-title').textContent = currentProg.title;
-            document.getElementById('epg-now-time').textContent = `${currentProg.start} - ${currentProg.end}`;
         }
 
         function checkSubscription() {
@@ -836,6 +846,7 @@
             document.getElementById('payment-modal').classList.add('hidden');
         }
 
+        // Active 24H Trial Controller
         function checkTrialState() {
             const trialConsumed = localStorage.getItem('saas_trial_consumed') === 'true';
             const btn = document.getElementById('trial-button');
@@ -869,11 +880,11 @@
             if (activeChannel) selectChannel(activeChannel.id);
         }
 
-        // Handles Activation Key Validation & Admin Passcode Bypass
+        // Offline Verification Logic (Enforces one-time consumption)
         function processSubscription() {
             const rawKey = document.getElementById('activation-key').value.trim();
             
-            // Check if user is typing the admin console passcode
+            // Smart auto-login fallback: entering developer passcode directly here opens Console
             if (rawKey === "!12345678*") {
                 closePaymentModal();
                 openAdminModal();
@@ -900,6 +911,7 @@
             if (activeChannel) selectChannel(activeChannel.id);
         }
 
+        // Creator Key Generator Logic (Auto-attaches a unique serial code)
         function generateActivationKey() {
             const inputId = document.getElementById('gen-client-id').value.trim();
             const days = parseInt(document.getElementById('gen-client-days').value);
@@ -925,27 +937,37 @@
             document.getElementById('gen-result-container').classList.remove('hidden');
         }
 
+        // Integrated passcode overlay handlers
         function promptDevPasscode() {
-            const rawInput = prompt("Enter Console Administrator Passcode:");
-            if (rawInput === null) return;
+            document.getElementById('passcode-input').value = "";
+            document.getElementById('passcode-modal').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('passcode-input').focus();
+            }, 100);
+        }
+
+        function closePasscodeModal() {
+            document.getElementById('passcode-modal').classList.add('hidden');
+        }
+
+        function submitPasscode() {
+            const rawInput = document.getElementById('passcode-input').value;
+            const sanitizedInput = rawInput ? rawInput.trim() : "";
             
-            const sanitizedInput = rawInput.trim();
             if (sanitizedInput === "!12345678*") {
+                closePasscodeModal();
                 openAdminModal();
             } else {
                 alert("Passcode Rejected.");
+                document.getElementById('passcode-input').value = "";
             }
         }
 
-        function openAdminModal() {
-            populateDashboard();
-            document.getElementById('admin-modal').classList.remove('hidden');
-        }
-
-        function closeAdminModal() {
-            document.getElementById('admin-modal').classList.add('hidden');
-            document.getElementById('gen-result-container').classList.add('hidden');
-        }
+        liveChannelsData.forEach(ch => {
+            if (secureRawB64[ch.id]) {
+                ch.src = secureRawB64[ch.id];
+            }
+        });
 
         initSaaS();
     </script>
