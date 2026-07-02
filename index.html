@@ -207,7 +207,7 @@
                 <button onclick="closeAdminModal()" class="text-slate-400 hover:text-white font-black text-lg">&times;</button>
             </div>
             
-            <div class="p-5 space-y-6">
+            <div class="p-5 space-y-6 flex-grow">
                 <!-- Client Key Generator Section with One-Time-Use Serial Engine -->
                 <div class="bg-indigo-950/30 border border-indigo-900/60 p-4 rounded-xl space-y-3">
                     <span class="block text-[10px] font-bold text-indigo-300 uppercase tracking-wider">System Cryptographic Key Provisioning Console</span>
@@ -251,7 +251,7 @@
                             <label class="block text-[9px] text-slate-400 mb-1">GCash Account Holder Name</label>
                             <input type="text" id="cfg-gcash-name" class="w-full bg-slate-900 border border-slate-800 rounded p-2 text-white">
                         </div>
-                        <button onclick="saveBrandSettings()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded">
+                        <button onclick="saveBrandSettings()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded mb-1">
                             Save Configuration Settings
                         </button>
                     </div>
@@ -290,8 +290,11 @@
                 </div>
             </div>
 
-            <div class="p-4 border-t border-slate-800 bg-slate-950/40 flex justify-end space-x-3 sticky bottom-0 z-10 backdrop-blur-md">
-                <span class="text-[9px] text-slate-500 self-center">URLs remain cryptographically hidden in native sandbox variables.</span>
+            <!-- Footer Area inside Admin Panel featuring Developer Logout/Relock Trigger -->
+            <div class="p-4 border-t border-slate-800 bg-slate-950/40 flex justify-between items-center sticky bottom-0 z-10 backdrop-blur-md">
+                <button onclick="devLogout()" class="px-4 py-2 bg-red-950 hover:bg-red-900 border border-red-800 text-red-300 font-bold text-[10px] rounded-xl transition" title="Wipes admin license to test locked interface again.">
+                    Lock Device (Logout Dev)
+                </button>
                 <button onclick="saveChannelsAndEPG()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl">
                     Apply EPG Updates
                 </button>
@@ -306,7 +309,7 @@
             try { return decodeURIComponent(atob(b64)); } catch(e) { return ""; }
         }
 
-        // Live Channels Data
+        // Live Channels Data (Paramount swapped with Universal Movies, Cleaned List)
         const liveChannelsData = [
             {
                 id: "new-kmovies",
@@ -392,7 +395,7 @@
         let activeAdminPlanId = 'p1';
         let deviceId = '';
 
-        // Cryptographic Salting Key (Updated to Brand Scope)
+        // Cryptographic Salting Key
         const SECRETS_SALT = "FAMILY_BONDING_TIME_SALT_2026_SECURE";
 
         function generateUniqueDeviceID() {
@@ -492,13 +495,13 @@
             document.getElementById('client-device-display').textContent = `Device ID: ${deviceId}`;
             document.getElementById('gen-client-id').value = deviceId;
 
-            // version _v7 namespace forces automatic cache clearing and reloads the newly updated sequential logic
-            const saved = localStorage.getItem('family_bonding_portal_config_v7');
+            // version _v8 namespace forces clean cache structures and re-registers the entire sequential layout and admin tools
+            const saved = localStorage.getItem('family_bonding_portal_config_v8');
             if (saved) {
                 appData = JSON.parse(saved);
             } else {
                 appData = JSON.parse(JSON.stringify(defaultConfig));
-                localStorage.setItem('family_bonding_portal_config_v7', JSON.stringify(appData));
+                localStorage.setItem('family_bonding_portal_config_v8', JSON.stringify(appData));
             }
 
             populateDashboard();
@@ -584,7 +587,7 @@
             appData.gcashNo = document.getElementById('cfg-gcash-no').value;
             appData.gcashName = document.getElementById('cfg-gcash-name').value;
 
-            localStorage.setItem('family_bonding_portal_config_v7', JSON.stringify(appData));
+            localStorage.setItem('family_bonding_portal_config_v8', JSON.stringify(appData));
             alert("Platform configuration updated successfully.");
             updateViewerPortalUI();
             updateAdminQRDisplay();
@@ -611,7 +614,7 @@
                 }
             });
 
-            localStorage.setItem('family_bonding_portal_config_v7', JSON.stringify(appData));
+            localStorage.setItem('family_bonding_portal_config_v8', JSON.stringify(appData));
             alert("Schedules and linear EPG timeline updated successfully.");
             updateViewerPortalUI();
             closeAdminModal();
@@ -620,7 +623,7 @@
         function resetToPresets() {
             if (confirm("Reset layout to default channel presets?")) {
                 appData = JSON.parse(JSON.stringify(defaultConfig));
-                localStorage.setItem('family_bonding_portal_config_v7', JSON.stringify(appData));
+                localStorage.setItem('family_bonding_portal_config_v8', JSON.stringify(appData));
                 populateDashboard();
                 updateViewerPortalUI();
                 updateAdminQRDisplay();
@@ -968,6 +971,13 @@
                 alert("Passcode Rejected.");
                 document.getElementById('passcode-input').value = "";
             }
+        }
+
+        function devLogout() {
+            localStorage.removeItem('saas_premium_expiry');
+            localStorage.removeItem('saas_trial_consumed');
+            alert("Developer license cleared. Portal is locked.");
+            location.reload(); // Reloads the site to apply standard restriction overlay cleanly
         }
 
         liveChannelsData.forEach(ch => {
