@@ -20,7 +20,7 @@
     <!-- Top Header -->
     <header class="p-4 md:p-5 flex justify-between items-center border-b border-slate-800 bg-slate-950/60 backdrop-blur-md sticky top-0 z-40">
         <div>
-            <h1 id="view-brand-title" class="text-base md:text-lg font-black tracking-wider text-indigo-400 uppercase">PORTAL</h1>
+            <h1 id="view-brand-title" onclick="promptDevPasscode()" class="text-base md:text-lg font-black tracking-wider text-indigo-400 uppercase cursor-pointer hover:text-indigo-350 select-none" title="Admin Portal Access">PORTAL</h1>
             <p class="text-[10px] md:text-xs text-slate-400">Integrated Streaming Middleware Console</p>
         </div>
         <div class="flex items-center space-x-3">
@@ -122,6 +122,7 @@
                         <span id="vending-cost-display" class="text-lg font-black text-white">₱15</span>
                     </div>
 
+                    <!-- GCash Info -->
                     <div class="bg-slate-950 p-3 rounded-xl border border-slate-855 text-[11px] text-slate-300 space-y-1.5">
                         <div class="flex justify-between font-bold text-indigo-400 text-[9px] uppercase tracking-wider">
                             <span>Direct Transfer:</span>
@@ -132,6 +133,15 @@
                         </div>
                     </div>
 
+                    <!-- Reference QR Code Generation -->
+                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-855 flex flex-col items-center justify-center space-y-2">
+                        <span class="text-[9px] font-bold text-indigo-400 uppercase tracking-wider self-start">Activation Verification Reference</span>
+                        <div class="bg-white p-1 rounded">
+                            <img id="viewer-checkout-qr" src="" alt="Payment QR" class="w-24 h-24">
+                        </div>
+                        <span id="viewer-checkout-qr-preview" class="text-[9px] font-mono text-slate-400 select-all tracking-wider">Ref: Calculating...</span>
+                    </div>
+
                     <div>
                         <div class="flex justify-between items-center mb-1">
                             <label class="block text-[9px] text-slate-400 uppercase tracking-wide">Enter Activation Key</label>
@@ -140,7 +150,7 @@
                         <input type="text" id="activation-key" placeholder="WP-XXXX-XXXX-XXD-XXXX-XXXXXX" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-center font-mono tracking-wider text-white focus:outline-none focus:border-indigo-500">
                     </div>
 
-                    <button onclick="processSubscription()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-xs tracking-wide transition font-bold">
+                    <button onclick="processSubscription()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-xs tracking-wide transition">
                         Verify System Payment
                     </button>
                 </div>
@@ -150,7 +160,7 @@
                     <div class="space-y-3">
                         <span class="text-[10px] font-bold text-slate-400 block uppercase tracking-wide">02. Activation Information</span>
                         
-                        <!-- Automated Pipeline Notice (Updated to 1 Hour Allowance) -->
+                        <!-- Automated Pipeline Notice -->
                         <div class="bg-amber-950/25 border border-amber-900/40 p-3 rounded-xl text-[10px] text-amber-300 leading-normal flex items-start space-x-2.5">
                             <svg class="w-4 h-4 text-amber-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
@@ -183,7 +193,7 @@
         </div>
     </div>
 
-    <!-- Creator Panel Modal (Optimized for Mobile Height) -->
+    <!-- Creator Panel Modal -->
     <div id="admin-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 overflow-y-auto hidden">
         <div class="bg-slate-900 border border-slate-855 rounded-2xl max-w-4xl w-full overflow-y-auto max-h-[90vh] md:max-h-[95vh] flex flex-col shadow-2xl">
             <div class="p-5 border-b border-slate-800 flex justify-between items-center bg-slate-950/60 sticky top-0 z-10 backdrop-blur-md">
@@ -293,14 +303,14 @@
             try { return decodeURIComponent(atob(b64)); } catch(e) { return ""; }
         }
 
-        // Live Channels Data
+        // Live Channels Data (Cleaned and Mapped to custom categories)
         const liveChannelsData = [
             {
                 id: "Movies 1",
                 name: "Movies 1",
                 group: "Movies",
                 logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/new-kmovies.png",
-                src: "YUhSMGNITTZMeTloWkhNdWFYUnpMVzVsZDJsc0xtNWxkQzloY0drdmJXRnVhVlp6ZEM1dTN1ODlkRndMWmVkamFHRnViMlZ6TDJScFlXNXBabVZ6ZEM1dTN1OD9kSEF0YmVkM2FXUnNMWGNoWVc1dVpXeHZZbVZ5Y3pwaGNuTjFjbVZmZEhWc1gyMXBkSFU9",
+                src: "",
                 schedule: [
                     { title: "Seoul Morning Romance Selections", start: "00:00", end: "08:00" },
                     { title: "Korean Blockbuster Mystery Hits", start: "08:00", end: "16:00" },
@@ -312,7 +322,7 @@
                 name: "Movies 2",
                 group: "Movies",
                 logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/mix-hollywood.png",
-                src: "YUhSMGNITTZMeTltYFMtcWR4c2FXZDNhbU5vTG0xNWMyOHVhbThvVFdseVZGWXVkR3hmYVc1a1pYZ3VpM1U9",
+                src: "",
                 schedule: [
                     { title: "Hollywood Golden Era Block", start: "00:00", end: "08:00" },
                     { title: "Modern Action & Sci-Fi features", start: "08:00", end: "16:00" },
@@ -324,7 +334,7 @@
                 name: "Movies 3",
                 group: "Movies",
                 logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/universal-movies.png",
-                src: "YUhSMGNITTZMeTlrTUhkaGJYWjNiaTB0Y21KeWVHbHVMbU5zYjNWaFptSnliMjUwTG01bGRDOW1ZVzVwWm1WemRDMHpabVZqTTJWallXTXpPV0V6TWpJeXpJeFp6Sm1ZelppTnpFeFpEUTNjbTkyWkY5a1pXWmhkVHgxZFc4dGJtSmpkMT",
+                src: "",
                 schedule: [
                     { title: "Universal Studios Classics Selection", start: "00:00", end: "08:00" },
                     { title: "Universal Action Comedy Blockbuster", start: "08:00", end: "16:00" },
@@ -336,35 +346,34 @@
                 name: "Movies 4",
                 group: "Movies",
                 logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/mix-hollywood.png",
-                src: "YUhSMGNITTZMeTloWkhNdWQyaHBjR3hoYzNndVkyTXZkMmhwY0d4aGMyaDBlR0YwTDJsdVpHVjRMbTB3",
+                src: "",
                 schedule: [
                     { title: "Family Early Bird Reels", start: "00:00", end: "08:00" },
                     { title: "Curated Retro Film Favorites", start: "08:00", end: "16:00" },
                     { title: "Late Night Cult Classics", start: "16:00", end: "24:00" }
                 ]
             },
-
             {
                 id: "FIGHT",
                 name: "FIGHT",
                 group: "Sports",
                 logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/netmax-tv.png",
-                src: "YUhSMGNITTZMeTloWldkcGN5MWpiRzl1WkhKdmJuUXRNUzF0ZFdKcUxtWnBaRzh2WW1aaFpDIzVaV0V0TlRKaFpTMDBOR1l6TFRnMU5pMHhNamN6TWpSbE9HUXhNRFl2TVRBNGNHMXRZM012YVc1a1pYZ3VpM1U0",
+                src: "",
                 schedule: [
                     { title: "DAZN Heavyweight Classics", start: "00:00", end: "08:00" },
                     { title: "Live Ringside Match Replays", start: "08:00", end: "16:00" },
                     { title: "Knockout Compilation Block", start: "16:00", end: "24:00" }
                 ]
-            },
-            
+            }
         ];
 
+        // Decryption table corresponding to specific Channel IDs
         const secureRawB64 = {
-            "new-kmovies": "aHR0cHM6Ly9hZHMuaXRzLW5ld2lkLm5ldC9hcGkvbWFuaWZlc3QubTN1OD90cD1sZ19jaGFubmVscyZjaGFubmVsX25hbWU9bmV3a21vdmllcyZjaGFubmVsX2lkPW5ld2lkXzIxOSZtcGY9YWRmYzIwNGQtMzlhZjE5NjItMTNhMmYwMWEmYXBpa2V5PTQ4MjMwZTZiLTFjZWEwMDk3LTE1OTc1ZjkzLzM5YWYxOTYyJmF1dGg9YjYyYzJjOGItODMxNmE3NzEtMjk1ZWJhMjgtZjQ2NjNkZGQmYWRzLmxpdmU9W0NPTlRFTlRfTElWRV0mYWRzLmRldmljZWlkPVtERVZJQ0VfSURdJmFkcy5pZmE9W0lGQV0mYWRzLmlmYXR5cGU9W0lGQV9UWVBFXSZhZHMubGF0PVtMTVRdJmFkcy5kb25vdHNlbGw9W0ROU10mYWRzLnVhPVtVQV0mYWRzLmlwPVtJUF0mYWRzLmdkcHI9W0dEUFJdJmFkcy5nZHByX2NvbnNlbnQ9W0dEUFJfQ09OU0VOVF0mYWRzLmNvdW50cnk9W0NPVU5UUlldJmFkcy51c19wcml2YWN5PVtVU19QUklWQUNZXSZhZHMuYXBwc3RvcmV1cmw9W0FQUF9TVE9SRVVSTF0mYWRzLmJ1bmRsZWlkPVtBUFBfQlVORExFXSZhZHMuYXBwbmFtZT1bQVBQX05BTUVdJmFkcy5hcHB2ZXJzaW9uPVtBUFBfVkVSU0lPTl0mYWRzLmRldmljZXR5cGU9W0RFVklDRV9UWVBFXSZhZHMuZGV2aWNlbWFrZT1bREVWSUNFX01BS0VdJmFkcy5kZXZpY2Vtb2RlbD1bREVWSUNFX01PREVMXSZhZHMudGFyZ2V0YWQ9W1RBUkdFVEFEX0FMTE9XRURdJmFkcy5mY2s9W0ZDS10mYWRzLnZpZXdzaXplPVtWSUVXU0laRV0mYWRzLmdpdm49W05PTkNFXQ==",
-            "mix-hollywood": "aHR0cHM6Ly9tbC1wdWxsLWh3Yy5teWNvLmlvL01peFRWL2hscy9pbmRleC5tM3U4",
-            "universal-movies": "aHR0cHM6Ly9kNHdobXZ3bTByZHZpLmNsb3VkZnJvbnQubmV0L21hbmlmZXN0LzNmZWMzZTVjYWMzOWE1MmIyMTMyZjljNjZjODNkYWUwNDNkYzE3ZDQvcHJvZF9kZWZhdWx0X3h1bW8tbmJjdS1saW5lYXIvZTcyNzViZmItZmI4ZC00OWQ4LTk2OWYtODU0NDgxZmE3ZTcxLzQubTN1OA==",
-            "family-bonding-cinema": "aHR0cHM6Ly9jZG4ud2hpcGxhc2guY2Mvd2hpcGxhc2gtY2luZW1hL2luZGV4Lm0zdTg=",
-            "dazn-ringside": "aHR0cHM6Ly9hZWdpcy1jbG91ZGZyb250LTEudHViaS52aWRlby9iZmFkMjllMi01YmVlLTQ0ZjMtODI1Ni0xMjczMjRlOGIxMDYvMTA4MHAtY2MvaW5kZXgubTN1OA==",
+            "Movies 1": "aHR0cHM6Ly9hZHMuaXRzLW5ld2lkLm5ldC9hcGkvbWFuaWZlc3QubTN1OD90cD1sZ19jaGFubmVscyZjaGFubmVsX25hbWU9bmV3a21vdmllcyZjaGFubmVsX2idPW5ld2lkXzIxOSZtcGY9YWRmYzIwNGQtMzlhZjE5NjItMTNhMmYwMWEmYXBpa2V5PTQ4MjMwZTZiLTFjZWEwMDk3LTE1OTc1ZjkzLzM5YWYxOTYyJmF1dGg9YjYyYzJjOGUtODMxNmE3NzEtMjk1ZWJhMjgtZjQ2NjNkZGQmYWRzLmxpdmU9W0NPTlRFTlRfTElWRV0mYWRzLmRldmljZWlkPVtERVZJQ0VfSURdJmFkcy5pZmE9W0lGQV0mYWRzLmlmYXR5cGU9W0lGQV9UWVBFXSZhZHMubGF0PVtMTVRdJmFkcy5kb25vdHNlbGw9W0DNU10mYWRzLnVhPVtVQV0mYWRzLmlwPVtJUF0mYWRzLmdkcHI9W0dEUFJdJmFkcy5nZHByX2NvbnNlbnQ9W0dEUFJfQ09OU0VOVF0mYWRzLmNvdW50cnk9W0NPVU5UUlldJmFkcy51c19wcml2YWN5PVtVU19QUklWQUNZXSZhZHMuYXBwc3RvcmV1cmw9W0FQUF9TVE9SRVVSTF0mYWRzLmJ1bmRsZWlkPVtBUFBfQlVORExFXSZhZHMuYXBwbmFtZT1bQVBQX05BTUVdJmFkcy5hcHB2ZXJzaW9uPVtBUFBfVkVSU0lPTl0mYWRzLmRldmljZXR5cGU9W0RFVklDRV9UWVBFXSZhZHMuZGV2aWNlbWFrZT1bREVWSUNFX01BS0VdJmFkcy5kZXZpY2Vtb2RlbD1bREVWSUNFX01PREVMXSZhZHMudGFyZ2V0YWQ9W1RBUkdFVEFEX0FMTE9XRURdJmFkcy5mY2s9W0ZDS10mYWRzLnZpZXdzaXplPVtWSUVXU0laRV0mYWRzLmdpdm49W05PTkNFXQ==",
+            "Movies 2": "aHR0cHM6Ly9tbC1wdWxsLWh3Yy5teWNvLmlvL01peFRWL2hscy9pbmRleC5tM3U4",
+            "Movies 3": "aHR0cHM6Ly9kNHdobXZ3bTByZHZpLmNsb3VkZnJvbnQubmV0L21hbmlmZXN0LzNmZWMzZTVjYWMzOWE1MmIyMTMyZjljNjZjODNkYWUwNDNkYzE3ZDQvcHJvZF9kZWZhdWx0X3h1bW8tbmJjdS1saW5lYXIvZTcyNzViZmItZmI4ZC00OWQ4LTk2OWYtODU0NDgxZmE3ZTcxLzQubTN1OA==",
+            "Movies 4": "aHR0cHM6Ly9jZG4ud2hpcGxhc2guY2Mvd2hpcGxhc2gtY2luZW1hL2luZGV4Lm0zdTg=",
+            "FIGHT": "aHR0cHM6Ly9hZWdpcy1jbG91ZGZyb250LTEudHViaS52aWRlby9iZmFkMjllMi01YmVlLTQ0ZjMtODI1Ni0xMjczMjRlOGIxMDYvMTA4MHAtY2MvaW5kZXgubTN1OA=="
         };
 
         liveChannelsData.forEach(ch => {
@@ -375,7 +384,7 @@
 
         const defaultConfig = {
             brandName: "Family Bonding Time",
-            gcashNo: "09608754210", // Official payment destination
+            gcashNo: "09608754210", 
             gcashName: "System Administrator",
             channels: [...liveChannelsData]
         };
@@ -387,7 +396,6 @@
         let activeAdminPlanId = 'p1';
         let deviceId = '';
 
-        // Cryptographic Salting Key (Updated to Brand Scope)
         const SECRETS_SALT = "FAMILY_BONDING_TIME_SALT_2026_SECURE";
 
         function generateUniqueDeviceID() {
@@ -405,7 +413,6 @@
             return id;
         }
 
-        // Stepper cost calculation logic
         function calculateVendingCost(days) {
             if (days === 1) return 15;
             return days * 10;
@@ -423,11 +430,12 @@
 
         function updateVendingQR() {
             const payload = deviceId;
-            document.getElementById('viewer-checkout-qr-preview').textContent = `Ref: ${payload}`;
-            document.getElementById('viewer-checkout-qr').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(payload)}`;
+            const previewEl = document.getElementById('viewer-checkout-qr-preview');
+            const qrEl = document.getElementById('viewer-checkout-qr');
+            if (previewEl) previewEl.textContent = `Ref: ${payload}`;
+            if (qrEl) qrEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(payload)}`;
         }
 
-        // Dynamic key generator
         function calculateSignature(devId, days, serial) {
             const rawPayload = `${devId}-${days}-${serial}-${SECRETS_SALT}`;
             let hash = 0;
@@ -478,7 +486,6 @@
             document.getElementById('client-device-display').textContent = `Device ID: ${deviceId}`;
             document.getElementById('gen-client-id').value = deviceId;
 
-            // version _v4 namespace isolates configuration modifications to clear cached values
             const saved = localStorage.getItem('family_bonding_portal_config_v4');
             if (saved) {
                 appData = JSON.parse(saved);
@@ -643,7 +650,7 @@
                     btn.onclick = () => selectChannel(channel.id);
                     
                     const hasSource = channel.src && channel.src.trim() !== "";
-                    btn.className = `w-full text-left p-2 rounded-xl flex items-center justify-between border transition duration-150 ${!hasSource ? 'opacity-40 cursor-not-allowed bg-slate-950/20 border-slate-900 text-slate-500' : 'bg-slate-900/30 border-slate-850/50 text-slate-300 hover:bg-slate-900/60'}`;
+                    btn.className = `w-full text-left p-2 rounded-xl flex items-center justify-between border transition duration-150 ${!hasSource ? 'opacity-40 cursor-not-allowed bg-slate-950/20 border-slate-900 text-slate-500' : 'bg-slate-900/30 border-slate-855/50 text-slate-300 hover:bg-slate-900/60'}`;
 
                     let logoHTML = '';
                     if (channel.logo && channel.logo.trim() !== "") {
@@ -816,7 +823,7 @@
                 if (ch.id === id) {
                     el.className = "w-full text-left p-2 rounded-xl flex items-center justify-between border transition duration-150 bg-indigo-950/20 border-indigo-500 text-white";
                 } else {
-                    el.className = `w-full text-left p-2 rounded-xl flex items-center justify-between border transition duration-150 ${!hasSource ? 'opacity-40 cursor-not-allowed bg-slate-950/20 border-slate-900 text-slate-500' : 'bg-slate-900/30 border-slate-850/50 text-slate-300 hover:bg-slate-900/60'}`;
+                    el.className = `w-full text-left p-2 rounded-xl flex items-center justify-between border transition duration-150 ${!hasSource ? 'opacity-40 cursor-not-allowed bg-slate-950/20 border-slate-900 text-slate-500' : 'bg-slate-900/30 border-slate-855/50 text-slate-300 hover:bg-slate-900/60'}`;
                 }
             });
 
@@ -839,7 +846,6 @@
             document.getElementById('payment-modal').classList.add('hidden');
         }
 
-        // Active 24H Trial Controller
         function checkTrialState() {
             const trialConsumed = localStorage.getItem('saas_trial_consumed') === 'true';
             const btn = document.getElementById('trial-button');
@@ -873,7 +879,6 @@
             if (activeChannel) selectChannel(activeChannel.id);
         }
 
-        // Offline Verification Logic (Enforces one-time consumption)
         function processSubscription() {
             const rawKey = document.getElementById('activation-key').value.trim();
             
@@ -897,7 +902,6 @@
             if (activeChannel) selectChannel(activeChannel.id);
         }
 
-        // Creator Key Generator Logic (Auto-attaches a unique serial code)
         function generateActivationKey() {
             const inputId = document.getElementById('gen-client-id').value.trim();
             const days = parseInt(document.getElementById('gen-client-days').value);
@@ -927,7 +931,6 @@
             const rawInput = prompt("Enter Console Administrator Passcode:");
             if (rawInput === null) return;
             
-            // Normalize mobile keyboard autocorrect characters and spaces
             const sanitizedInput = rawInput.trim();
             
             if (sanitizedInput === "!12345678*") {
