@@ -293,7 +293,7 @@
             try { return decodeURIComponent(atob(b64)); } catch(e) { return ""; }
         }
 
-        // Live Channels Data (Generic 8-Channel Presets)
+        // Live Channels Data (Cleaned Generic Lineup - Kids, Games, and Movies 5 removed)
         const liveChannelsData = [
             {
                 id: "new-kmovies",
@@ -344,51 +344,15 @@
                 ]
             },
             {
-                id: "axn-movies-hd",
-                name: "Movies 5",
-                group: "Movies",
-                logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/universal-movies.png",
-                src: "YUhSMGNITTZMeTl3TVM0M0xqRXlNQzR6TkRvd01EQm9MMEZZVGwxQ1RFRkRTM0FpYm1SbGVDNXREelU0",
-                schedule: [
-                    { title: "Morning Mystery Hour", start: "00:00", end: "08:00" },
-                    { title: "Action and Intense Crime Dramas", start: "08:00", end: "16:00" },
-                    { title: "Midnight Thriller Hour", start: "16:00", end: "24:00" }
-                ]
-            },
-            {
-                id: "nba-tv-hd",
-                name: "Games",
-                group: "Sports",
-                logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/netmax-tv.png",
-                src: "YUhSMGNITTZMeTlhTXk0eU16Y3VNVEEwTGpFMk9pZ3dPREFvVlZORmUwNUNRUzV0TXpVNA==",
-                schedule: [
-                    { title: "Hardwood Morning Classic Matches", start: "00:00", end: "08:00" },
-                    { title: "Game Day Preview & Analysis", start: "08:00", end: "16:00" },
-                    { title: "Season Replay Highlights", start: "16:00", end: "24:00" }
-                ]
-            },
-            {
                 id: "dazn-ringside",
                 name: "Fight",
                 group: "Sports",
                 logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/netmax-tv.png",
-                src: "YUhSMGNITTZMeTloWldkcGN5MWpiRzl1WkhKdmJuUXRNUzF0ZFdKcUxtWnBaRzh2WW1aaFpDIzVaV0V0TlRKaFpTMDBOR1l6TFRnMU5pMHhNamN6TWpSbE9HUXhNRFl2TVRBNGNHMXRZM012YVc1a1pYZ3VpM1U0",
+                src: "YUhSMGNITTZMeTloWldkcGN5MWpiRzl1WkhKdmJuUXRNUzF0ZFdKcUxtWnBaRzh2WW1aaFpDIzVaV0V0TlRKaFpTMDBOR1l6TFRnMU5pMHhNamN6TWpSbE9HUXhNRFl2TVRBNGNHMXRZM012YVc1a1pYZ3VpM1U4",
                 schedule: [
                     { title: "Heavyweight Classics", start: "00:00", end: "08:00" },
                     { title: "Live Ringside Match Replays", start: "08:00", end: "16:00" },
                     { title: "Knockout Compilation Block", start: "16:00", end: "24:00" }
-                ]
-            },
-            {
-                id: "cartoon-network",
-                name: "Kids 1",
-                group: "Kids",
-                logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/cartoon-network.png",
-                src: "YUhSMGNITTZMeTlhTXk0eU16Y3VNVEEwTGpFMk9pZ3dPREFvVlZORmUwTkJVaTFEVlhKMVUxUjVUMDRmWm1sbVkzUnZjMmwwT25SNWMzVT0=",
-                schedule: [
-                    { title: "Morning Cartoon Fun Blocks", start: "00:00", end: "08:00" },
-                    { title: "Classic Midday Animated Hits", start: "08:00", end: "16:00" },
-                    { title: "Action Cartoon Hour", start: "16:00", end: "24:00" }
                 ]
             }
         ];
@@ -398,10 +362,7 @@
             "mix-hollywood": "aHR0cHM6Ly9tbC1wdWxsLWh3Yy5teWNvLmlvL01peFRWL2hscy9pbmRleC5tM3U4",
             "universal-movies": "aHR0cHM6Ly9kNHdobXZ3bTByZHZpLmNsb3VkZnJvbnQubmV0L21hbmlmZXN0LzNmZWMzZTVjYWMzOWE1MmIyMTMyZjljNjZjODNkYWUwNDNkYzE3ZDQvcHJvZF9kZWZhdWx0X3h1bW8tbmJjdS1saW5lYXIvZTcyNzViZmItZmI4ZC00OWQ4LTk2OWYtODU0NDgxZmE3ZTcxLzQubTN1OA==",
             "family-bonding-cinema": "aHR0cHM6Ly9jZG4ud2hpcGxhc2guY2Mvd2hpcGxhc2gtY2luZW1hL2luZGV4Lm0zdTg=",
-            "axn-movies-hd": "aHR0cDovLzUwLjcuMTIwLjM0OjgwODAvQVhOX0JMQUNLL2luZGV4Lm0zdTg=",
-            "nba-tv-hd": "aHR0cDovLzIzLjIzNy4xMDQuMTA2OjgwODAvVVNBX05CQS9pbmRleC5tM3U4",
-            "dazn-ringside": "aHR0cHM6Ly9hZWdpcy1jbG91ZGZyb250LTEudHViaS52aWRlby9iZmFkMjllMi01YmVlLTQ0ZjMtODI1Ni0xMjczMjRlOGIxMDYvMTA4MHAtY2MvaW5kZXgubTN1OA==",
-            "cartoon-network": "aHR0cDovLzIzLjIzNy4xMDQuMTA2OjgwODAvVVNBX0NBUlRPT05fTkVUV09SSy9pbmRleC5tM3U4"
+            "dazn-ringside": "aHR0cHM6Ly9hZWdpcy1jbG91ZGZyb250LTEudHViaS52aWRlby9iZmFkMjllMi01YmVlLTQ0ZjMtODI1Ni0xMjczMjRlOGIxMDYvMTA4MHAtY2MvaW5kZXgubTN1OA=="
         };
 
         liveChannelsData.forEach(ch => {
@@ -514,13 +475,13 @@
             document.getElementById('client-device-display').textContent = `Device ID: ${deviceId}`;
             document.getElementById('gen-client-id').value = deviceId;
 
-            // Updated namespace to v6 to force initial loading of the generic 8-channel scheme
-            const saved = localStorage.getItem('family_bonding_portal_config_v6');
+            // Updated namespace to v7 to bypass cached versions of removed channels
+            const saved = localStorage.getItem('family_bonding_portal_config_v7');
             if (saved) {
                 appData = JSON.parse(saved);
             } else {
                 appData = JSON.parse(JSON.stringify(defaultConfig));
-                localStorage.setItem('family_bonding_portal_config_v6', JSON.stringify(appData));
+                localStorage.setItem('family_bonding_portal_config_v7', JSON.stringify(appData));
             }
 
             populateDashboard();
@@ -606,12 +567,13 @@
             appData.gcashNo = document.getElementById('cfg-gcash-no').value;
             appData.gcashName = document.getElementById('cfg-gcash-name').value;
 
-            localStorage.setItem('family_bonding_portal_config_v6', JSON.stringify(appData));
+            localStorage.setItem('family_bonding_portal_config_v7', JSON.stringify(appData));
             alert("Platform configuration updated successfully.");
             updateViewerPortalUI();
             updateAdminQRDisplay();
         }
 
+        // Apply dynamic channel data changes
         function saveChannelsAndEPG() {
             appData.channels.forEach(channel => {
                 const nameInp = document.getElementById(`edit-name-${channel.id}`);
@@ -633,7 +595,7 @@
                 }
             });
 
-            localStorage.setItem('family_bonding_portal_config_v6', JSON.stringify(appData));
+            localStorage.setItem('family_bonding_portal_config_v7', JSON.stringify(appData));
             alert("Schedules and linear EPG timeline updated successfully.");
             updateViewerPortalUI();
             closeAdminModal();
@@ -642,7 +604,7 @@
         function resetToPresets() {
             if (confirm("Reset layout to default channel presets?")) {
                 appData = JSON.parse(JSON.stringify(defaultConfig));
-                localStorage.setItem('family_bonding_portal_config_v6', JSON.stringify(appData));
+                localStorage.setItem('family_bonding_portal_config_v7', JSON.stringify(appData));
                 populateDashboard();
                 updateViewerPortalUI();
                 updateAdminQRDisplay();
@@ -872,6 +834,7 @@
             checkTrialState();
         }
 
+        // Vending Machine Stepper UI trigger
         function closePaymentModal() {
             document.getElementById('payment-modal').classList.add('hidden');
         }
