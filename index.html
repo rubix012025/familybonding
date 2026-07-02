@@ -273,4 +273,713 @@
                     
                     <div id="channels-editor-container" class="space-y-3 max-h-[350px] overflow-y-auto pr-1">
                         <!-- Populated dynamically -->
-                    </di
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 border-t border-slate-800 bg-slate-950/40 flex justify-end space-x-3">
+                <span class="text-[9px] text-slate-500 self-center">URLs remain cryptographically hidden in native sandbox variables.</span>
+                <button onclick="saveChannelsAndEPG()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl">
+                    Apply EPG Updates
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Execution Logic -->
+    <script>
+        // Secure token decoder
+        function secureDecode(b64) {
+            try { return decodeURIComponent(atob(b64)); } catch(e) { return ""; }
+        }
+
+        // Live Channels Data
+        const liveChannelsData = [
+            {
+                id: "new-kmovies",
+                name: "New Kmovies",
+                group: "Movies",
+                logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/new-kmovies.png",
+                src: "YUhSMGNITTZMeTloWkhNdWFYUnpMVzVsZDJsc0xtNWxkQzloY0drdmJXRnVhVlp6ZEM1dTN1ODlkRndMWmVkamFHRnViMlZ6TDJScFlXNXBabVZ6ZEM1dTN1OD9kSEF0YmVkM2FXUnNMWGNoWVc1dVpXeHZZbVZ5Y3pwaGNuTjFjbVZmZEhWc1gyMXBkSFU9",
+                schedule: [
+                    { title: "Seoul Morning Romance Selections", start: "00:00", end: "08:00" },
+                    { title: "Korean Blockbuster Mystery Hits", start: "08:00", end: "16:00" },
+                    { title: "Late Night K-Thriller Premieres", start: "16:00", end: "24:00" }
+                ]
+            },
+            {
+                id: "mix-hollywood",
+                name: "MixHollywood",
+                group: "Movies",
+                logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/mix-hollywood.png",
+                src: "YUhSMGNITTZMeTltYFMtcWR4c2FXZDNhbU5vTG0xNWMyOHVhbThvVFdseVZGWXVkR3hmYVc1a1pYZ3VpM1U9",
+                schedule: [
+                    { title: "Hollywood Golden Era Block", start: "00:00", end: "08:00" },
+                    { title: "Modern Action & Sci-Fi features", start: "08:00", end: "16:00" },
+                    { title: "Late Night Indie Masterpieces", start: "16:00", end: "24:00" }
+                ]
+            },
+            {
+                id: "universal-movies",
+                name: "Universal movies",
+                group: "Movies",
+                logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/universal-movies.png",
+                src: "YUhSMGNITTZMeTlrTUhkaGJYWjNiaTB0Y21KeWVHbHVMbU5zYjNWaFptSnliMjUwTG01bGRDOW1ZVzVwWm1WemRDMHpabVZqTTJWallXTXpPV0V6TWpJeXpJeFp6Sm1ZelppTnpFeFpEUTNjbTkyWkY5a1pXWmhkVHgxZFc4dGJtSmpkMT",
+                schedule: [
+                    { title: "Universal Studios Classics Selection", start: "00:00", end: "08:00" },
+                    { title: "Universal Action Comedy Blockbuster", start: "08:00", end: "16:00" },
+                    { title: "Late Night Suspense & Film Noir", start: "16:00", end: "24:00" }
+                ]
+            },
+            {
+                id: "family-bonding-cinema",
+                name: "Family Bonding Cinema (480p)",
+                group: "Movies",
+                logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/mix-hollywood.png",
+                src: "YUhSMGNITTZMeTloWkhNdWQyaHBjR3hoYzNndVkyTXZkMmhwY0d4aGMyaDBlR0YwTDJsdVpHVjRMbTB3",
+                schedule: [
+                    { title: "Family Early Bird Reels", start: "00:00", end: "08:00" },
+                    { title: "Curated Retro Film Favorites", start: "08:00", end: "16:00" },
+                    { title: "Late Night Cult Classics", start: "16:00", end: "24:00" }
+                ]
+            },
+            {
+                id: "axn-movies-hd",
+                name: "AXN Movies HD",
+                group: "Movies",
+                logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/universal-movies.png",
+                src: "YUhSMGNITTZMeTl3TVM0M0xqRXlNQzR6TkRvd01EQm9MMEZZVGwxQ1RFRkRTM0FpYm1SbGVDNXREelU0",
+                schedule: [
+                    { title: "AXN Morning Mystery Hour", start: "00:00", end: "08:00" },
+                    { title: "Action and Intense Crime Dramas", start: "08:00", end: "16:00" },
+                    { title: "AXN Midnight Thriller Hour", start: "16:00", end: "24:00" }
+                ]
+            },
+            {
+                id: "nba-tv-hd",
+                name: "NBA TV HD",
+                group: "Sports",
+                logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/netmax-tv.png",
+                src: "YUhSMGNITTZMeTlhTXk0eU16Y3VNVEEwTGpFMk9pZ3dPREFvVlZORmUwNUNRUzV0TXpVNA==",
+                schedule: [
+                    { title: "Hardwood Morning Classic Matches", start: "00:00", end: "08:00" },
+                    { title: "NBA Game Day Preview & Analysis", start: "08:00", end: "16:00" },
+                    { title: "NBA Season Replay Highlights", start: "16:00", end: "24:00" }
+                ]
+            },
+            {
+                id: "dazn-ringside",
+                name: "DAZN RINGSIDE",
+                group: "Sports",
+                logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/netmax-tv.png",
+                src: "YUhSMGNITTZMeTloWldkcGN5MWpiRzl1WkhKdmJuUXRNUzF0ZFdKcUxtWnBaRzh2WW1aaFpESTVaV0V0TlRKaFpTMDBOR1l6TFRnMU5pMHhNamN6TWpSbE9HUXhNRFl2TVRBNGNHMXRZM012YVc1a1pYZ3VpM1U0",
+                schedule: [
+                    { title: "DAZN Heavyweight Classics", start: "00:00", end: "08:00" },
+                    { title: "Live Ringside Match Replays", start: "08:00", end: "16:00" },
+                    { title: "Knockout Compilation Block", start: "16:00", end: "24:00" }
+                ]
+            },
+            {
+                id: "cartoon-network",
+                name: "Cartoon Network",
+                group: "Kids",
+                logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/cartoon-network.png",
+                src: "YUhSMGNITTZMeTlhTXk0eU16Y3VNVEEwTGpFMk9pZ3dPREFvVlZORmUwTkJVaTFEVlhKMVUxUjVUMDRmWm1sbVkzUnZjMmwwT25SNWMzVT0=",
+                schedule: [
+                    { title: "Morning Cartoon Fun Blocks", start: "00:00", end: "08:00" },
+                    { title: "Classic Midday Animated Hits", start: "08:00", end: "16:00" },
+                    { title: "Toonami Action Block Hours", start: "16:00", end: "24:00" }
+                ]
+            }
+        ];
+
+        const secureRawB64 = {
+            "new-kmovies": "aHR0cHM6Ly9hZHMuaXRzLW5ld2lkLm5ldC9hcGkvbWFuaWZlc3QubTN1OD90cD1sZ19jaGFubmVscyZjaGFubmVsX25hbWU9bmV3a21vdmllcyZjaGFubmVsX2lkPW5ld2lkXzIxOSZtcGY9YWRmYzIwNGQtMzlhZjE5NjItMTNhMmYwMWEmYXBpa2V5PTQ4MjMwZTZiLTFjZWEwMDk3LTE1OTc1ZjkzLzM5YWYxOTYyJmF1dGg9YjYyYzJjOGItODMxNmE3NzEtMjk1ZWJhMjgtZjQ2NjNkZGQmYWRzLmxpdmU9W0NPTlRFTlRfTElWRV0mYWRzLmRldmljZWlkPVtERVZJQ0VfSURdJmFkcy5pZmE9W0lGQV0mYWRzLmlmYXR5cGU9W0lGQV9UWVBFXSZhZHMubGF0PVtMTVRdJmFkcy5kb25vdHNlbGw9W0ROU10mYWRzLnVhPVtVQV0mYWRzLmlwPVtJUF0mYWRzLmdkcHI9W0dEUFJdJmFkcy5nZHByX2NvbnNlbnQ9W0dEUFJfQ09OU0VOVF0mYWRzLmNvdW50cnk9W0NPVU5UUlldJmFkcy51c19wcml2YWN5PVtVU19QUklWQUNZXSZhZHMuYXBwc3RvcmV1cmw9W0FQUF9TVE9SRVVSTF0mYWRzLmJ1bmRsZWlkPVtBUFBfQlVORExFXSZhZHMuYXBwbmFtZT1bQVBQX05BTUVdJmFkcy5hcHB2ZXJzaW9uPVtBUFBfVkVSU0lPTl0mYWRzLmRldmljZXR5cGU9W0RFVklDRV9UWVBFXSZhZHMuZGV2aWNlbWFrZT1bREVWSUNFX01BS0VdJmFkcy5kZXZpY2Vtb2RlbD1bREVWSUNFX01PREVMXSZhZHMudGFyZ2V0YWQ9W1RBUkdFVEFEX0FMTE9XRURdJmFkcy5mY2s9W0ZDS10mYWRzLnZpZXdzaXplPVtWSUVXU0laRV0mYWRzLmdpdm49W05PTkNFXQ==",
+            "mix-hollywood": "aHR0cHM6Ly9tbC1wdWxsLWh3Yy5teWNvLmlvL01peFRWL2hscy9pbmRleC5tM3U4",
+            "universal-movies": "aHR0cHM6Ly9kNHdobXZ3bTByZHZpLmNsb3VkZnJvbnQubmV0L21hbmlmZXN0LzNmZWMzZTVjYWMzOWE1MmIyMTMyZjljNjZjODNkYWUwNDNkYzE3ZDQvcHJvZF9kZWZhdWx0X3h1bW8tbmJjdS1saW5lYXIvZTcyNzViZmItZmI4ZC00OWQ4LTk2OWYtODU0NDgxZmE3ZTcxLzQubTN1OA==",
+            "family-bonding-cinema": "aHR0cHM6Ly9jZG4ud2hpcGxhc2guY2Mvd2hpcGxhc2gtY2luZW1hL2luZGV4Lm0zdTg=",
+            "axn-movies-hd": "aHR0cDovLzUwLjcuMTIwLjM0OjgwODAvQVhOX0JMQUNLL2luZGV4Lm0zdTg=",
+            "nba-tv-hd": "aHR0cDovLzIzLjIzNy4xMDQuMTA2OjgwODAvVVNBX05CQS9pbmRleC5tM3U4",
+            "dazn-ringside": "aHR0cHM6Ly9hZWdpcy1jbG91ZGZyb250LTEudHViaS52aWRlby9iZmFkMjllMi01YmVlLTQ0ZjMtODI1Ni0xMjczMjRlOGIxMDYvMTA4MHAtY2MvaW5kZXgubTN1OA==",
+            "cartoon-network": "aHR0cDovLzIzLjIzNy4xMDQuMTA2OjgwODAvVVNBX0NBUlRPT05fTkVUV09SSy9pbmRleC5tM3U4"
+        };
+
+        liveChannelsData.forEach(ch => {
+            if (secureRawB64[ch.id]) {
+                ch.src = secureRawB64[ch.id];
+            }
+        });
+
+        const defaultConfig = {
+            brandName: "Family Bonding Time",
+            gcashNo: "09608754210", // Official payment destination
+            gcashName: "System Administrator",
+            channels: [...liveChannelsData]
+        };
+
+        let appData = {};
+        let activeChannel = null;
+        let vendingDays = 1;
+        let hlsInstance = null;
+        let activeAdminPlanId = 'p1';
+        let deviceId = '';
+
+        // Cryptographic Salting Key (Updated to Brand Scope)
+        const SECRETS_SALT = "FAMILY_BONDING_TIME_SALT_2026_SECURE";
+
+        function generateUniqueDeviceID() {
+            let id = localStorage.getItem('saas_device_id');
+            if (!id) {
+                const hex = '0123456789ABCDEF';
+                let part1 = '', part2 = '';
+                for (let i = 0; i < 4; i++) {
+                    part1 += hex[Math.floor(Math.random() * 16)];
+                    part2 += hex[Math.floor(Math.random() * 16)];
+                }
+                id = `WP-${part1}-${part2}`;
+                localStorage.setItem('saas_device_id', id);
+            }
+            return id;
+        }
+
+        // Stepper cost calculation logic
+        function calculateVendingCost(days) {
+            if (days === 1) return 15;
+            return days * 10;
+        }
+
+        function adjustVendingDays(amount) {
+            const newDays = vendingDays + amount;
+            if (newDays >= 1 && newDays <= 99) {
+                vendingDays = newDays;
+                document.getElementById('vending-days-display').textContent = vendingDays;
+                document.getElementById('vending-cost-display').textContent = `₱${calculateVendingCost(vendingDays)}`;
+                updateVendingQR();
+            }
+        }
+
+        function updateVendingQR() {
+            const payload = deviceId;
+            document.getElementById('viewer-checkout-qr-preview').textContent = `Ref: ${payload}`;
+            document.getElementById('viewer-checkout-qr').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(payload)}`;
+        }
+
+        // Dynamic key generator
+        function calculateSignature(devId, days, serial) {
+            const rawPayload = `${devId}-${days}-${serial}-${SECRETS_SALT}`;
+            let hash = 0;
+            for (let i = 0; i < rawPayload.length; i++) {
+                hash = (hash << 5) - hash + rawPayload.charCodeAt(i);
+                hash |= 0;
+            }
+            return Math.abs(hash).toString(16).toUpperCase().substring(0, 8);
+        }
+
+        function buildLicenseKey(devId, days, serial) {
+            const sig = calculateSignature(devId, days, serial);
+            return `${devId}-${days}D-${serial}-${sig}`;
+        }
+
+        function verifyLicenseKey(key) {
+            if (!key) return { valid: false, error: "Empty Key" };
+            const segments = key.trim().split('-');
+            if (segments.length !== 6) return { valid: false, error: "Invalid layout" };
+
+            const parseDevId = `${segments[0]}-${segments[1]}-${segments[2]}`;
+            const daysSegment = segments[3];
+            const serial = segments[4];
+            const signature = segments[5];
+
+            if (parseDevId !== deviceId) {
+                return { valid: false, error: "Key tied to another gadget" };
+            }
+
+            let usedSerials = JSON.parse(localStorage.getItem('saas_used_serials') || '[]');
+            if (usedSerials.includes(serial)) {
+                return { valid: false, error: "This key signature was already consumed" };
+            }
+
+            const days = parseInt(daysSegment);
+            if (isNaN(days)) return { valid: false, error: "Invalid duration segment" };
+
+            const expectedSig = calculateSignature(deviceId, days, serial);
+            if (signature === expectedSig) {
+                return { valid: true, days: days, serial: serial };
+            }
+
+            return { valid: false, error: "Invalid cryptographic validation" };
+        }
+
+        function initSaaS() {
+            deviceId = generateUniqueDeviceID();
+            document.getElementById('client-device-display').textContent = `Device ID: ${deviceId}`;
+            document.getElementById('gen-client-id').value = deviceId;
+
+            // version _v4 namespace isolates configuration modifications to clear cached values
+            const saved = localStorage.getItem('family_bonding_portal_config_v4');
+            if (saved) {
+                appData = JSON.parse(saved);
+            } else {
+                appData = JSON.parse(JSON.stringify(defaultConfig));
+                localStorage.setItem('family_bonding_portal_config_v4', JSON.stringify(appData));
+            }
+
+            populateDashboard();
+            updateViewerPortalUI();
+            updateAdminQRDisplay();
+            checkSubscription();
+            checkTrialState();
+        }
+
+        function getPlanPayloadUrl(planId) {
+            const baseUrl = window.location.href.split('?')[0];
+            return `${baseUrl}?plan=${planId}`;
+        }
+
+        function updateAdminQRDisplay() {
+            const payload = getPlanPayloadUrl(activeAdminPlanId);
+            document.getElementById('admin-qr-link-preview').textContent = payload;
+            
+            const adminQR = document.getElementById('admin-qr-image');
+            adminQR.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(payload)}`;
+        }
+
+        function selectAdminQR(planId) {
+            activeAdminPlanId = planId;
+            const tabs = ['p1', 'p2', 'p3', 'p4'];
+            tabs.forEach(tab => {
+                const el = document.getElementById(`admin-qr-tab-${tab}`);
+                if (!el) return;
+                if (tab === planId) {
+                    el.className = "flex-1 py-1 rounded bg-indigo-600 text-white font-bold";
+                } else {
+                    el.className = "flex-1 py-1 rounded text-slate-400";
+                }
+            });
+            updateAdminQRDisplay();
+        }
+
+        function populateDashboard() {
+            document.getElementById('cfg-brand-name').value = appData.brandName;
+            document.getElementById('cfg-gcash-no').value = appData.gcashNo;
+            document.getElementById('cfg-gcash-name').value = appData.gcashName;
+
+            const container = document.getElementById('channels-editor-container');
+            container.innerHTML = '';
+
+            appData.channels.forEach((channel) => {
+                const div = document.createElement('div');
+                div.className = "bg-slate-950 p-4 rounded-xl border border-slate-855 space-y-3";
+                
+                let scheduleInputsHTML = ``;
+                for (let i = 0; i < 3; i++) {
+                    const prog = channel.schedule && channel.schedule[i] ? channel.schedule[i] : { title: `Program Slot ${i+1}`, start: "00:00", end: "24:00" };
+                    scheduleInputsHTML += `
+                        <div class="grid grid-cols-12 gap-1 items-center">
+                            <span class="col-span-2 text-[9px] text-slate-500 font-bold">Slot ${i+1}</span>
+                            <input type="text" id="epg-title-${channel.id}-${i}" value="${prog.title}" placeholder="Program Name" class="col-span-5 bg-slate-900 border border-slate-800 rounded px-2 py-1 text-[10px] text-white">
+                            <input type="text" id="epg-start-${channel.id}-${i}" value="${prog.start}" placeholder="00:00" class="col-span-2 bg-slate-900 border border-slate-800 rounded px-2 py-1 text-[10px] text-white text-center font-mono">
+                            <span class="col-span-1 text-center text-slate-600 text-xs">-</span>
+                            <input type="text" id="epg-end-${channel.id}-${i}" value="${prog.end}" placeholder="24:00" class="col-span-2 bg-slate-900 border border-slate-800 rounded px-2 py-1 text-[10px] text-white text-center font-mono">
+                        </div>
+                    `;
+                }
+
+                div.innerHTML = `
+                    <div class="flex items-center justify-between border-b border-slate-900 pb-3">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs font-mono text-indigo-400 font-bold">ID: ${channel.id}</span>
+                            <input type="text" id="edit-name-${channel.id}" value="${channel.name}" class="bg-slate-900 border border-slate-800 rounded px-2.5 py-1 text-xs font-bold text-white w-48">
+                        </div>
+                        <span class="text-[9px] uppercase px-2 py-0.5 bg-slate-900 text-slate-400 rounded border border-slate-800">CORS Encryption Active</span>
+                    </div>
+                    <div class="space-y-1.5 pt-1">
+                        <span class="block text-[9px] text-indigo-400 font-semibold uppercase tracking-wider">Configure EPG Schedules</span>
+                        ${scheduleInputsHTML}
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function saveBrandSettings() {
+            appData.brandName = document.getElementById('cfg-brand-name').value;
+            appData.gcashNo = document.getElementById('cfg-gcash-no').value;
+            appData.gcashName = document.getElementById('cfg-gcash-name').value;
+
+            localStorage.setItem('family_bonding_portal_config_v4', JSON.stringify(appData));
+            alert("Platform configuration updated successfully.");
+            updateViewerPortalUI();
+            updateAdminQRDisplay();
+        }
+
+        function saveChannelsAndEPG() {
+            appData.channels.forEach(channel => {
+                const nameInp = document.getElementById(`edit-name-${channel.id}`);
+                if (nameInp) channel.name = nameInp.value;
+
+                channel.schedule = [];
+                for (let i = 0; i < 3; i++) {
+                    const titleVal = document.getElementById(`epg-title-${channel.id}-${i}`).value;
+                    const startVal = document.getElementById(`epg-start-${channel.id}-${i}`).value;
+                    const endVal = document.getElementById(`epg-end-${channel.id}-${i}`).value;
+                    
+                    if (titleVal.trim() !== "") {
+                        channel.schedule.push({
+                            title: titleVal,
+                            start: startVal || "00:00",
+                            end: endVal || "24:00"
+                        });
+                    }
+                }
+            });
+
+            localStorage.setItem('family_bonding_portal_config_v4', JSON.stringify(appData));
+            alert("Schedules and linear EPG timeline updated successfully.");
+            updateViewerPortalUI();
+            closeAdminModal();
+        }
+
+        function resetToPresets() {
+            if (confirm("Reset layout to default channel presets?")) {
+                appData = JSON.parse(JSON.stringify(defaultConfig));
+                localStorage.setItem('family_bonding_portal_config_v4', JSON.stringify(appData));
+                populateDashboard();
+                updateViewerPortalUI();
+                updateAdminQRDisplay();
+            }
+        }
+
+        function updateViewerPortalUI() {
+            document.getElementById('view-brand-title').textContent = appData.brandName;
+            document.getElementById('portal-gcash-no').textContent = appData.gcashNo;
+            document.getElementById('portal-gcash-name').textContent = appData.gcashName;
+
+            const viewerContainer = document.getElementById('viewer-channels-list');
+            viewerContainer.innerHTML = '';
+
+            const categories = {};
+            appData.channels.forEach(channel => {
+                const grp = channel.group || "Movies";
+                if (!categories[grp]) categories[grp] = [];
+                categories[grp].push(channel);
+            });
+
+            Object.keys(categories).forEach(categoryName => {
+                const section = document.createElement('div');
+                section.className = "space-y-1 pb-1";
+                
+                const header = document.createElement('h3');
+                header.className = "text-[9px] font-extrabold text-slate-500 uppercase tracking-wider px-2 py-1";
+                header.textContent = categoryName;
+                section.appendChild(header);
+
+                categories[categoryName].forEach(channel => {
+                    const btn = document.createElement('button');
+                    btn.id = `view-chan-${channel.id}`;
+                    btn.onclick = () => selectChannel(channel.id);
+                    
+                    const hasSource = channel.src && channel.src.trim() !== "";
+                    btn.className = `w-full text-left p-2 rounded-xl flex items-center justify-between border transition duration-150 ${!hasSource ? 'opacity-40 cursor-not-allowed bg-slate-950/20 border-slate-900 text-slate-500' : 'bg-slate-900/30 border-slate-850/50 text-slate-300 hover:bg-slate-900/60'}`;
+
+                    let logoHTML = '';
+                    if (channel.logo && channel.logo.trim() !== "") {
+                        logoHTML = `<img src="${channel.logo}" alt="logo" class="w-6 h-6 object-contain rounded bg-slate-950 p-0.5 border border-slate-800 flex-shrink-0">`;
+                    } else {
+                        const initials = channel.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+                        logoHTML = `<div class="w-6 h-6 rounded bg-indigo-950/80 border border-indigo-900/40 text-indigo-400 font-bold text-[9px] flex items-center justify-center flex-shrink-0">${initials}</div>`;
+                    }
+
+                    btn.innerHTML = `
+                        <div class="flex items-center space-x-2 overflow-hidden">
+                            ${logoHTML}
+                            <div class="truncate text-left leading-tight">
+                                <span class="text-xs font-bold block truncate max-w-[180px] text-slate-100">${channel.name}</span>
+                                <span class="text-[8px] text-slate-500 block truncate max-w-[180px]" id="channel-playing-${channel.id}">Calculating...</span>
+                            </div>
+                        </div>
+                    `;
+
+                    if (!hasSource) btn.disabled = true;
+                    section.appendChild(btn);
+                    updateChannelNowPlayingLabel(channel);
+                });
+
+                viewerContainer.appendChild(section);
+            });
+
+            const activeSet = appData.channels.find(c => c.src && c.src !== "");
+            if (activeSet && (!activeChannel || !appData.channels.some(c => c.id === activeChannel.id))) {
+                activeChannel = activeSet;
+                document.getElementById('current-channel-title').textContent = activeSet.name.toUpperCase();
+            }
+            
+            updateEPGDisplay();
+        }
+
+        function getNowPlayingProgram(channel) {
+            if (!channel.schedule || channel.schedule.length === 0) {
+                return { title: "Continuous Broadcast Loop", start: "00:00", end: "24:00" };
+            }
+
+            const now = new Date();
+            const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+            for (let item of channel.schedule) {
+                const startParts = item.start.split(":");
+                const endParts = item.end.split(":");
+                const startMin = parseInt(startParts[0]) * 60 + parseInt(startParts[1]);
+                const endMin = parseInt(endParts[0]) * 60 + parseInt(endParts[1]);
+
+                if (currentMinutes >= startMin && currentMinutes < endMin) {
+                    return item;
+                }
+            }
+            return channel.schedule[0]; 
+        }
+
+        function updateChannelNowPlayingLabel(channel) {
+            const label = document.getElementById(`channel-playing-${channel.id}`);
+            if (label) {
+                const prog = getNowPlayingProgram(channel);
+                label.textContent = prog.title;
+            }
+        }
+
+        function updateEPGDisplay() {
+            if (!activeChannel) return;
+            const currentProg = getNowPlayingProgram(activeChannel);
+            document.getElementById('epg-now-title').textContent = currentProg.title;
+            document.getElementById('epg-now-time').textContent = `${currentProg.start} - ${currentProg.end}`;
+        }
+
+        function checkSubscription() {
+            const expirationTime = localStorage.getItem('saas_premium_expiry');
+            const overlay = document.getElementById('paywall-overlay');
+            const subBadge = document.getElementById('sub-badge');
+            const countdownEl = document.getElementById('subscription-countdown');
+            const statusBar = document.getElementById('status-bar');
+
+            if (expirationTime) {
+                const now = new Date().getTime();
+                const timeLeft = expirationTime - now;
+
+                if (timeLeft > 0) {
+                    overlay.classList.add('hidden');
+                    statusBar.classList.remove('hidden');
+                    
+                    subBadge.className = "px-3 py-1 rounded-full text-[10px] md:text-xs font-semibold bg-emerald-950 text-emerald-400 border border-emerald-800";
+                    subBadge.textContent = "Access Granted";
+
+                    const hrs = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const mins = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                    if (timeLeft > (24 * 60 * 60 * 1000)) {
+                        const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+                        countdownEl.textContent = `${days}d ${hrs}h`;
+                    } else {
+                        countdownEl.textContent = `${hrs}h ${mins}m`;
+                    }
+
+                    if (!document.getElementById('video').src && activeChannel) {
+                        const decryptedStreamUrl = secureDecode(activeChannel.src);
+                        loadVideoStream(decryptedStreamUrl);
+                    }
+                    return true;
+                }
+            }
+
+            overlay.classList.remove('hidden');
+            statusBar.classList.add('hidden');
+            subBadge.className = "px-3 py-1 rounded-full text-[10px] md:text-xs font-semibold bg-red-950 text-red-400 border border-red-800";
+            subBadge.textContent = "Awaiting Verification";
+            unloadVideo();
+            return false;
+        }
+
+        function loadVideoStream(src) {
+            const video = document.getElementById('video');
+            if (!src) return;
+
+            if (hlsInstance) {
+                hlsInstance.destroy();
+                hlsInstance = null;
+            }
+
+            if (Hls.isSupported()) {
+                hlsInstance = new Hls({
+                    maxMaxBufferLength: 10,
+                    enableWorker: true
+                });
+                hlsInstance.loadSource(src);
+                hlsInstance.attachMedia(video);
+                hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(() => {}));
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = src;
+                video.addEventListener('loadedmetadata', () => video.play().catch(() => {}));
+            } else {
+                video.src = src;
+                video.play().catch(() => {});
+            }
+        }
+
+        function unloadVideo() {
+            const video = document.getElementById('video');
+            video.pause();
+            video.removeAttribute('src');
+            video.load();
+            if (hlsInstance) {
+                hlsInstance.destroy();
+                hlsInstance = null;
+            }
+        }
+
+        function selectChannel(id) {
+            const isSubscribed = checkSubscription();
+            if (!isSubscribed) {
+                openPaymentModal();
+                return;
+            }
+
+            const target = appData.channels.find(c => c.id === id);
+            if (!target || !target.src) return;
+
+            activeChannel = target;
+            document.getElementById('current-channel-title').textContent = target.name.toUpperCase();
+            
+            appData.channels.forEach(ch => {
+                const el = document.getElementById(`view-chan-${ch.id}`);
+                if (!el) return;
+                const hasSource = ch.src && ch.src.trim() !== "";
+                if (ch.id === id) {
+                    el.className = "w-full text-left p-2 rounded-xl flex items-center justify-between border transition duration-150 bg-indigo-950/20 border-indigo-500 text-white";
+                } else {
+                    el.className = `w-full text-left p-2 rounded-xl flex items-center justify-between border transition duration-150 ${!hasSource ? 'opacity-40 cursor-not-allowed bg-slate-950/20 border-slate-900 text-slate-500' : 'bg-slate-900/30 border-slate-850/50 text-slate-300 hover:bg-slate-900/60'}`;
+                }
+            });
+
+            updateEPGDisplay();
+            
+            const stream = secureDecode(target.src);
+            loadVideoStream(stream);
+        }
+
+        function openPaymentModal() {
+            document.getElementById('payment-modal').classList.remove('hidden');
+            vendingDays = 1;
+            document.getElementById('vending-days-display').textContent = vendingDays;
+            document.getElementById('vending-cost-display').textContent = `₱${calculateVendingCost(vendingDays)}`;
+            updateVendingQR();
+            checkTrialState();
+        }
+
+        function closePaymentModal() {
+            document.getElementById('payment-modal').classList.add('hidden');
+        }
+
+        // Active 24H Trial Controller
+        function checkTrialState() {
+            const trialConsumed = localStorage.getItem('saas_trial_consumed') === 'true';
+            const btn = document.getElementById('trial-button');
+            if (trialConsumed) {
+                btn.textContent = "Trial Expired / Claimed";
+                btn.disabled = true;
+                btn.className = "w-full py-2 bg-slate-950 text-slate-600 text-xs font-bold rounded-lg cursor-not-allowed border border-slate-900";
+            } else {
+                btn.textContent = "Start 24-Hour Free Trial";
+                btn.disabled = false;
+                btn.className = "w-full py-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 text-xs font-bold rounded-lg transition";
+            }
+        }
+
+        function activateOneTimeTrial() {
+            const trialConsumed = localStorage.getItem('saas_trial_consumed') === 'true';
+            if (trialConsumed) {
+                alert("The one-time 24-Hour trial has already been used on this gadget.");
+                return;
+            }
+
+            localStorage.setItem('saas_trial_consumed', 'true');
+
+            const expirationTimestamp = new Date().getTime() + (24 * 60 * 60 * 1000);
+            localStorage.setItem('saas_premium_expiry', expirationTimestamp);
+
+            alert("24-Hour Free Trial Activated on this gadget.");
+            closePaymentModal();
+            checkSubscription();
+
+            if (activeChannel) selectChannel(activeChannel.id);
+        }
+
+        // Offline Verification Logic (Enforces one-time consumption)
+        function processSubscription() {
+            const rawKey = document.getElementById('activation-key').value.trim();
+            
+            const check = verifyLicenseKey(rawKey);
+            if (!check.valid) {
+                alert(`Verification Blocked: ${check.error}`);
+                return;
+            }
+
+            let usedSerials = JSON.parse(localStorage.getItem('saas_used_serials') || '[]');
+            usedSerials.push(check.serial);
+            localStorage.setItem('saas_used_serials', JSON.stringify(usedSerials));
+
+            const expirationTimestamp = new Date().getTime() + (check.days * 24 * 60 * 60 * 1000);
+            localStorage.setItem('saas_premium_expiry', expirationTimestamp);
+            
+            alert(`Key Activated. Access granted for ${check.days} Days.`);
+            closePaymentModal();
+            checkSubscription();
+            
+            if (activeChannel) selectChannel(activeChannel.id);
+        }
+
+        // Creator Key Generator Logic (Auto-attaches a unique serial code)
+        function generateActivationKey() {
+            const inputId = document.getElementById('gen-client-id').value.trim();
+            const days = parseInt(document.getElementById('gen-client-days').value);
+            
+            if (!inputId.startsWith("WP-") || inputId.split('-').length !== 3) {
+                alert("Please input a valid target Client Device ID (e.g. WP-A1B2-C3D4).");
+                return;
+            }
+
+            if (isNaN(days) || days < 1) {
+                alert("Please select a valid day quantity.");
+                return;
+            }
+
+            const hex = '0123456789ABCDEF';
+            let randomSerial = '';
+            for(let i=0; i<4; i++) {
+                randomSerial += hex[Math.floor(Math.random() * 16)];
+            }
+
+            const key = buildLicenseKey(inputId, days, randomSerial);
+            document.getElementById('gen-result-key').textContent = key;
+            document.getElementById('gen-result-container').classList.remove('hidden');
+        }
+
+        function promptDevPasscode() {
+            const code = prompt("Enter Console Administrator Passcode:");
+            if (code === "!12345678*") {
+                openAdminModal();
+            } else if (code !== null) {
+                alert("Passcode Rejected.");
+            }
+        }
+
+        function openAdminModal() {
+            populateDashboard();
+            document.getElementById('admin-modal').classList.remove('hidden');
+        }
+
+        function closeAdminModal() {
+            document.getElementById('admin-modal').classList.add('hidden');
+            document.getElementById('gen-result-container').classList.add('hidden');
+        }
+
+        initSaaS();
+    </script>
+</body>
+</html>
