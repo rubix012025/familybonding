@@ -1,1 +1,1162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family Bonding Time</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- HLS.js (For HLS playback) -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <style>
+        body { background-color: #060814; }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: #0b0f19; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen font-sans flex flex-col justify-between" oncontextmenu="return false;">
+
+    <!-- Top Header -->
+    <header class="p-4 md:p-5 flex justify-between items-center border-b border-slate-800 bg-slate-950/60 backdrop-blur-md sticky top-0 z-40">
+        <div onclick="promptDevPasscode()" class="cursor-pointer select-none group">
+            <h1 id="view-brand-title" class="text-base md:text-lg font-black tracking-wider text-indigo-400 uppercase group-hover:text-indigo-300 transition duration-150">PORTAL</h1>
+            <p class="text-[10px] md:text-xs text-slate-400">Integrated Streaming Middleware Console</p>
+        </div>
+        <div class="flex items-center space-x-3">
+            <span id="sub-badge" class="px-3 py-1 rounded-full text-[10px] md:text-xs font-semibold bg-red-950 text-red-400 border border-red-800">
+                Awaiting Verification
+            </span>
+            <button onclick="openPaymentModal()" class="px-4 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 transition duration-150">
+                Purchase Access
+            </button>
+        </div>
+    </header>
+
+    <div id="status-bar" class="bg-indigo-600 text-white text-center py-1.5 text-xs font-semibold tracking-wide hidden flex justify-center items-center gap-3">
+        <span>Active session remaining: <span id="subscription-countdown">...</span></span>
+        <button onclick="logoutDeveloperAccess()" class="underline text-[10px] hover:text-indigo-200 font-bold ml-1.5 focus:outline-none">
+            [Log Out Developer]
+        </button>
+    </div>
+
+    <!-- MAIN VIEWER ARENA -->
+    <main class="flex-grow flex flex-col lg:flex-row max-w-7xl mx-auto w-full p-4 gap-6">
+        
+        <!-- Player Area & Program Timeline (Left) -->
+        <div class="flex-grow flex flex-col lg:w-2/3 space-y-4">
+            <div class="relative w-full aspect-video rounded-2xl overflow-hidden shadow-2xl border border-slate-800 bg-black">
+                <video id="video" class="w-full h-full object-contain shadow-inner" controls autoplay playsinline></video>
+                
+                <!-- Lock Overlay -->
+                <div id="paywall-overlay" class="absolute inset-0 bg-slate-950/95 flex flex-col items-center justify-center p-6 text-center hidden">
+                    <svg class="w-12 h-12 text-indigo-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                    </svg>
+                    <h3 class="text-base md:text-lg font-bold text-slate-100">Access Restricted</h3>
+                    <p class="text-xs text-slate-400 max-w-md mt-1 font-light">Claim your free trial instantly below, or input your checkout verification key to unlock live streaming playback.</p>
+                    
+                    <div class="flex flex-col sm:flex-row gap-3 mt-6 w-full max-w-sm">
+                        <button id="trial-button-overlay" onclick="activateOneTimeTrial()" class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition duration-150 shadow-lg shadow-indigo-950">
+                            🚀 Start 24-Hour Free Trial
+                        </button>
+                        <button onclick="openPaymentModal()" class="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-xs transition duration-150 border border-slate-700">
+                            💳 Purchase Access
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Metadata Panel -->
+            <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-800 space-y-3">
+                <div class="flex items-center space-x-2">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                    </span>
+                    <span id="current-channel-title" class="text-xs md:text-sm font-bold text-slate-200">Selecting dynamic streams...</span>
+                </div>
+
+                <!-- Live EPG Scheduling Component -->
+                <div class="bg-slate-950 p-3 rounded-lg border border-slate-855 flex justify-between items-center text-xs">
+                    <div>
+                        <span class="text-[9px] uppercase font-bold text-indigo-400 tracking-wider block">Now Airing</span>
+                        <div id="epg-now-title" class="font-bold text-slate-150 mt-0.5">Determining show schedules...</div>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-[9px] uppercase font-bold text-slate-500 tracking-wider block">Active Slot</span>
+                        <div id="epg-now-time" class="font-semibold text-slate-400 mt-0.5">00:00 - 24:00</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Channels Grid (Right) -->
+        <div class="w-full lg:w-1/3 flex flex-col space-y-4">
+            <h2 class="text-[10px] font-bold uppercase tracking-widest text-slate-400 px-1 border-l-2 border-indigo-500 pl-2">Live Networks</h2>
+            <div class="space-y-2 max-h-[500px] overflow-y-auto pr-1" id="viewer-channels-list">
+                <!-- Dynamic stream items populate here -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Automated GCash Checkout Modal -->
+    <div id="payment-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 overflow-y-auto hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-3xl w-full overflow-y-auto max-h-[90vh] md:max-h-[95vh] shadow-2xl">
+            <div class="p-5 border-b border-slate-800 flex justify-between items-center bg-slate-950/40 sticky top-0 z-10 backdrop-blur-md">
+                <h3 class="font-bold text-sm md:text-base text-indigo-400">GCash Automated Activation</h3>
+                <button onclick="closePaymentModal()" class="text-slate-400 hover:text-white text-lg font-bold">&times;</button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2">
+                <!-- Left Column (Vending Machine Stepper & Manual Entry Backup) -->
+                <div class="p-5 space-y-4 border-r border-slate-800">
+                    <span class="text-[10px] font-bold text-slate-400 block uppercase tracking-wide">01. Choose Your Plan Duration</span>
+                    
+                    <div class="flex items-center justify-between bg-slate-950 p-3 rounded-xl border border-slate-800">
+                        <button onclick="adjustVendingDays(-1)" class="w-10 h-10 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 flex items-center justify-center text-lg font-bold text-indigo-400 transition">-</button>
+                        <div class="text-center min-w-[100px]">
+                            <span id="vending-days-display" class="text-2xl font-black text-white">1</span>
+                            <span class="block text-[8px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Day Access</span>
+                        </div>
+                        <button onclick="adjustVendingDays(1)" class="w-10 h-10 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 flex items-center justify-center text-lg font-bold text-indigo-400 transition">+</button>
+                    </div>
+
+                    <div class="flex justify-between items-center bg-indigo-950/20 px-4 py-2.5 rounded-xl border border-indigo-900/50">
+                        <span class="text-[10px] text-slate-350 font-bold uppercase">Total Cost:</span>
+                        <span id="vending-cost-display" class="text-lg font-black text-white">₱25</span>
+                    </div>
+
+                    <div class="space-y-2">
+                        <button id="pay-btn" onclick="initializeAutomatedPayment()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-xs tracking-wide transition uppercase flex items-center justify-center gap-2">
+                            <span>Get Verification QR Code</span>
+                        </button>
+                    </div>
+
+                    <div class="pt-2 border-t border-slate-800/60">
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="block text-[8px] text-slate-500 uppercase tracking-wide">Or input standard device key</label>
+                            <span class="text-[8px] font-mono text-indigo-400 select-all cursor-pointer" id="client-device-display" title="Copy Device ID">ID: Calculating...</span>
+                        </div>
+                        <input type="text" id="activation-key" placeholder="WP-XXXX-XXXX-XXD-XXXX-XXXXXX" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-center font-mono tracking-wider text-white focus:outline-none focus:border-indigo-500">
+                        <button onclick="processSubscription()" class="w-full mt-2 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-lg text-[10px] tracking-wide transition">
+                            Apply Key Manually
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Column (Automatic QR Scan & Webhook Status Tracker) -->
+                <div class="p-5 bg-slate-950/30 flex flex-col justify-between space-y-4">
+                    <div class="space-y-3 flex flex-col items-center justify-center text-center">
+                        <span class="text-[10px] font-bold text-slate-400 block uppercase tracking-wide self-start">02. Scan QR & Pay</span>
+                        
+                        <div class="bg-white p-3 rounded-xl inline-block relative" id="checkout-qr-container">
+                            <img id="viewer-checkout-qr" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=AwaitingSelection" alt="Payment QR" class="w-36 h-36">
+                            <div id="qr-loading-overlay" class="absolute inset-0 bg-slate-950/90 flex items-center justify-center text-xs text-slate-300 rounded-xl font-bold">
+                                Select duration
+                            </div>
+                        </div>
+
+                        <div class="w-full">
+                            <div id="payment-status-box" class="bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs flex flex-col items-center justify-center gap-2">
+                                <span class="text-slate-400 text-[10px] uppercase font-mono tracking-wider" id="payment-status-label">Awaiting Payment Generation</span>
+                                <div id="status-spinner" class="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin hidden"></div>
+                            </div>
+                        </div>
+
+                        <div id="reference-input-container" class="w-full space-y-1.5 hidden">
+                            <label class="block text-[8px] text-slate-400 uppercase tracking-wide text-left">Reference No. (Optional for faster release)</label>
+                            <div class="flex gap-1.5">
+                                <input type="text" id="manual-ref-no" placeholder="e.g. 5013XXXXXXXX" class="flex-1 bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-center font-mono tracking-wider text-white focus:outline-none focus:border-indigo-500">
+                                <button onclick="checkRefManual()" class="px-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold">Verify</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Free Trial Section -->
+                    <div class="border-t border-slate-800 pt-3">
+                        <div class="bg-indigo-950/30 border border-indigo-900/40 p-3 rounded-xl text-center space-y-2">
+                            <span class="block text-[9px] font-bold text-indigo-300 uppercase tracking-wider">Unregistered Gadget?</span>
+                            <p class="text-[9px] text-slate-400">Get 24 hours of full, unrestricted console access on this device instantly.</p>
+                            <button id="trial-button" onclick="activateOneTimeTrial()" class="w-full py-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 text-xs font-bold rounded-lg transition">
+                                Start 24-Hour Free Trial
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Creator Panel Modal -->
+    <div id="admin-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 overflow-y-auto hidden">
+        <div class="bg-slate-900 border border-slate-855 rounded-2xl max-w-4xl w-full overflow-y-auto max-h-[90vh] md:max-h-[95vh] flex flex-col shadow-2xl">
+            <div class="p-5 border-b border-slate-800 flex justify-between items-center bg-slate-950/60 sticky top-0 z-10 backdrop-blur-md">
+                <div class="flex items-center space-x-2">
+                    <span class="bg-indigo-600 text-white font-extrabold px-1.5 py-0.5 rounded text-[9px] tracking-wide">ADMIN CONSOLE</span>
+                    <h3 class="font-bold text-slate-100">Platform Brand, Custom Keys & Lineup Console</h3>
+                </div>
+                <button onclick="closeAdminModal()" class="text-slate-400 hover:text-white font-black text-lg">&times;</button>
+            </div>
+            
+            <div class="p-5 space-y-6">
+                <!-- Client Key Generator Section -->
+                <div class="bg-indigo-950/30 border border-indigo-900/60 p-4 rounded-xl space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="block text-[10px] font-bold text-indigo-300 uppercase tracking-wider">System Cryptographic Key Provisioning Console</span>
+                        <button onclick="logoutDeveloperAccess()" class="text-[9px] uppercase px-3 py-1 rounded bg-red-950/60 hover:bg-red-900/80 text-red-400 border border-red-900 font-bold tracking-wide transition">
+                            Log Out Developer
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                        <div class="md:col-span-2">
+                            <label class="block text-[9px] text-slate-400 mb-1">Target Client Device ID</label>
+                            <input type="text" id="gen-client-id" placeholder="WP-XXXX-XXXX" class="w-full bg-slate-900 border border-slate-800 rounded p-2 text-xs font-mono text-white">
+                        </div>
+                        <div>
+                            <label class="block text-[9px] text-slate-400 mb-1">Days (Custom Length)</label>
+                            <input type="number" id="gen-client-days" value="1" min="1" max="365" class="w-full bg-slate-900 border border-slate-800 rounded p-2 text-xs text-white">
+                        </div>
+                        <div class="flex items-end">
+                            <button onclick="generateActivationKey()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded text-xs">
+                                Generate Key
+                            </button>
+                        </div>
+                    </div>
+                    <div class="hidden" id="gen-result-container">
+                        <label class="block text-[9px] text-emerald-400 font-bold uppercase tracking-wider">Generated Signature Key</label>
+                        <div class="bg-slate-950 p-2.5 rounded font-mono text-xs text-emerald-300 border border-emerald-900 flex justify-between items-center mt-1">
+                            <span id="gen-result-key" class="select-all">...</span>
+                            <span class="text-[8px] text-slate-500 uppercase">Send to User</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Config Left -->
+                    <div class="bg-slate-950/80 p-4 rounded-xl border border-slate-800 space-y-3 text-xs">
+                        <span class="block text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Gateway Configuration</span>
+                        <div>
+                            <label class="block text-[9px] text-slate-400 mb-1">Branding Title</label>
+                            <input type="text" id="cfg-brand-name" class="w-full bg-slate-900 border border-slate-800 rounded p-2 text-white">
+                        </div>
+                        <div>
+                            <label class="block text-[9px] text-slate-400 mb-1">Payment API Endpoint / Webhook URL</label>
+                            <input type="text" id="cfg-payment-api" class="w-full bg-slate-900 border border-slate-800 rounded p-2 text-white">
+                        </div>
+                        <button onclick="saveBrandSettings()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded">
+                            Save Configuration Settings
+                        </button>
+                    </div>
+
+                    <!-- Dynamic QR Previewer -->
+                    <div class="bg-slate-950/80 p-4 rounded-xl border border-slate-800 flex flex-col justify-between items-center text-center space-y-3">
+                        <span class="block text-[10px] font-bold text-indigo-400 uppercase tracking-wider self-start">Plan QR Code Previewer</span>
+                        
+                        <div class="flex bg-slate-900 p-1 rounded border border-slate-800 text-[10px] w-full">
+                            <button onclick="selectAdminQR('p1')" id="admin-qr-tab-p1" class="flex-1 py-1 rounded bg-indigo-600 text-white font-bold">1d</button>
+                            <button onclick="selectAdminQR('p2')" id="admin-qr-tab-p2" class="flex-1 py-1 rounded text-slate-400">7d</button>
+                            <button onclick="selectAdminQR('p3')" id="admin-qr-tab-p3" class="flex-1 py-1 rounded text-slate-400">14d</button>
+                            <button onclick="selectAdminQR('p4')" id="admin-qr-tab-p4" class="flex-1 py-1 rounded text-slate-400">30d</button>
+                        </div>
+
+                        <div class="bg-white p-2.5 rounded-lg">
+                            <img id="admin-qr-image" src="" alt="Admin QR" class="w-28 h-28">
+                        </div>
+
+                        <div class="w-full text-left text-[9px] font-mono bg-slate-900 p-2.5 rounded border border-slate-800 select-all truncate text-slate-400" id="admin-qr-link-preview">
+                            Loading routing path...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Channels & Schedules Configuration -->
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                        <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Dynamic Channel & EPG Manager</span>
+                        <div class="flex space-x-3 text-xs">
+                            <button onclick="addNewChannelTemplate()" class="text-indigo-400 hover:text-indigo-300 font-bold hover:underline">+ Add Custom Network</button>
+                            <span class="text-slate-700">|</span>
+                            <button onclick="resetToPresets()" class="text-slate-400 hover:text-slate-350 hover:underline">Reset to Presets</button>
+                        </div>
+                    </div>
+                    
+                    <div id="channels-editor-container" class="space-y-4 max-h-[400px] overflow-y-auto pr-1">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 border-t border-slate-800 bg-slate-950/40 flex justify-between items-center sticky bottom-0 z-10 backdrop-blur-md">
+                <span class="text-[9px] text-slate-500">All stream URLs undergo standard Base64 obfuscation automatically upon save.</span>
+                <button onclick="saveChannelsAndEPG()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl">
+                    Apply Layout Updates
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Persistent Global Footer -->
+    <footer class="w-full border-t border-slate-900 bg-slate-950/80 p-4 md:p-6 mt-6 z-30">
+        <div class="max-w-7xl mx-auto text-center space-y-2">
+            <p class="text-[10px] md:text-xs text-slate-400 font-bold tracking-wider uppercase">Legal Disclaimer</p>
+            <p class="text-[9px] md:text-[10px] text-slate-500 leading-normal max-w-4xl mx-auto">
+                This platform operates strictly as a web-based streaming middleware interface. We do not own, manage, host, or distribute any proprietary media files, streams, or broadcast signals. All channels shown here are dynamic directories mapped from publicly available, third-party network streams. Access is completed under full user discretion.
+            </p>
+            <p class="text-[8px] text-slate-600 mt-2">
+                &copy; 2026 Integrated Streaming Middleware. All Rights Reserved.
+            </p>
+        </div>
+    </footer>
+
+    <!-- Execution Logic -->
+    <script>
+        // Secure token decoder
+        function secureDecode(b64) {
+            try {
+                if (!b64) return "";
+                let decoded = decodeURIComponent(atob(b64.trim()));
+                if (decoded && !decoded.startsWith("http") && !decoded.startsWith("/") && /^[a-zA-Z0-9+/=]+$/.test(decoded)) {
+                    try {
+                        const secondPass = decodeURIComponent(atob(decoded.trim()));
+                        if (secondPass && secondPass.startsWith("http")) {
+                            return secondPass;
+                        }
+                    } catch (innerErr) {}
+                }
+                return decoded;
+            } catch(e) { return ""; }
+        }
+
+        function secureEncode(str) {
+            try { return btoa(str); } catch(e) { return ""; }
+        }
+
+        const liveChannelsData = [
+            {
+                id: "new-kmovies",
+                name: "Movies 1",
+                group: "Movies",
+                logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/new-kmovies.png",
+                src: "YUhSMGNITTZMeTloWkhNdWFYUnpMVzVsZDJsc0xtNWxkQzloY0drdmJXRnVhVlp6ZEM1dTN1ODlkRndMWmVkamFHRnViMlZ6TDJScFlXNXBabVZ6ZEM1dTN1OD9kSEF0YmVkM2FXUnNMWGNoWVc1dVpXeHZZbVZ5Y3pwaGNuTjFjbVZmZEhWc1gyMXBkSFU9",
+                schedule: [
+                    { title: "Morning Romance Selections", start: "00:00", end: "08:00" },
+                    { title: "Blockbuster Mystery Hits", start: "08:00", end: "16:00" },
+                    { title: "Late Night Thriller Premieres", start: "16:00", end: "24:00" }
+                ]
+            },
+            {
+                id: "mix-hollywood",
+                name: "Movies 2",
+                group: "Movies",
+                logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/mix-hollywood.png",
+                src: "YUhSMGNITTZMeTltYFMtcWR4c2FXZDNhbU5vTG0xNWMyOHVhbThvVFdseVZGWXVkR3hmYVc1a1pYZ3VpM1U9",
+                schedule: [
+                    { title: "Golden Era Block", start: "00:00", end: "08:00" },
+                    { title: "Modern Action & Sci-Fi features", start: "08:00", end: "16:00" },
+                    { title: "Late Night Indie Masterpieces", start: "16:00", end: "24:00" }
+                ]
+            },
+            {
+                id: "universal-movies",
+                name: "Movies 3",
+                group: "Movies",
+                logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/universal-movies.png",
+                src: "YUhSMGNITTZMeTlrTUhkaGJYWjNiaTB0Y21KeWVHbHVMbU5zYjNWaFptSnliMjUwTG01bGRDOW1ZVzVwWm1WemREMHpabVZqTTJWallXTXpPV0V6TWpJeXpJeFp6Sm1ZelppTnpFeFpEUTNjbTkyWkY5a1pXWmhkVHgxZFc4dGJtSmpkMT",
+                schedule: [
+                    { title: "Classics Selection", start: "00:00", end: "08:00" },
+                    { title: "Action Comedy Blockbuster", start: "08:00", end: "16:00" },
+                    { title: "Late Night Suspense & Film Noir", start: "16:00", end: "24:00" }
+                ]
+            }
+        ];
+
+        const defaultConfig = {
+            brandName: "Family Bonding Time",
+            paymentApi: "https://ph.famtymbond.cc/api/verify-payment", // Custom back-end payment processing URL
+            channels: [...liveChannelsData]
+        };
+
+        let appData = {};
+        let activeChannel = null;
+        let vendingDays = 1;
+        let hlsInstance = null;
+        let activeAdminPlanId = 'p1';
+        let deviceId = '';
+        let paymentPollingInterval = null;
+
+        const SECRETS_SALT = "FAMILY_BONDING_TIME_SALT_2026_SECURE";
+        const GCASH_TARGET_NUMBER = "09608754210"; // Custom Receiving GCash
+
+        function generateUniqueDeviceID() {
+            let id = localStorage.getItem('saas_device_id');
+            if (!id) {
+                const hex = '0123456789ABCDEF';
+                let part1 = '', part2 = '';
+                for (let i = 0; i < 4; i++) {
+                    part1 += hex[Math.floor(Math.random() * 16)];
+                    part2 += hex[Math.floor(Math.random() * 16)];
+                }
+                id = `WP-${part1}-${part2}`;
+                localStorage.setItem('saas_device_id', id);
+            }
+            return id;
+        }
+
+        function calculateVendingCost(days) {
+            if (days === 1) return 25;
+            return days * 20;
+        }
+
+        function adjustVendingDays(amount) {
+            const newDays = vendingDays + amount;
+            if (newDays >= 1 && newDays <= 99) {
+                vendingDays = newDays;
+                document.getElementById('vending-days-display').textContent = vendingDays;
+                document.getElementById('vending-cost-display').textContent = `₱${calculateVendingCost(vendingDays)}`;
+                resetQRState();
+            }
+        }
+
+        function resetQRState() {
+            if (paymentPollingInterval) clearInterval(paymentPollingInterval);
+            
+            document.getElementById('qr-loading-overlay').classList.remove('hidden');
+            document.getElementById('qr-loading-overlay').textContent = "Tap button to generate link";
+            document.getElementById('payment-status-label').textContent = "Awaiting Payment Generation";
+            document.getElementById('status-spinner').classList.add('hidden');
+            document.getElementById('reference-input-container').classList.add('hidden');
+            document.getElementById('pay-btn').disabled = false;
+        }
+
+        function initializeAutomatedPayment() {
+            const payBtn = document.getElementById('pay-btn');
+            const qrOverlay = document.getElementById('qr-loading-overlay');
+            const statusLabel = document.getElementById('payment-status-label');
+            const spinner = document.getElementById('status-spinner');
+            const qrImage = document.getElementById('viewer-checkout-qr');
+            const refContainer = document.getElementById('reference-input-container');
+
+            payBtn.disabled = true;
+            statusLabel.textContent = "Setting up payment QR...";
+            spinner.classList.remove('hidden');
+
+            const cost = calculateVendingCost(vendingDays);
+
+            // Generates a local QR Ph scan structure directing to your personal GCash number
+            // and the calculated payment amount.
+            const qrPhPayload = `GCash://${GCASH_TARGET_NUMBER}?amount=${cost}&ref=${deviceId}`;
+            
+            qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrPhPayload)}`;
+            
+            setTimeout(() => {
+                qrOverlay.classList.add('hidden');
+                statusLabel.textContent = "Waiting for GCash Payment...";
+                refContainer.classList.remove('hidden');
+                
+                // Continuous 3-second rapid status polling
+                startLocalVerificationLoop(deviceId, cost, vendingDays);
+            }, 800);
+        }
+
+        function startLocalVerificationLoop(devId, amount, days) {
+            if (paymentPollingInterval) clearInterval(paymentPollingInterval);
+
+            paymentPollingInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`${appData.paymentApi}?deviceId=${devId}&amount=${amount}`);
+                    if (!response.ok) return;
+                    
+                    const resData = await response.json();
+                    if (resData.verified === true) {
+                        clearInterval(paymentPollingInterval);
+                        grantPremiumAccess(days);
+                    }
+                } catch (e) {
+                    // Fail silently to keep interface running during intermittent connection losses
+                }
+            }, 3000);
+        }
+
+        async function checkRefManual() {
+            const refNo = document.getElementById('manual-ref-no').value.trim();
+            if (!refNo || refNo.length < 5) {
+                alert("Please enter a valid Reference Number.");
+                return;
+            }
+
+            const statusLabel = document.getElementById('payment-status-label');
+            statusLabel.textContent = "Checking Reference Number...";
+
+            try {
+                const cost = calculateVendingCost(vendingDays);
+                const response = await fetch(`${appData.paymentApi}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        deviceId: deviceId,
+                        refNo: refNo,
+                        amount: cost,
+                        days: vendingDays
+                    })
+                });
+
+                const data = await response.json();
+                if (data.verified === true) {
+                    grantPremiumAccess(vendingDays);
+                } else {
+                    alert(data.message || "Reference number not yet registered. Ensure transaction is complete.");
+                    statusLabel.textContent = "Waiting for GCash Payment...";
+                }
+            } catch (err) {
+                alert("Verification request could not be completed. Please try again.");
+            }
+        }
+
+        function grantPremiumAccess(days) {
+            const addedTime = days * 24 * 60 * 60 * 1000;
+            const currentExpiry = parseInt(localStorage.getItem('saas_premium_expiry')) || new Date().getTime();
+            const newExpiry = Math.max(currentExpiry, new Date().getTime()) + addedTime;
+
+            localStorage.setItem('saas_premium_expiry', newExpiry);
+            
+            if (paymentPollingInterval) clearInterval(paymentPollingInterval);
+            
+            document.getElementById('payment-status-label').textContent = "Payment Verified!";
+            document.getElementById('status-spinner').classList.add('hidden');
+            
+            alert(`Payment recognized. Unlocked Portal for ${days} days.`);
+            closePaymentModal();
+            checkSubscription();
+            
+            if (activeChannel) selectChannel(activeChannel.id);
+        }
+
+        function calculateSignature(devId, days, serial) {
+            const rawPayload = `${devId}-${days}-${serial}-${SECRETS_SALT}`;
+            let hash = 0;
+            for (let i = 0; i < rawPayload.length; i++) {
+                hash = (hash << 5) - hash + rawPayload.charCodeAt(i);
+                hash |= 0;
+            }
+            return Math.abs(hash).toString(16).toUpperCase().substring(0, 8);
+        }
+
+        function buildLicenseKey(devId, days, serial) {
+            const sig = calculateSignature(devId, days, serial);
+            return `${devId}-${days}D-${serial}-${sig}`;
+        }
+
+        function verifyLicenseKey(key) {
+            if (!key) return { valid: false, error: "Empty Key" };
+            const segments = key.trim().split('-');
+            if (segments.length !== 6) return { valid: false, error: "Invalid layout" };
+
+            const parseDevId = `${segments[0]}-${segments[1]}-${segments[2]}`;
+            const daysSegment = segments[3];
+            const serial = segments[4];
+            const signature = segments[5];
+
+            if (parseDevId !== deviceId) {
+                return { valid: false, error: "Key tied to another gadget" };
+            }
+
+            let usedSerials = JSON.parse(localStorage.getItem('saas_used_serials') || '[]');
+            if (usedSerials.includes(serial)) {
+                return { valid: false, error: "This key signature was already consumed" };
+            }
+
+            const days = parseInt(daysSegment);
+            if (isNaN(days)) return { valid: false, error: "Invalid duration segment" };
+
+            const expectedSig = calculateSignature(deviceId, days, serial);
+            if (signature === expectedSig) {
+                return { valid: true, days: days, serial: serial };
+            }
+
+            return { valid: false, error: "Invalid cryptographic validation" };
+        }
+
+        function initSaaS() {
+            deviceId = generateUniqueDeviceID();
+            document.getElementById('client-device-display').textContent = `Device ID: ${deviceId}`;
+            document.getElementById('gen-client-id').value = deviceId;
+
+            const saved = localStorage.getItem('family_bonding_portal_config_v7');
+            if (saved) {
+                appData = JSON.parse(saved);
+                if (!appData.paymentApi || appData.paymentApi.includes("fambond.cc")) {
+                    appData.paymentApi = defaultConfig.paymentApi;
+                }
+            } else {
+                appData = JSON.parse(JSON.stringify(defaultConfig));
+                localStorage.setItem('family_bonding_portal_config_v7', JSON.stringify(appData));
+            }
+
+            populateDashboard();
+            updateViewerPortalUI();
+            updateAdminQRDisplay();
+            checkSubscription();
+            checkTrialState();
+        }
+
+        function getPlanPayloadUrl(planId) {
+            const baseUrl = window.location.href.split('?')[0];
+            return `${baseUrl}?plan=${planId}`;
+        }
+
+        function updateAdminQRDisplay() {
+            const payload = getPlanPayloadUrl(activeAdminPlanId);
+            document.getElementById('admin-qr-link-preview').textContent = payload;
+            
+            const adminQR = document.getElementById('admin-qr-image');
+            adminQR.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(payload)}`;
+        }
+
+        function selectAdminQR(planId) {
+            activeAdminPlanId = planId;
+            const tabs = ['p1', 'p2', 'p3', 'p4'];
+            tabs.forEach(tab => {
+                const el = document.getElementById(`admin-qr-tab-${tab}`);
+                if (!el) return;
+                if (tab === planId) {
+                    el.className = "flex-1 py-1 rounded bg-indigo-600 text-white font-bold";
+                } else {
+                    el.className = "flex-1 py-1 rounded text-slate-400";
+                }
+            });
+            updateAdminQRDisplay();
+        }
+
+        function populateDashboard() {
+            document.getElementById('cfg-brand-name').value = appData.brandName;
+            document.getElementById('cfg-payment-api').value = appData.paymentApi;
+
+            const container = document.getElementById('channels-editor-container');
+            container.innerHTML = '';
+
+            appData.channels.forEach((channel) => {
+                const div = document.createElement('div');
+                div.className = "channel-editor-item bg-slate-950 p-4 rounded-xl border border-slate-855 space-y-3";
+                div.setAttribute('data-channel-id', channel.id);
+                
+                let scheduleInputsHTML = ``;
+                for (let i = 0; i < 3; i++) {
+                    const prog = channel.schedule && channel.schedule[i] ? channel.schedule[i] : { title: `Program Slot ${i+1}`, start: "00:00", end: "24:00" };
+                    scheduleInputsHTML += `
+                        <div class="grid grid-cols-12 gap-1 items-center">
+                            <span class="col-span-2 text-[9px] text-slate-500 font-bold">Slot ${i+1}</span>
+                            <input type="text" id="epg-title-${channel.id}-${i}" value="${prog.title}" placeholder="Program Name" class="col-span-5 bg-slate-900 border border-slate-800 rounded px-2 py-1 text-[10px] text-white">
+                            <input type="text" id="epg-start-${channel.id}-${i}" value="${prog.start}" placeholder="00:00" class="col-span-2 bg-slate-900 border border-slate-800 rounded px-2 py-1 text-[10px] text-white text-center font-mono">
+                            <span class="col-span-1 text-center text-slate-600 text-xs">-</span>
+                            <input type="text" id="epg-end-${channel.id}-${i}" value="${prog.end}" placeholder="24:00" class="col-span-2 bg-slate-900 border border-slate-800 rounded px-2 py-1 text-[10px] text-white text-center font-mono">
+                        </div>
+                    `;
+                }
+
+                const decodedUrl = secureDecode(channel.src);
+
+                div.innerHTML = `
+                    <div class="flex items-center justify-between border-b border-slate-900 pb-3">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs font-mono text-indigo-400 font-bold">ID: ${channel.id}</span>
+                            <input type="text" id="edit-name-${channel.id}" value="${channel.name}" placeholder="Network Name" class="bg-slate-900 border border-slate-800 rounded px-2.5 py-1 text-xs font-bold text-white w-48">
+                        </div>
+                        <button onclick="removeChannel('${channel.id}')" class="text-[9px] uppercase px-2 py-1 bg-red-950 hover:bg-red-900 rounded text-red-400 border border-red-850">
+                            Delete Channel
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[9px] text-slate-400 mb-1">Group Identifier</label>
+                            <input type="text" id="edit-group-${channel.id}" value="${channel.group || 'Movies'}" class="w-full bg-slate-900 border border-slate-800 rounded p-2 text-xs text-white">
+                        </div>
+                        <div>
+                            <label class="block text-[9px] text-slate-400 mb-1">Logo URL (Optional)</label>
+                            <input type="text" id="edit-logo-${channel.id}" value="${channel.logo || ''}" class="w-full bg-slate-900 border border-slate-800 rounded p-2 text-xs text-white">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[9px] text-slate-400 mb-1">M3U8 Stream URL (Decoded Raw Text)</label>
+                        <input type="text" id="edit-src-${channel.id}" value="${decodedUrl}" placeholder="https://domain.com/index.m3u8" class="w-full bg-slate-900 border border-slate-800 rounded p-2 text-xs font-mono text-indigo-300">
+                    </div>
+                    <div class="space-y-1.5 pt-1">
+                        <span class="block text-[9px] text-indigo-400 font-semibold uppercase tracking-wider">Configure EPG Schedules</span>
+                        ${scheduleInputsHTML}
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function addNewChannelTemplate() {
+            const uniqueId = "chan-" + Date.now();
+            const newChan = {
+                id: uniqueId,
+                name: "New Movies Channel",
+                group: "Movies",
+                logo: "",
+                src: secureEncode("https://example.com/stream/index.m3u8"),
+                schedule: [
+                    { title: "Continuous Broadcast Block 1", start: "00:00", end: "08:00" },
+                    { title: "Continuous Broadcast Block 2", start: "08:00", end: "16:00" },
+                    { title: "Continuous Broadcast Block 3", start: "16:00", end: "24:00" }
+                ]
+            };
+            appData.channels.push(newChan);
+            populateDashboard();
+
+            const container = document.getElementById('channels-editor-container');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function removeChannel(id) {
+            if (confirm("Are you sure you want to remove this channel from the lineup?")) {
+                appData.channels = appData.channels.filter(ch => ch.id !== id);
+                populateDashboard();
+            }
+        }
+
+        function saveBrandSettings() {
+            appData.brandName = document.getElementById('cfg-brand-name').value;
+            appData.paymentApi = document.getElementById('cfg-payment-api').value;
+
+            localStorage.setItem('family_bonding_portal_config_v7', JSON.stringify(appData));
+            alert("Platform configuration updated.");
+            updateViewerPortalUI();
+            updateAdminQRDisplay();
+        }
+
+        function saveChannelsAndEPG() {
+            const updatedChannels = [];
+            const channelNodes = document.querySelectorAll('.channel-editor-item');
+
+            channelNodes.forEach(node => {
+                const id = node.getAttribute('data-channel-id');
+                const nameVal = document.getElementById(`edit-name-${id}`).value.trim();
+                const groupVal = document.getElementById(`edit-group-${id}`).value.trim();
+                const logoVal = document.getElementById(`edit-logo-${id}`).value.trim();
+                const srcVal = document.getElementById(`edit-src-${id}`).value.trim();
+
+                const schedule = [];
+                for (let i = 0; i < 3; i++) {
+                    const titleVal = document.getElementById(`epg-title-${id}-${i}`).value.trim();
+                    const startVal = document.getElementById(`epg-start-${id}-${i}`).value.trim();
+                    const endVal = document.getElementById(`epg-end-${id}-${i}`).value.trim();
+                    
+                    schedule.push({
+                        title: titleVal || `Continuous Broadcast Slot ${i+1}`,
+                        start: startVal || "00:00",
+                        end: endVal || "24:00"
+                    });
+                }
+
+                updatedChannels.push({
+                    id: id,
+                    name: nameVal || "Unnamed Network",
+                    group: groupVal || "Movies",
+                    logo: logoVal,
+                    src: secureEncode(srcVal),
+                    schedule: schedule
+                });
+            });
+
+            appData.channels = updatedChannels;
+            localStorage.setItem('family_bonding_portal_config_v7', JSON.stringify(appData));
+            alert("Lineup and EPG settings saved successfully.");
+            updateViewerPortalUI();
+            closeAdminModal();
+        }
+
+        function resetToPresets() {
+            if (confirm("Reset layout to default channel presets? Custom networks will be deleted.")) {
+                appData = JSON.parse(JSON.stringify(defaultConfig));
+                localStorage.setItem('family_bonding_portal_config_v7', JSON.stringify(appData));
+                populateDashboard();
+                updateViewerPortalUI();
+                updateAdminQRDisplay();
+            }
+        }
+
+        function updateViewerPortalUI() {
+            document.getElementById('view-brand-title').textContent = appData.brandName;
+
+            const viewerContainer = document.getElementById('viewer-channels-list');
+            viewerContainer.innerHTML = '';
+
+            const categories = {};
+            appData.channels.forEach(channel => {
+                const grp = channel.group || "Movies";
+                if (!categories[grp]) categories[grp] = [];
+                categories[grp].push(channel);
+            });
+
+            Object.keys(categories).forEach(categoryName => {
+                const section = document.createElement('div');
+                section.className = "space-y-1 pb-1";
+                
+                const header = document.createElement('h3');
+                header.className = "text-[9px] font-extrabold text-slate-500 uppercase tracking-wider px-2 py-1";
+                header.textContent = categoryName;
+                section.appendChild(header);
+
+                categories[categoryName].forEach(channel => {
+                    const btn = document.createElement('button');
+                    btn.id = `view-chan-${channel.id}`;
+                    btn.onclick = () => selectChannel(channel.id);
+                    
+                    const hasSource = channel.src && channel.src.trim() !== "";
+                    btn.className = `w-full text-left p-2 rounded-xl flex items-center justify-between border transition duration-150 ${!hasSource ? 'opacity-40 cursor-not-allowed bg-slate-950/20 border-slate-900 text-slate-500' : 'bg-slate-900/30 border-slate-855 text-slate-300 hover:bg-slate-900/60'}`;
+
+                    let logoHTML = '';
+                    if (channel.logo && channel.logo.trim() !== "") {
+                        logoHTML = `<img src="${channel.logo}" alt="logo" class="w-6 h-6 object-contain rounded bg-slate-950 p-0.5 border border-slate-800 flex-shrink-0">`;
+                    } else {
+                        const initials = channel.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+                        logoHTML = `<div class="w-6 h-6 rounded bg-indigo-950/80 border border-indigo-900/40 text-indigo-400 font-bold text-[9px] flex items-center justify-center flex-shrink-0">${initials}</div>`;
+                    }
+
+                    btn.innerHTML = `
+                        <div class="flex items-center space-x-2 overflow-hidden">
+                            ${logoHTML}
+                            <div class="truncate text-left leading-tight">
+                                <span class="text-xs font-bold block truncate max-w-[180px] text-slate-100">${channel.name}</span>
+                                <span class="text-[8px] text-slate-500 block truncate max-w-[180px]" id="channel-playing-${channel.id}">Calculating...</span>
+                            </div>
+                        </div>
+                    `;
+
+                    if (!hasSource) btn.disabled = true;
+                    section.appendChild(btn);
+                    updateChannelNowPlayingLabel(channel);
+                });
+
+                viewerContainer.appendChild(section);
+            });
+
+            const activeSet = appData.channels.find(c => c.src && c.src !== "");
+            if (activeSet && (!activeChannel || !appData.channels.some(c => c.id === activeChannel.id))) {
+                activeChannel = activeSet;
+                document.getElementById('current-channel-title').textContent = activeSet.name.toUpperCase();
+            }
+            
+            updateEPGDisplay();
+        }
+
+        function getNowPlayingProgram(channel) {
+            if (!channel.schedule || channel.schedule.length === 0) {
+                return { title: "Continuous Broadcast Loop", start: "00:00", end: "24:00" };
+            }
+
+            const now = new Date();
+            const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+            for (let item of channel.schedule) {
+                const startParts = item.start.split(":");
+                const endParts = item.end.split(":");
+                const startMin = parseInt(startParts[0]) * 60 + parseInt(startParts[1]);
+                const endMin = parseInt(endParts[0]) * 60 + parseInt(endParts[1]);
+
+                if (currentMinutes >= startMin && currentMinutes < endMin) {
+                    return item;
+                }
+            }
+            return channel.schedule[0]; 
+        }
+
+        function updateChannelNowPlayingLabel(channel) {
+            const label = document.getElementById(`channel-playing-${channel.id}`);
+            if (label) {
+                const prog = getNowPlayingProgram(channel);
+                label.textContent = prog.title;
+            }
+        }
+
+        function updateEPGDisplay() {
+            if (!activeChannel) return;
+            const currentProg = getNowPlayingProgram(activeChannel);
+            document.getElementById('epg-now-title').textContent = currentProg.title;
+            document.getElementById('epg-now-time').textContent = `${currentProg.start} - ${currentProg.end}`;
+        }
+
+        function checkSubscription() {
+            const isDeveloper = localStorage.getItem('saas_developer_bypass') === 'true';
+            const expirationTime = localStorage.getItem('saas_premium_expiry');
+            const overlay = document.getElementById('paywall-overlay');
+            const subBadge = document.getElementById('sub-badge');
+            const countdownEl = document.getElementById('subscription-countdown');
+            const statusBar = document.getElementById('status-bar');
+
+            if (isDeveloper) {
+                overlay.classList.add('hidden');
+                statusBar.classList.remove('hidden');
+                
+                subBadge.className = "px-3 py-1 rounded-full text-[10px] md:text-xs font-semibold bg-indigo-950 text-indigo-400 border border-indigo-800 animate-pulse";
+                subBadge.textContent = "Developer Lifetime Access";
+                countdownEl.textContent = "Infinite Bypass Active";
+
+                if (!document.getElementById('video').src && activeChannel) {
+                    const decryptedStreamUrl = secureDecode(activeChannel.src);
+                    loadVideoStream(decryptedStreamUrl);
+                }
+                return true;
+            }
+
+            if (expirationTime) {
+                const now = new Date().getTime();
+                const timeLeft = expirationTime - now;
+
+                if (timeLeft > 0) {
+                    overlay.classList.add('hidden');
+                    statusBar.classList.remove('hidden');
+                    
+                    subBadge.className = "px-3 py-1 rounded-full text-[10px] md:text-xs font-semibold bg-emerald-950 text-emerald-400 border border-emerald-800";
+                    subBadge.textContent = "Access Granted";
+
+                    const hrs = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const mins = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                    if (timeLeft > (24 * 60 * 60 * 1000)) {
+                        const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+                        countdownEl.textContent = `${days}d ${hrs}h`;
+                    } else {
+                        countdownEl.textContent = `${hrs}h ${mins}m`;
+                    }
+
+                    if (!document.getElementById('video').src && activeChannel) {
+                        const decryptedStreamUrl = secureDecode(activeChannel.src);
+                        loadVideoStream(decryptedStreamUrl);
+                    }
+                    return true;
+                }
+            }
+
+            overlay.classList.remove('hidden');
+            statusBar.classList.add('hidden');
+            subBadge.className = "px-3 py-1 rounded-full text-[10px] md:text-xs font-semibold bg-red-950 text-red-400 border border-red-800";
+            subBadge.textContent = "Awaiting Verification";
+            unloadVideo();
+            return false;
+        }
+
+        function loadVideoStream(src) {
+            const video = document.getElementById('video');
+            if (!src) return;
+
+            if (hlsInstance) {
+                hlsInstance.destroy();
+                hlsInstance = null;
+            }
+
+            if (Hls.isSupported()) {
+                hlsInstance = new Hls({
+                    maxMaxBufferLength: 10,
+                    enableWorker: true
+                });
+                hlsInstance.loadSource(src);
+                hlsInstance.attachMedia(video);
+                hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(() => {}));
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = src;
+                video.addEventListener('loadedmetadata', () => video.play().catch(() => {}));
+            } else {
+                video.src = src;
+                video.play().catch(() => {});
+            }
+        }
+
+        function unloadVideo() {
+            const video = document.getElementById('video');
+            video.pause();
+            video.removeAttribute('src');
+            video.load();
+            if (hlsInstance) {
+                hlsInstance.destroy();
+                hlsInstance = null;
+            }
+        }
+
+        function selectChannel(id) {
+            const isSubscribed = checkSubscription();
+            if (!isSubscribed) {
+                openPaymentModal();
+                return;
+            }
+
+            const target = appData.channels.find(c => c.id === id);
+            if (!target || !target.src) return;
+
+            activeChannel = target;
+            document.getElementById('current-channel-title').textContent = target.name.toUpperCase();
+            
+            appData.channels.forEach(ch => {
+                const el = document.getElementById(`view-chan-${ch.id}`);
+                if (!el) return;
+                const hasSource = ch.src && ch.src.trim() !== "";
+                if (ch.id === id) {
+                    el.className = "w-full text-left p-2 rounded-xl flex items-center justify-between border transition duration-150 bg-indigo-950/20 border-indigo-500 text-white";
+                } else {
+                    el.className = `w-full text-left p-2 rounded-xl flex items-center justify-between border transition duration-150 ${!hasSource ? 'opacity-40 cursor-not-allowed bg-slate-950/20 border-slate-900 text-slate-500' : 'bg-slate-900/30 border-slate-855 text-slate-300 hover:bg-slate-900/60'}`;
+                }
+            });
+
+            updateEPGDisplay();
+            
+            const stream = secureDecode(target.src);
+            loadVideoStream(stream);
+        }
+
+        function openPaymentModal() {
+            document.getElementById('payment-modal').classList.remove('hidden');
+            vendingDays = 1;
+            document.getElementById('vending-days-display').textContent = vendingDays;
+            document.getElementById('vending-cost-display').textContent = `₱${calculateVendingCost(vendingDays)}`;
+            resetQRState();
+            checkTrialState();
+        }
+
+        function closePaymentModal() {
+            document.getElementById('payment-modal').classList.add('hidden');
+            if (paymentPollingInterval) clearInterval(paymentPollingInterval);
+        }
+
+        function checkTrialState() {
+            const trialConsumed = localStorage.getItem('saas_trial_consumed') === 'true';
+            const modalBtn = document.getElementById('trial-button');
+            const overlayBtn = document.getElementById('trial-button-overlay');
+
+            if (trialConsumed) {
+                if (modalBtn) {
+                    modalBtn.textContent = "Trial Expired / Claimed";
+                    modalBtn.disabled = true;
+                    modalBtn.className = "w-full py-2 bg-slate-950 text-slate-600 text-xs font-bold rounded-lg cursor-not-allowed border border-slate-900";
+                }
+                if (overlayBtn) {
+                    overlayBtn.textContent = "Trial Claimed";
+                    overlayBtn.disabled = true;
+                    overlayBtn.className = "flex-1 py-3 bg-slate-950 text-slate-600 font-bold rounded-xl text-xs cursor-not-allowed border border-slate-900";
+                }
+            } else {
+                if (modalBtn) {
+                    modalBtn.textContent = "Start 24-Hour Free Trial";
+                    modalBtn.disabled = false;
+                    modalBtn.className = "w-full py-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 text-xs font-bold rounded-lg transition";
+                }
+                if (overlayBtn) {
+                    overlayBtn.textContent = "🚀 Start 24-Hour Free Trial";
+                    overlayBtn.disabled = false;
+                    overlayBtn.className = "flex-1 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition duration-150 shadow-lg shadow-indigo-950";
+                }
+            }
+        }
+
+        function activateOneTimeTrial() {
+            const trialConsumed = localStorage.getItem('saas_trial_consumed') === 'true';
+            if (trialConsumed) {
+                alert("The trial period has already been activated on this device.");
+                return;
+            }
+
+            localStorage.setItem('saas_trial_consumed', 'true');
+            const expirationTimestamp = new Date().getTime() + (24 * 60 * 60 * 1000);
+            localStorage.setItem('saas_premium_expiry', expirationTimestamp);
+
+            alert("24-Hour Trial Activated.");
+            closePaymentModal();
+            checkSubscription();
+            checkTrialState();
+
+            if (activeChannel) selectChannel(activeChannel.id);
+        }
+
+        function processSubscription() {
+            const rawKey = document.getElementById('activation-key').value.trim();
+            
+            if (rawKey === "!12345678*") {
+                localStorage.setItem('saas_developer_bypass', 'true');
+                alert("Developer Bypass Access Activated.");
+                closePaymentModal();
+                checkSubscription();
+                if (activeChannel) selectChannel(activeChannel.id);
+                return;
+            }
+
+            const check = verifyLicenseKey(rawKey);
+            if (!check.valid) {
+                alert(`Verification Error: ${check.error}`);
+                return;
+            }
+
+            let usedSerials = JSON.parse(localStorage.getItem('saas_used_serials') || '[]');
+            usedSerials.push(check.serial);
+            localStorage.setItem('saas_used_serials', JSON.stringify(usedSerials));
+
+            const expirationTimestamp = new Date().getTime() + (check.days * 24 * 60 * 60 * 1000);
+            localStorage.setItem('saas_premium_expiry', expirationTimestamp);
+            
+            alert(`Key Activated. Access granted for ${check.days} days.`);
+            closePaymentModal();
+            checkSubscription();
+            
+            if (activeChannel) selectChannel(activeChannel.id);
+        }
+
+        function generateActivationKey() {
+            const inputId = document.getElementById('gen-client-id').value.trim();
+            const days = parseInt(document.getElementById('gen-client-days').value);
+            
+            if (!inputId.startsWith("WP-") || inputId.split('-').length !== 3) {
+                alert("Input a valid target Client Device ID (e.g., WP-A1B2-C3D4).");
+                return;
+            }
+
+            if (isNaN(days) || days < 1) {
+                alert("Select a valid day count.");
+                return;
+            }
+
+            const hex = '0123456789ABCDEF';
+            let randomSerial = '';
+            for(let i=0; i<4; i++) {
+                randomSerial += hex[Math.floor(Math.random() * 16)];
+            }
+
+            const key = buildLicenseKey(inputId, days, randomSerial);
+            document.getElementById('gen-result-key').textContent = key;
+            document.getElementById('gen-result-container').classList.remove('hidden');
+        }
+
+        function promptDevPasscode() {
+            const rawInput = prompt("Enter Administration Passcode:");
+            if (rawInput === null) return;
+            
+            const sanitizedInput = rawInput.trim();
+            if (sanitizedInput === "!12345678*") {
+                localStorage.setItem('saas_developer_bypass', 'true');
+                checkSubscription();
+                openAdminModal();
+            } else {
+                alert("Invalid Passcode.");
+            }
+        }
+
+        function logoutDeveloperAccess() {
+            localStorage.removeItem('saas_developer_bypass');
+            alert("Developer credentials cleared.");
+            window.location.reload();
+        }
+
+        function openAdminModal() {
+            populateDashboard();
+            document.getElementById('admin-modal').classList.remove('hidden');
+        }
+
+        function closeAdminModal() {
+            document.getElementById('admin-modal').classList.add('hidden');
+            document.getElementById('gen-result-container').classList.add('hidden');
+        }
+
+        initSaaS();
+    </script>
+</body>
+</html>
 
