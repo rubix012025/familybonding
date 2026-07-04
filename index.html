@@ -189,7 +189,7 @@
             <div class="p-5 border-b border-slate-800 flex justify-between items-center bg-slate-950/60 sticky top-0 z-10 backdrop-blur-md">
                 <div class="flex items-center space-x-2">
                     <span class="bg-indigo-600 text-white font-extrabold px-1.5 py-0.5 rounded text-[9px] tracking-wide">ADMIN CONSOLE</span>
-                    <h3 class="font-bold text-slate-100">Platform Brand, Custom Keys & EPG Console</h3>
+                    <h3 class="font-bold text-slate-100">Platform Brand, Custom Keys & Channel Manager</h3>
                 </div>
                 <button onclick="closeAdminModal()" class="text-slate-400 hover:text-white font-black text-lg">&times;</button>
             </div>
@@ -266,21 +266,25 @@
 
                 <!-- Channels & schedules configuration space -->
                 <div class="space-y-3">
-                    <div class="flex justify-between items-center">
-                        <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Dynamic Program Guide Manager (EPG)</span>
-                        <button onclick="resetToPresets()" class="text-xs text-indigo-400 hover:underline">Reset to Default Configuration</button>
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                        <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Lineup & Dynamic Program Guide Manager (EPG)</span>
+                        <div class="flex space-x-3 text-xs">
+                            <button onclick="addNewChannelTemplate()" class="text-indigo-400 hover:text-indigo-300 font-bold hover:underline">+ Add New Custom Channel</button>
+                            <span class="text-slate-700">|</span>
+                            <button onclick="resetToPresets()" class="text-slate-400 hover:text-slate-350 hover:underline">Reset to Default Configuration</button>
+                        </div>
                     </div>
                     
-                    <div id="channels-editor-container" class="space-y-3 max-h-[350px] overflow-y-auto pr-1">
+                    <div id="channels-editor-container" class="space-y-4 max-h-[350px] overflow-y-auto pr-1">
                         <!-- Populated dynamically -->
                     </div>
                 </div>
             </div>
 
-            <div class="p-4 border-t border-slate-800 bg-slate-950/40 flex justify-end space-x-3 sticky bottom-0 z-10 backdrop-blur-md">
-                <span class="text-[9px] text-slate-500 self-center">URLs remain cryptographically hidden in native sandbox variables.</span>
+            <div class="p-4 border-t border-slate-800 bg-slate-950/40 flex justify-between items-center sticky bottom-0 z-10 backdrop-blur-md">
+                <span class="text-[9px] text-slate-500">All stream URLs automatically undergo standard secure obfuscation.</span>
                 <button onclick="saveChannelsAndEPG()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl">
-                    Apply EPG Updates
+                    Apply Channel & EPG Updates
                 </button>
             </div>
         </div>
@@ -293,7 +297,12 @@
             try { return decodeURIComponent(atob(b64)); } catch(e) { return ""; }
         }
 
-        // Live Channels Data (Cleaned Generic Lineup - Kids, Games, and Movies 5 removed)
+        // Secure token encoder
+        function secureEncode(str) {
+            try { return btoa(encodeURIComponent(str)); } catch(e) { return ""; }
+        }
+
+        // Live Channels Data (Cleaned Generic Lineup)
         const liveChannelsData = [
             {
                 id: "new-kmovies",
@@ -358,7 +367,7 @@
         ];
 
         const secureRawB64 = {
-            "new-kmovies": "aHR0cHM6Ly9hZHMuaXRzLW5ld2lkLm5ldC9hcGkvbWFuaWZlc3QubTN1OD90cD1sZ19jaGFubmVscyZjaGFubmVsX25hbWU9bmV3a21vdmllcyZjaGFubmVsX2lkPW5ld2lkXzIxOSZtcGY9YWRmYzIwNGQtMzlhZjE5NjAtMTNhMmYwMWEmYXBpa2V5PTQ4MjMwZTZiLTFjZWEwMDk3LTE1OTc1ZjkzLzM5YWYxOTYyJmF1dGg9YjYyYzJjOGItODMxNmE3NzEtMjk1ZWJhMjgtZjQ2NjNkZGQmYWRzLmxpdmU9W0NPTlRFTlRfTElWRV0mYWRzLmRldmljZWlkPVtERVZJQ0VfSURdJmFkcy5pZmE9W0lGQV0mYWRzLmlmYXR5cGU9W0lGQV9UWVBFXSZhZHMubGF0PVtMTVRdJmFkcy5kb25vdHNlbGw9W0ROU10mYWRzLnVhPVtVQV0mYWRzLmlwPVtJUF0mYWRzLmdkcHI9W0dEUFJdJmFkcy5nZHByX2NvbnNlbnQ9W0dEUFJfQ09OU0VOVF0mYWRzLmNvdW50cnk9W0NPVU5UUlldJmFkcy51c19wcml2YWN5PVtVU19QUklWQUNZXSZhZHMuYXBwc3RvcmV1cmw9W0FQUF9TVE9SRVVSTF0mYWRzLmJ1bmRsZWlkPVtBUFBfQlVORExFXSZhZHMuYXBwbmFtZT1bQVBQX05BTUVdJmFkcy5hcHB2ZXJzaW9uPVtBUFBfVkVSU0lPTl0mYWRzLmRldmljZXR5cGU9W0RFVklDRV9UWVBFXSZhZHMuZGV2aWNlbWFrZT1bREVWSUNFX01BS0VdJmFkcy5kZXZpY2Vtb2RlbD1bREVWSUNFX01PREVMXSZhZHMudGFyZ2V0YWQ9W1RBUkdFVEFEX0FMTE9XRURdJmFkcy5mY2s9W0ZDS10mYWRzLnZpZXdzaXplPVtWSUVXU0laRV0mYWRzLmdpdm49W05PTkNFXQ==",
+            "new-kmovies": "aHR0cHM6Ly9hZHMuaXRzLW5ld2lkLm5ldC9hcGkvbWFuaWZlc3QubTN1OD90cD1sZ19jaGFubmVscyZjaGFubmVsX25hbWU9bmV3a21vdmllcyZjaGFubmVsX2idPW5ld2lkXzIxOSZtcGY9YWRmYzIwNGQtMzlhZjE5NjAtMTNhMmYwMWEmYXBpa2V5PTQ4MjMwZTZiLTFjZWEwMDk3LTE1OTc1ZjkzLzM5YWYxOTYyJmF1dGg9YjYyYzJjOGItODMxNmE3NzEtMjk1ZWJhMjgtZjQ2NjNkZGQmYWRzLmxpdmU9W0NPTlRFTlRfTElWRV0mYWRzLmRldmljZWlkPVtERVZJQ0VfSURdJmFkcy5pZmE9W0lGQV0mYWRzLmlmYXR5cGU9W0lGQV9UWVBFXSZhZHMubGF0PVtMTVRdJmFkcy5kb25vdHNlbGw9W0ROU10mYWRzLnVhPVtVQV0mYWRzLmlwPVtJUF0mYWRzLmdkcHI9W0dEUFJdJmFkcy5nZHByX2NvbnNlbnQ9W0dEUFJfQ09OU0VOVF0mYWRzLmNvdW50cnk9W0NPVU5UUlldJmFkcy51c19wcml2YWN5PVtVU19QUklWQUNZXSZhZHMuYXBwc3RvcmV1cmw9W0FQUF9TVE9SRVVSTF0mYWRzLmJ1bmRsZWlkPVtBUFBfQlVORExFXSZhZHMuYXBwbmFtZT1bQVBQX05BTUVdJmFkcy5hcHB2ZXJzaW9uPVtBUFBfVkVSU0lPTl0mYWRzLmRldmljZXR5cGU9W0RFVklDRV9UWVBFXSZhZHMuZGV2aWNlbWFrZT1bREVWSUNFX01BS0VdJmFkcy5kZXZpY2Vtb2RlbD1bREVWSUNFX01PREVMXSZhZHMudGFyZ2V0YWQ9W1RBUkdFVEFEX0FMTE9XRURdJmFkcy5mY2s9W0ZDS10mYWRzLnZpZXdzaXplPVtWSUVXU0laRV0mYWRzLmdpdm49W05PTkNFXQ==",
             "mix-hollywood": "aHR0cHM6Ly9tbC1wdWxsLWh3Yy5teWNvLmlvL01peFRWL2hscy9pbmRleC5tM3U4",
             "universal-movies": "aHR0cHM6Ly9kNHdobXZ3bTByZHZpLmNsb3VkZnJvbnQubmV0L21hbmlmZXN0LzNmZWMzZTVjYWMzOWE1MmIyMTMyZjljNjZjODNkYWUwNDNkYzE3ZDQvcHJvZF9kZWZhdWx0X3h1bW8tbmJjdS1saW5lYXIvZTcyNzViZmItZmI4ZC00OWQ4LTk2OWYtODU0NDgxZmE3ZTcxLzQubTN1OA==",
             "family-bonding-cinema": "aHR0cHM6Ly9jZG4ud2hpcGxhc2guY2Mvd2hpcGxhc2gtY2luZW1hL2luZGV4Lm0zdTg=",
@@ -475,13 +484,19 @@
             document.getElementById('client-device-display').textContent = `Device ID: ${deviceId}`;
             document.getElementById('gen-client-id').value = deviceId;
 
-            // Updated namespace to v7 to bypass cached versions of removed channels
-            const saved = localStorage.getItem('family_bonding_portal_config_v7');
+            // Updated namespace to v8 to process customized CRUD channel structures
+            const saved = localStorage.getItem('family_bonding_portal_config_v8');
             if (saved) {
                 appData = JSON.parse(saved);
             } else {
-                appData = JSON.parse(JSON.stringify(defaultConfig));
-                localStorage.setItem('family_bonding_portal_config_v7', JSON.stringify(appData));
+                // If previous setup data existed under legacy keys, translate or start clean
+                const legacy = localStorage.getItem('family_bonding_portal_config_v7');
+                if (legacy) {
+                    appData = JSON.parse(legacy);
+                } else {
+                    appData = JSON.parse(JSON.stringify(defaultConfig));
+                }
+                localStorage.setItem('family_bonding_portal_config_v8', JSON.stringify(appData));
             }
 
             populateDashboard();
@@ -529,7 +544,7 @@
 
             appData.channels.forEach((channel) => {
                 const div = document.createElement('div');
-                div.className = "bg-slate-950 p-4 rounded-xl border border-slate-855 space-y-3";
+                div.className = "bg-slate-950 p-4 rounded-xl border border-slate-855 space-y-3 relative group/item";
                 
                 let scheduleInputsHTML = ``;
                 for (let i = 0; i < 3; i++) {
@@ -545,16 +560,38 @@
                     `;
                 }
 
+                // Decode source URL for human editing inside the developer workspace
+                const plainSourceUrl = secureDecode(channel.src);
+
                 div.innerHTML = `
-                    <div class="flex items-center justify-between border-b border-slate-900 pb-3">
+                    <div class="flex flex-col sm:flex-row gap-2 sm:items-center justify-between border-b border-slate-900 pb-3">
                         <div class="flex items-center space-x-2">
-                            <span class="text-xs font-mono text-indigo-400 font-bold">ID: ${channel.id}</span>
-                            <input type="text" id="edit-name-${channel.id}" value="${channel.name}" class="bg-slate-900 border border-slate-800 rounded px-2.5 py-1 text-xs font-bold text-white w-48">
+                            <span class="text-xs font-mono text-indigo-400 font-bold">ID:</span>
+                            <input type="text" id="edit-id-${channel.id}" value="${channel.id}" disabled class="bg-slate-900/50 border border-slate-800 rounded px-2 py-0.5 text-xs text-slate-400 w-28 font-mono select-none">
+                            <input type="text" id="edit-name-${channel.id}" value="${channel.name}" placeholder="Channel Title" class="bg-slate-900 border border-slate-800 rounded px-2.5 py-1 text-xs font-bold text-white w-40">
                         </div>
-                        <span class="text-[9px] uppercase px-2 py-0.5 bg-slate-900 text-slate-400 rounded border border-slate-800">CORS Encryption Active</span>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="removeChannel('${channel.id}')" class="text-xs px-2.5 py-1 bg-red-950/80 hover:bg-red-900 text-red-400 rounded border border-red-900 transition">
+                                Delete Channel
+                            </button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div>
+                            <label class="block text-[9px] text-slate-400 mb-0.5 uppercase">Group / Genre</label>
+                            <input type="text" id="edit-group-${channel.id}" value="${channel.group || 'Movies'}" class="w-full bg-slate-900 border border-slate-800 rounded p-2 text-xs text-white">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-[9px] text-slate-400 mb-0.5 uppercase">Logo URL</label>
+                            <input type="text" id="edit-logo-${channel.id}" value="${channel.logo || ''}" class="w-full bg-slate-900 border border-slate-800 rounded p-2 text-xs text-white">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[9px] text-indigo-400 mb-0.5 uppercase font-bold">M3U8 Stream Source URL (Decoded Cleartext)</label>
+                        <input type="text" id="edit-src-${channel.id}" value="${plainSourceUrl}" placeholder="https://domain.com/path/index.m3u8" class="w-full bg-slate-900 border border-indigo-950 rounded p-2 text-xs font-mono text-indigo-200 focus:border-indigo-800">
                     </div>
                     <div class="space-y-1.5 pt-1">
-                        <span class="block text-[9px] text-indigo-400 font-semibold uppercase tracking-wider">Configure EPG Schedules</span>
+                        <span class="block text-[9px] text-slate-400 font-semibold uppercase tracking-wider">Configure EPG Schedules</span>
                         ${scheduleInputsHTML}
                     </div>
                 `;
@@ -562,49 +599,95 @@
             });
         }
 
+        function addNewChannelTemplate() {
+            const tempId = "custom-channel-" + Date.now();
+            const newChannel = {
+                id: tempId,
+                name: "New Custom Channel",
+                group: "Movies",
+                logo: "",
+                src: secureEncode(""), // Empty plain url translated
+                schedule: [
+                    { title: "Continuous Broadcast Loop", start: "00:00", end: "08:00" },
+                    { title: "Continuous Broadcast Loop", start: "08:00", end: "16:00" },
+                    { title: "Continuous Broadcast Loop", start: "16:00", end: "24:00" }
+                ]
+            };
+
+            appData.channels.push(newChannel);
+            populateDashboard();
+
+            // Auto-scroll inside editor container to show the newly added template
+            const container = document.getElementById('channels-editor-container');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function removeChannel(id) {
+            if (confirm("Are you sure you want to remove this channel from the lineup?")) {
+                appData.channels = appData.channels.filter(ch => ch.id !== id);
+                populateDashboard();
+            }
+        }
+
         function saveBrandSettings() {
             appData.brandName = document.getElementById('cfg-brand-name').value;
             appData.gcashNo = document.getElementById('cfg-gcash-no').value;
             appData.gcashName = document.getElementById('cfg-gcash-name').value;
 
-            localStorage.setItem('family_bonding_portal_config_v7', JSON.stringify(appData));
+            localStorage.setItem('family_bonding_portal_config_v8', JSON.stringify(appData));
             alert("Platform configuration updated successfully.");
             updateViewerPortalUI();
             updateAdminQRDisplay();
         }
 
-        // Apply dynamic channel data changes
+        // Save customized layout, updated links, logo assets, names & schedule intervals
         function saveChannelsAndEPG() {
             appData.channels.forEach(channel => {
                 const nameInp = document.getElementById(`edit-name-${channel.id}`);
-                if (nameInp) channel.name = nameInp.value;
+                const groupInp = document.getElementById(`edit-group-${channel.id}`);
+                const logoInp = document.getElementById(`edit-logo-${channel.id}`);
+                const srcInp = document.getElementById(`edit-src-${channel.id}`);
+
+                if (nameInp) channel.name = nameInp.value.trim();
+                if (groupInp) channel.group = groupInp.value.trim() || "Movies";
+                if (logoInp) channel.logo = logoInp.value.trim();
+                if (srcInp) {
+                    // Re-encode edited human-readable stream source back to safe b64 base
+                    channel.src = secureEncode(srcInp.value.trim());
+                }
 
                 channel.schedule = [];
                 for (let i = 0; i < 3; i++) {
-                    const titleVal = document.getElementById(`epg-title-${channel.id}-${i}`).value;
-                    const startVal = document.getElementById(`epg-start-${channel.id}-${i}`).value;
-                    const endVal = document.getElementById(`epg-end-${channel.id}-${i}`).value;
+                    const titleEl = document.getElementById(`epg-title-${channel.id}-${i}`);
+                    const startEl = document.getElementById(`epg-start-${channel.id}-${i}`);
+                    const endEl = document.getElementById(`epg-end-${channel.id}-${i}`);
                     
-                    if (titleVal.trim() !== "") {
-                        channel.schedule.push({
-                            title: titleVal,
-                            start: startVal || "00:00",
-                            end: endVal || "24:00"
-                        });
+                    if (titleEl) {
+                        const titleVal = titleEl.value;
+                        const startVal = startEl ? startEl.value : "00:00";
+                        const endVal = endEl ? endEl.value : "24:00";
+                        
+                        if (titleVal.trim() !== "") {
+                            channel.schedule.push({
+                                title: titleVal,
+                                start: startVal || "00:00",
+                                end: endVal || "24:00"
+                            });
+                        }
                     }
                 }
             });
 
-            localStorage.setItem('family_bonding_portal_config_v7', JSON.stringify(appData));
-            alert("Schedules and linear EPG timeline updated successfully.");
+            localStorage.setItem('family_bonding_portal_config_v8', JSON.stringify(appData));
+            alert("Schedules and local lineup configuration updated successfully.");
             updateViewerPortalUI();
             closeAdminModal();
         }
 
         function resetToPresets() {
-            if (confirm("Reset layout to default channel presets?")) {
+            if (confirm("Reset layout to default channel presets? Custom items will be removed.")) {
                 appData = JSON.parse(JSON.stringify(defaultConfig));
-                localStorage.setItem('family_bonding_portal_config_v7', JSON.stringify(appData));
+                localStorage.setItem('family_bonding_portal_config_v8', JSON.stringify(appData));
                 populateDashboard();
                 updateViewerPortalUI();
                 updateAdminQRDisplay();
@@ -715,11 +798,27 @@
         }
 
         function checkSubscription() {
+            const isLifetime = localStorage.getItem('saas_premium_lifetime') === 'true';
             const expirationTime = localStorage.getItem('saas_premium_expiry');
             const overlay = document.getElementById('paywall-overlay');
             const subBadge = document.getElementById('sub-badge');
             const countdownEl = document.getElementById('subscription-countdown');
             const statusBar = document.getElementById('status-bar');
+
+            if (isLifetime) {
+                overlay.classList.add('hidden');
+                statusBar.classList.remove('hidden');
+                
+                subBadge.className = "px-3 py-1 rounded-full text-[10px] md:text-xs font-semibold bg-indigo-950 text-indigo-400 border border-indigo-800";
+                subBadge.textContent = "Developer Lifetime Access";
+                countdownEl.textContent = "Infinite (Permanent Bypass)";
+
+                if (!document.getElementById('video').src && activeChannel) {
+                    const decryptedStreamUrl = secureDecode(activeChannel.src);
+                    loadVideoStream(decryptedStreamUrl);
+                }
+                return true;
+            }
 
             if (expirationTime) {
                 const now = new Date().getTime();
@@ -834,7 +933,6 @@
             checkTrialState();
         }
 
-        // Vending Machine Stepper UI trigger
         function closePaymentModal() {
             document.getElementById('payment-modal').classList.add('hidden');
         }
@@ -876,10 +974,13 @@
         function processSubscription() {
             const rawKey = document.getElementById('activation-key').value.trim();
             
-            // Check if user is typing the admin console passcode
+            // Check if user is typing the admin console / lifetime activation passcode
             if (rawKey === "!12345678*") {
+                localStorage.setItem('saas_premium_lifetime', 'true');
+                alert("Developer Lifetime Access Activated.");
                 closePaymentModal();
-                openAdminModal();
+                checkSubscription();
+                if (activeChannel) selectChannel(activeChannel.id);
                 return;
             }
 
@@ -934,6 +1035,8 @@
             
             const sanitizedInput = rawInput.trim();
             if (sanitizedInput === "!12345678*") {
+                localStorage.setItem('saas_premium_lifetime', 'true');
+                checkSubscription();
                 openAdminModal();
             } else {
                 alert("Passcode Rejected.");
