@@ -1,4 +1,5 @@
 const ytdl = require('ytdl-core');
+const fetch = require('node-fetch'); // Ensure node-fetch is supported, or use global fetch in Node 18+
 
 exports.handler = async function(event, context) {
     const videoId = event.queryStringParameters.id;
@@ -6,6 +7,7 @@ exports.handler = async function(event, context) {
     if (!videoId) {
         return {
             statusCode: 400,
+            headers: { "Access-Control-Allow-Origin": "*" },
             body: JSON.stringify({ error: "Missing video id parameter." })
         };
     }
@@ -13,34 +15,45 @@ exports.handler = async function(event, context) {
     try {
         const info = await ytdl.getInfo(videoId);
         
-        // Isolate the highest quality audio-only format stream
+        // Select the best audio-only format
         const audioFormat = ytdl.chooseFormat(info.formats, { 
             quality: 'highestaudio', 
             filter: 'audioonly' 
         });
 
         if (!audioFormat || !audioFormat.url) {
-            throw new Error("No direct audio format URL resolved.");
+            throw new Error("No direct audio formats resolved.");
         }
 
-        // Redirect browser to stream the direct CORS-enabled audio source safely
+        // Fetch the raw audio stream from Google Video servers on the backend
+        const response = await fetch(audioFormat.url);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch raw stream from YouTube: ${response.statusText}`);
+        }
+
+        const arrayBuffer = await response.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+
+        // Return the raw audio bytes as a base64 payload from your own domain
         return {
-            statusCode: 302,
+            statusCode: 200,
             headers: {
-                "Location": audioFormat.url,
+                "Content-Type": "audio/webm", // or audio/mp4 depending on format
                 "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Headers": "Content-Type",
-                "Access-Control-Allow-Methods": "GET"
+                "Access-Control-Allow-Headers": "Content-Type, Range",
+                "Access-Control-Allow-Methods": "GET",
+                "Cache-Control": "public, max-age=3600"
             },
-            body: ""
+            body: buffer.toString('base64'),
+            isBase64Encoded: true
         };
 
     } catch (err) {
-        console.error("[Audio Resolver Error]:", err.message);
+        console.error("[Proxy Stream Error]:", err.message);
         return {
             statusCode: 500,
             headers: { "Access-Control-Allow-Origin": "*" },
-            body: JSON.stringify({ error: "Failed to resolve raw audio stream url.", details: err.message })
+            body: JSON.stringify({ error: "Failed to proxy audio stream.", details: err.message })
         };
     }
 };
