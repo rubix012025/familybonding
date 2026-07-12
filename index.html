@@ -3,39 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Family Bonding Time</title>
+    <title>Vocal Portal - Interactive Karaoke Console</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- HLS.js (For HLS playback) -->
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
-        body { background-color: #060814; }
+        body { background-color: #05070f; }
         ::-webkit-scrollbar { width: 5px; height: 5px; }
-        ::-webkit-scrollbar-track { background: #0b0f19; }
-        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
+        ::-webkit-scrollbar-track { background: #080b13; }
+        ::-webkit-scrollbar-thumb { background: #1b253b; border-radius: 3px; }
     </style>
 </head>
 <body class="text-slate-100 min-h-screen font-sans flex flex-col justify-between" oncontextmenu="return false;">
 
     <!-- Top Header -->
     <header class="p-4 md:p-5 flex justify-between items-center border-b border-slate-800 bg-slate-950/60 backdrop-blur-md sticky top-0 z-40">
-        <div onclick="promptDevPasscode()" class="cursor-pointer select-none group">
-            <h1 id="view-brand-title" class="text-base md:text-lg font-black tracking-wider text-indigo-400 uppercase group-hover:text-indigo-300 transition duration-150">PORTAL</h1>
-            <p class="text-[10px] md:text-xs text-slate-400">Integrated Streaming Middleware Console</p>
+        <div onclick="promptDevPasscode()" class="cursor-pointer select-none group flex items-center space-x-3">
+            <div>
+                <h1 id="view-brand-title" class="text-base md:text-lg font-black tracking-wider text-fuchsia-400 uppercase group-hover:text-fuchsia-300 transition duration-150">VOCAL PORTAL</h1>
+                <p class="text-[10px] md:text-xs text-slate-400">Integrated DSP Karaoke Middleware Console</p>
+            </div>
+            <!-- Sandbox Status Warning Badge -->
+            <span id="sandbox-indicator" class="px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider bg-amber-500/15 text-amber-500 border border-amber-500/30 hidden">
+                Sandbox Mode Active
+            </span>
         </div>
         <div class="flex items-center space-x-3">
-            <span id="sub-badge" class="px-3 py-1 rounded-full text-[10px] md:text-xs font-semibold bg-red-950 text-red-400 border border-red-800">
+            <!-- Smart TV Mode Toggle Button -->
+            <button id="tv-mode-toggle-btn" onclick="toggleSmartTvMode()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 border border-slate-700 transition duration-150 flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-slate-500" id="tv-mode-led"></span>
+                <span id="tv-mode-text">TV Remote: OFF</span>
+            </button>
+            <span id="sub-badge" class="px-3 py-1 rounded-full text-[10px] md:text-xs font-semibold bg-red-955 text-red-400 border border-red-800">
                 Awaiting Verification
             </span>
-            <button onclick="openPaymentModal()" class="px-4 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 transition duration-150">
+            <button onclick="openPaymentModal()" class="px-4 py-1.5 rounded-lg text-xs font-bold bg-fuchsia-600 hover:bg-fuchsia-500 transition duration-150">
                 Purchase Access
             </button>
         </div>
     </header>
 
-    <div id="status-bar" class="bg-indigo-600 text-white text-center py-1.5 text-xs font-semibold tracking-wide hidden flex justify-center items-center gap-3">
-        <span>Active session remaining: <span id="subscription-countdown">...</span></span>
-        <button onclick="logoutDeveloperAccess()" class="underline text-[10px] hover:text-indigo-200 font-bold ml-1.5 focus:outline-none">
+    <!-- Top Status Banner -->
+    <div id="status-bar" class="bg-fuchsia-600 text-white text-center py-1.5 text-xs font-semibold tracking-wide hidden flex flex-wrap justify-center items-center gap-2 px-4">
+        <span>
+            Active session remaining: <span id="subscription-countdown" class="font-bold">...</span> 
+            <span id="expiration-date-display" class="opacity-80 text-[10px] ml-1 font-normal italic"></span>
+        </span>
+        <button id="logout-dev-btn" onclick="logoutDeveloperAccess()" class="underline text-[10px] hover:text-fuchsia-200 font-bold ml-1.5 focus:outline-none hidden">
             [Log Out Developer]
         </button>
     </div>
@@ -43,26 +56,97 @@
     <!-- MAIN VIEWER ARENA -->
     <main class="flex-grow flex flex-col lg:flex-row max-w-7xl mx-auto w-full p-4 gap-6">
         
-        <!-- Player Area & Program Timeline (Left) -->
+        <!-- Player Area & Vocal DSP Dashboard (Left) -->
         <div class="flex-grow flex flex-col lg:w-2/3 space-y-4">
+            
+            <!-- YouTube Dynamic Embed Frame -->
             <div class="relative w-full aspect-video rounded-2xl overflow-hidden shadow-2xl border border-slate-800 bg-black">
-                <video id="video" class="w-full h-full object-contain shadow-inner" controls autoplay playsinline></video>
+                <div id="yt-player-target" class="w-full h-full"></div>
                 
                 <!-- Lock Overlay -->
                 <div id="paywall-overlay" class="absolute inset-0 bg-slate-950/95 flex flex-col items-center justify-center p-6 text-center hidden">
-                    <svg class="w-12 h-12 text-indigo-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                    <svg class="w-12 h-12 text-fuchsia-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 00-2 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                     </svg>
-                    <h3 class="text-base md:text-lg font-bold text-slate-100">Access Restricted</h3>
-                    <p class="text-xs text-slate-400 max-w-md mt-1 font-light">Claim your free trial instantly below, or input your checkout verification key to unlock live streaming playback.</p>
+                    <h3 class="text-base md:text-lg font-bold text-slate-100">Console Access Restricted</h3>
+                    <p class="text-xs text-slate-400 max-w-md mt-1 font-light">Claim your free trial instantly below, or scan the GCash QR code to unlock premium high-definition karaoke playback.</p>
                     
                     <div class="flex flex-col sm:flex-row gap-3 mt-6 w-full max-w-sm">
-                        <button id="trial-button-overlay" onclick="activateOneTimeTrial()" class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition duration-150 shadow-lg shadow-indigo-950">
+                        <button id="trial-button-overlay" onclick="activateOneTimeTrial()" class="flex-1 py-3 bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-bold rounded-xl text-xs transition duration-150 shadow-lg shadow-fuchsia-950">
                             🚀 Start 24-Hour Free Trial
                         </button>
                         <button onclick="openPaymentModal()" class="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-xs transition duration-150 border border-slate-700">
                             💳 Purchase Access
                         </button>
+                    </div>
+                </div>
+
+                <!-- Diagnostics & Error Overlay -->
+                <div id="player-error-overlay" class="absolute inset-0 bg-slate-950/95 flex flex-col items-center justify-center p-6 text-center hidden">
+                    <svg class="w-12 h-12 text-amber-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                    <h3 class="text-sm md:text-base font-bold text-slate-100" id="error-title">Video Unavailable</h3>
+                    <p class="text-[11px] text-slate-400 max-w-md mt-1 font-light leading-relaxed" id="error-message">This video stream is blocked, private, or does not support embedding. Select another track to continue.</p>
+                </div>
+            </div>
+
+            <!-- Web Audio DSP Control Board -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                <!-- Microphones & Volume DSP Panel -->
+                <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-800 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Vocal Input Processor</span>
+                        <button id="mic-toggle-btn" onclick="toggleVocalInput()" class="px-3 py-1 rounded bg-slate-850 hover:bg-slate-700 text-[10px] font-bold border border-slate-700 flex items-center gap-1.5 transition">
+                            <span class="w-2 h-2 rounded-full bg-slate-500" id="mic-led"></span>
+                            <span id="mic-btn-text">Mic: OFF</span>
+                        </button>
+                    </div>
+                    
+                    <!-- VU Level Indicator Meter -->
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-[8px] text-slate-500 uppercase tracking-wide">
+                            <span>Vocal Gain (Mic Input Level)</span>
+                            <span id="vu-db-display" class="font-mono text-fuchsia-400 font-bold">-INF</span>
+                        </div>
+                        <div class="w-full bg-slate-950 h-3.5 rounded overflow-hidden p-0.5 flex gap-0.5 border border-slate-800">
+                            <div id="vu-bar-green" class="h-full bg-emerald-500 transition-all duration-75" style="width: 0%"></div>
+                            <div id="vu-bar-orange" class="h-full bg-amber-500 transition-all duration-75" style="width: 0%"></div>
+                            <div id="vu-bar-red" class="h-full bg-rose-500 transition-all duration-75" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Voice FX and Echo Parameters -->
+                <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-800 space-y-3">
+                    <span class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 block">Atmospheric FX Control</span>
+                    <div class="grid grid-cols-2 gap-4 text-xs">
+                        <!-- Pitch Shifter Transpose Slider (Voice) -->
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-[9px] text-slate-400 uppercase tracking-wide">
+                                <span>Voice Key:</span>
+                                <span id="pitch-val-display" class="font-mono text-fuchsia-400 font-bold">0 ST</span>
+                            </div>
+                            <input type="range" id="mic-pitch-slider" min="-6" max="6" value="0" step="1" oninput="adjustMicVocalPitch(this.value)" class="w-full h-1 bg-slate-950 rounded-lg appearance-none cursor-pointer accent-fuchsia-500">
+                        </div>
+                        <!-- Reverb/Echo Feedback slider -->
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-[9px] text-slate-400 uppercase tracking-wide">
+                                <span>Echo Mix:</span>
+                                <span id="echo-val-display" class="font-mono text-fuchsia-400 font-bold">25%</span>
+                            </div>
+                            <input type="range" id="mic-echo-slider" min="0" max="75" value="25" step="5" oninput="adjustMicEchoFeedback(this.value)" class="w-full h-1 bg-slate-950 rounded-lg appearance-none cursor-pointer accent-fuchsia-500">
+                        </div>
+                        
+                        <!-- Backing Music Key Transpose Slider (Drives the CORS audio tag) -->
+                        <div class="space-y-1 col-span-2 pt-1 border-t border-slate-800/60 mt-1">
+                            <div class="flex justify-between text-[9px] text-slate-400 uppercase tracking-wide">
+                                <span>Backing Track Pitch (Music Key):</span>
+                                <span id="music-pitch-val-display" class="font-mono text-fuchsia-400 font-bold">0 ST</span>
+                            </div>
+                            <input type="range" id="music-pitch-slider" min="-6" max="6" value="0" step="1" oninput="adjustBackingMusicPitch(this.value)" class="w-full h-1 bg-slate-950 rounded-lg appearance-none cursor-pointer accent-fuchsia-500">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -71,112 +155,144 @@
             <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-800 space-y-3">
                 <div class="flex items-center space-x-2">
                     <span class="relative flex h-2 w-2">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-fuchsia-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-fuchsia-500"></span>
                     </span>
-                    <span id="current-channel-title" class="text-xs md:text-sm font-bold text-slate-200">Selecting dynamic streams...</span>
+                    <span id="current-channel-title" class="text-xs md:text-sm font-bold text-slate-200">Selecting dynamic tracks...</span>
                 </div>
 
-                <!-- Live EPG Scheduling Component -->
+                <!-- Custom Karaoke Queue Status -->
                 <div class="bg-slate-950 p-3 rounded-lg border border-slate-855 flex justify-between items-center text-xs">
                     <div>
-                        <span class="text-[9px] uppercase font-bold text-indigo-400 tracking-wider block">Now Airing</span>
-                        <div id="epg-now-title" class="font-bold text-slate-150 mt-0.5">Determining show schedules...</div>
+                        <span class="text-[9px] uppercase font-bold text-fuchsia-400 tracking-wider block">Now Processing</span>
+                        <div id="epg-now-title" class="font-bold text-slate-150 mt-0.5">Awaiting choice...</div>
                     </div>
                     <div class="text-right">
-                        <span class="text-[9px] uppercase font-bold text-slate-500 tracking-wider block">Active Slot</span>
-                        <div id="epg-now-time" class="font-semibold text-slate-400 mt-0.5">00:00 - 24:00</div>
+                        <span class="text-[9px] uppercase font-bold text-slate-500 tracking-wider block">Video Key Rate</span>
+                        <div id="current-playback-speed" class="font-semibold text-slate-400 mt-0.5">1.0x (Normal)</div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Channels Grid (Right) -->
+        <!-- Interactive Search & Song Directory (Right) -->
         <div class="w-full lg:w-1/3 flex flex-col space-y-4">
-            <h2 class="text-[10px] font-bold uppercase tracking-widest text-slate-400 px-1 border-l-2 border-indigo-500 pl-2">Live Networks</h2>
-            <div class="space-y-2 max-h-[500px] overflow-y-auto pr-1" id="viewer-channels-list">
-                <!-- Dynamic stream items populate here -->
+            
+            <!-- In-App Manual URL Loader & Dynamic Search -->
+            <div class="bg-slate-950/60 p-4 rounded-2xl border border-slate-800 space-y-3">
+                <span class="text-[9px] font-bold uppercase tracking-widest text-slate-400 block border-l-2 border-fuchsia-500 pl-2">Track Loader</span>
+                <div class="space-y-2">
+                    <div class="flex gap-2">
+                        <input type="text" id="karaoke-search-input" placeholder="Paste YouTube link or type title..." class="flex-grow bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-fuchsia-500">
+                        <button onclick="executeInAppSongLookup()" class="px-3 bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-bold text-xs rounded-lg transition uppercase">Load</button>
+                    </div>
+                    <p class="text-[8px] text-slate-500 leading-normal">Allows instant playback. Enter a direct link, video ID, or search terms to load instrumental versions.</p>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center px-1">
+                <h2 class="text-[10px] font-bold uppercase tracking-widest text-slate-400 border-l-2 border-fuchsia-500 pl-2">Hot Track Directory</h2>
+                <button onclick="resetToPresets()" class="text-[8px] uppercase font-bold tracking-wider text-slate-500 hover:text-slate-350 transition">Reset Presets</button>
+            </div>
+            <div class="space-y-2 max-h-[380px] overflow-y-auto pr-1" id="viewer-channels-list">
+                <!-- Curated track nodes load here -->
             </div>
         </div>
     </main>
 
+    <!-- Native CORS Backing Track Audio Element (Hidden) -->
+    <audio id="karaoke-audio-stream" crossorigin="anonymous" class="hidden"></audio>
+
     <!-- Automated GCash Checkout Modal -->
     <div id="payment-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 overflow-y-auto hidden">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-3xl w-full overflow-y-auto max-h-[90vh] md:max-h-[95vh] shadow-2xl">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-3xl w-full overflow-y-auto max-h-[90vh] shadow-2xl">
             <div class="p-5 border-b border-slate-800 flex justify-between items-center bg-slate-950/40 sticky top-0 z-10 backdrop-blur-md">
-                <h3 class="font-bold text-sm md:text-base text-indigo-400">GCash Automated Activation</h3>
+                <h3 class="font-bold text-sm md:text-base text-fuchsia-400 text-left">GCash Automated Activation</h3>
                 <button onclick="closePaymentModal()" class="text-slate-400 hover:text-white text-lg font-bold">&times;</button>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2">
-                <!-- Left Column (Vending Machine Stepper & Manual Entry Backup) -->
+                <!-- Left Column -->
                 <div class="p-5 space-y-4 border-r border-slate-800">
                     <span class="text-[10px] font-bold text-slate-400 block uppercase tracking-wide">01. Choose Your Plan Duration</span>
                     
                     <div class="flex items-center justify-between bg-slate-950 p-3 rounded-xl border border-slate-800">
-                        <button onclick="adjustVendingDays(-1)" class="w-10 h-10 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 flex items-center justify-center text-lg font-bold text-indigo-400 transition">-</button>
+                        <button onclick="adjustVendingDays(-1)" class="w-10 h-10 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 flex items-center justify-center text-lg font-bold text-fuchsia-400 transition">-</button>
                         <div class="text-center min-w-[100px]">
                             <span id="vending-days-display" class="text-2xl font-black text-white">1</span>
                             <span class="block text-[8px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Day Access</span>
                         </div>
-                        <button onclick="adjustVendingDays(1)" class="w-10 h-10 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 flex items-center justify-center text-lg font-bold text-indigo-400 transition">+</button>
+                        <button onclick="adjustVendingDays(1)" class="w-10 h-10 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 flex items-center justify-center text-lg font-bold text-fuchsia-400 transition">+</button>
                     </div>
 
-                    <div class="flex justify-between items-center bg-indigo-950/20 px-4 py-2.5 rounded-xl border border-indigo-900/50">
-                        <span class="text-[10px] text-slate-350 font-bold uppercase">Total Cost:</span>
+                    <div class="flex justify-between items-center bg-fuchsia-955/20 px-4 py-2.5 rounded-xl border border-fuchsia-900/50">
+                        <span class="text-[10px] text-slate-355 font-bold uppercase">Total Cost:</span>
                         <span id="vending-cost-display" class="text-lg font-black text-white">₱25</span>
                     </div>
 
                     <div class="space-y-2">
-                        <button id="pay-btn" onclick="initializeAutomatedPayment()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-xs tracking-wide transition uppercase flex items-center justify-center gap-2">
-                            <span>Get Verification QR Code</span>
+                        <button id="pay-btn" onclick="initializeAutomatedPayment()" class="w-full py-3 bg-fuchsia-600 hover:bg-fuchsia-500 font-bold rounded-xl text-xs tracking-wide transition uppercase flex items-center justify-center gap-2">
+                            <span>Get PayMongo GCash QR Code</span>
                         </button>
                     </div>
 
                     <div class="pt-2 border-t border-slate-800/60">
                         <div class="flex justify-between items-center mb-1">
                             <label class="block text-[8px] text-slate-500 uppercase tracking-wide">Or input standard device key</label>
-                            <span class="text-[8px] font-mono text-indigo-400 select-all cursor-pointer" id="client-device-display" title="Copy Device ID">ID: Calculating...</span>
+                            <span class="text-[8px] font-mono text-fuchsia-400 select-all cursor-pointer" id="client-device-display" title="Copy Device ID">ID: Calculating...</span>
                         </div>
-                        <input type="text" id="activation-key" placeholder="WP-XXXX-XXXX-XXD-XXXX-XXXXXX" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-center font-mono tracking-wider text-white focus:outline-none focus:border-indigo-500">
-                        <button onclick="processSubscription()" class="w-full mt-2 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-lg text-[10px] tracking-wide transition">
+                        <div class="relative flex items-center">
+                            <input type="text" id="activation-key" placeholder="WP-XXXX-XXXX-XXD-XXXX-XXXXXX" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 pr-12 text-[10px] text-center font-mono tracking-wider text-white focus:outline-none focus:border-fuchsia-500">
+                            <!-- Quick Paste Trigger for Activation Key Field -->
+                            <button onclick="pasteClipboardToActivationField()" class="absolute right-1.5 px-2 py-1 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-[8px] font-bold text-slate-400 hover:text-white rounded-md transition uppercase">
+                                Paste
+                            </button>
+                        </div>
+                        <button onclick="processSubscription()" class="w-full mt-2 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-lg text-[10px] tracking-wide transition uppercase">
                             Apply Key Manually
                         </button>
+                    </div>
+
+                    <!-- Phone Activation Bridge Module -->
+                    <div class="mt-3 p-3 bg-slate-950 border border-slate-800/80 rounded-xl space-y-2 text-center">
+                        <span class="text-[9px] uppercase font-black text-fuchsia-400 block tracking-wider">🔗 Phone Input Bridge</span>
+                        <p class="text-[9px] text-slate-400 leading-normal">Tired of typing? Scan this code with your phone to paste or enter your subscription key easily.</p>
+                        <div class="flex justify-center py-1">
+                            <img id="phone-bridge-qr" src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=Calculating" class="w-24 h-24 bg-white p-1 rounded-lg shadow-md" alt="Phone Bridge QR">
+                        </div>
+                        <div class="text-[8px] font-mono text-slate-500 break-all select-all hidden" id="phone-bridge-link-display">...</div>
                     </div>
                 </div>
 
                 <!-- Right Column (Automatic QR Scan & Webhook Status Tracker) -->
                 <div class="p-5 bg-slate-950/30 flex flex-col justify-between space-y-4">
                     <div class="space-y-3 flex flex-col items-center justify-center text-center">
-                        <span class="text-[10px] font-bold text-slate-400 block uppercase tracking-wide self-start">02. Scan QR & Pay</span>
+                        <span class="text-[10px] font-bold text-slate-400 block uppercase tracking-wide self-start text-left">02. Scan with GCash or Maya App</span>
                         
                         <div class="bg-white p-3 rounded-xl inline-block relative" id="checkout-qr-container">
                             <img id="viewer-checkout-qr" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=AwaitingSelection" alt="Payment QR" class="w-36 h-36">
-                            <div id="qr-loading-overlay" class="absolute inset-0 bg-slate-950/90 flex items-center justify-center text-xs text-slate-300 rounded-xl font-bold">
-                                Select duration
+                            <div id="qr-loading-overlay" class="absolute inset-0 bg-slate-950/90 flex items-center justify-center text-xs text-slate-300 rounded-xl font-bold p-3">
+                                Select duration and generate link
                             </div>
                         </div>
 
-                        <div class="w-full">
+                        <div class="w-full space-y-2">
+                            <!-- Mobile-friendly redirect deep link -->
+                            <a id="mobile-redirect-link" href="#" target="_blank" class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 font-bold rounded-xl text-[10px] tracking-wide uppercase flex items-center justify-center gap-2 transition hidden">
+                                📱 Open GCash App
+                            </a>
+                            
                             <div id="payment-status-box" class="bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs flex flex-col items-center justify-center gap-2">
-                                <span class="text-slate-400 text-[10px] uppercase font-mono tracking-wider" id="payment-status-label">Awaiting Payment Generation</span>
-                                <div id="status-spinner" class="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin hidden"></div>
-                            </div>
-                        </div>
-
-                        <div id="reference-input-container" class="w-full space-y-1.5 hidden">
-                            <label class="block text-[8px] text-slate-400 uppercase tracking-wide text-left">Reference No. (Optional for faster release)</label>
-                            <div class="flex gap-1.5">
-                                <input type="text" id="manual-ref-no" placeholder="e.g. 5013XXXXXXXX" class="flex-1 bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-center font-mono tracking-wider text-white focus:outline-none focus:border-indigo-500">
-                                <button onclick="checkRefManual()" class="px-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold">Verify</button>
+                                <span class="text-slate-400 text-[10px] uppercase font-mono tracking-wider text-center" id="payment-status-label">Awaiting Payment Generation</span>
+                                <div id="status-spinner" class="w-4 h-4 border-2 border-fuchsia-500 border-t-transparent rounded-full animate-spin hidden"></div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Free Trial Section -->
-                    <div class="border-t border-slate-800 pt-3">
-                        <div class="bg-indigo-950/30 border border-indigo-900/40 p-3 rounded-xl text-center space-y-2">
-                            <span class="block text-[9px] font-bold text-indigo-300 uppercase tracking-wider">Unregistered Gadget?</span>
+                    <div id="free-trial-container" class="border-t border-slate-800 pt-3">
+                        <div class="bg-fuchsia-955/30 border border-fuchsia-900/40 p-3 rounded-xl text-center space-y-2">
+                            <span class="block text-[9px] font-bold text-fuchsia-300 uppercase tracking-wider">Unregistered Gadget?</span>
                             <p class="text-[9px] text-slate-400">Get 24 hours of full, unrestricted console access on this device instantly.</p>
                             <button id="trial-button" onclick="activateOneTimeTrial()" class="w-full py-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 text-xs font-bold rounded-lg transition">
                                 Start 24-Hour Free Trial
@@ -190,23 +306,32 @@
 
     <!-- Creator Panel Modal -->
     <div id="admin-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 overflow-y-auto hidden">
-        <div class="bg-slate-900 border border-slate-855 rounded-2xl max-w-4xl w-full overflow-y-auto max-h-[90vh] md:max-h-[95vh] flex flex-col shadow-2xl">
+        <div class="bg-slate-900 border border-slate-855 rounded-2xl max-w-4xl w-full overflow-y-auto max-h-[90vh] flex flex-col shadow-2xl">
             <div class="p-5 border-b border-slate-800 flex justify-between items-center bg-slate-950/60 sticky top-0 z-10 backdrop-blur-md">
                 <div class="flex items-center space-x-2">
-                    <span class="bg-indigo-600 text-white font-extrabold px-1.5 py-0.5 rounded text-[9px] tracking-wide">ADMIN CONSOLE</span>
-                    <h3 class="font-bold text-slate-100">Platform Brand, Custom Keys & Lineup Console</h3>
+                    <span class="bg-fuchsia-600 text-white font-extrabold px-1.5 py-0.5 rounded text-[9px] tracking-wide">ADMIN CONSOLE</span>
+                    <h3 class="font-bold text-slate-100">Platform Brand, Custom Keys & Directory Console</h3>
                 </div>
                 <button onclick="closeAdminModal()" class="text-slate-400 hover:text-white font-black text-lg">&times;</button>
             </div>
             
             <div class="p-5 space-y-6">
                 <!-- Client Key Generator Section -->
-                <div class="bg-indigo-950/30 border border-indigo-900/60 p-4 rounded-xl space-y-3">
-                    <div class="flex justify-between items-center">
-                        <span class="block text-[10px] font-bold text-indigo-300 uppercase tracking-wider">System Cryptographic Key Provisioning Console</span>
-                        <button onclick="logoutDeveloperAccess()" class="text-[9px] uppercase px-3 py-1 rounded bg-red-950/60 hover:bg-red-900/80 text-red-400 border border-red-900 font-bold tracking-wide transition">
-                            Log Out Developer
-                        </button>
+                <div class="bg-fuchsia-955/30 border border-fuchsia-900/60 p-4 rounded-xl space-y-3">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                        <span class="block text-[10px] font-bold text-fuchsia-300 uppercase tracking-wider">System Cryptographic Key Provisioning Console</span>
+                        <div class="flex space-x-2">
+                            <button onclick="resetLocalSession()" class="text-[9px] uppercase px-3 py-1 rounded bg-amber-955/60 hover:bg-amber-900/80 text-amber-400 border border-amber-900 font-bold tracking-wide transition">
+                                Reset Local Session
+                            </button>
+                            <button onclick="logoutDeveloperAccess()" class="text-[9px] uppercase px-3 py-1 rounded bg-red-955/60 hover:bg-red-900/80 text-red-400 border border-red-900 font-bold tracking-wide transition">
+                                Log Out Developer
+                            </button>
+                            <!-- Secure Developer DB Purge Button -->
+                            <button onclick="resetDeveloperDatabaseState()" class="text-[9px] uppercase px-3 py-1 rounded bg-rose-955/60 hover:bg-rose-900/80 text-rose-400 border border-rose-900 font-bold tracking-wide transition">
+                                Purge DB Records
+                            </button>
+                        </div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
                         <div class="md:col-span-2">
@@ -218,7 +343,7 @@
                             <input type="number" id="gen-client-days" value="1" min="1" max="365" class="w-full bg-slate-900 border border-slate-800 rounded p-2 text-xs text-white">
                         </div>
                         <div class="flex items-end">
-                            <button onclick="generateActivationKey()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded text-xs">
+                            <button onclick="generateActivationKey()" class="w-full py-2 bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-bold rounded text-xs">
                                 Generate Key
                             </button>
                         </div>
@@ -226,8 +351,10 @@
                     <div class="hidden" id="gen-result-container">
                         <label class="block text-[9px] text-emerald-400 font-bold uppercase tracking-wider">Generated Signature Key</label>
                         <div class="bg-slate-950 p-2.5 rounded font-mono text-xs text-emerald-300 border border-emerald-900 flex justify-between items-center mt-1">
-                            <span id="gen-result-key" class="select-all">...</span>
-                            <span class="text-[8px] text-slate-500 uppercase">Send to User</span>
+                            <span id="gen-result-key" class="select-all break-all pr-2">...</span>
+                            <button id="copy-key-btn" onclick="copyGeneratedKey()" class="px-2.5 py-1 bg-emerald-955 hover:bg-emerald-900 border border-emerald-800 text-[9px] font-bold text-emerald-400 rounded-lg transition uppercase flex items-center gap-1.5 shrink-0">
+                                <span id="copy-btn-text">Copy Key</span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -235,7 +362,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <!-- Config Left -->
                     <div class="bg-slate-950/80 p-4 rounded-xl border border-slate-800 space-y-3 text-xs">
-                        <span class="block text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Gateway Configuration</span>
+                        <span class="block text-[10px] font-bold text-fuchsia-400 uppercase tracking-wider">Gateway Configuration</span>
                         <div>
                             <label class="block text-[9px] text-slate-400 mb-1">Branding Title</label>
                             <input type="text" id="cfg-brand-name" class="w-full bg-slate-900 border border-slate-800 rounded p-2 text-white">
@@ -244,17 +371,21 @@
                             <label class="block text-[9px] text-slate-400 mb-1">Payment API Endpoint / Webhook URL</label>
                             <input type="text" id="cfg-payment-api" class="w-full bg-slate-900 border border-slate-800 rounded p-2 text-white">
                         </div>
-                        <button onclick="saveBrandSettings()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded">
+                        <div class="flex items-center space-x-2 pt-1">
+                            <input type="checkbox" id="cfg-sandbox-mode" class="rounded bg-slate-900 border-slate-800 text-fuchsia-600 focus:ring-0 focus:ring-offset-0 w-4 h-4">
+                            <label for="cfg-sandbox-mode" class="text-[9px] text-slate-300 uppercase font-bold tracking-wider select-none cursor-pointer">Enable Sandbox Simulation (Offline Mode)</label>
+                        </div>
+                        <button onclick="saveBrandSettings()" class="w-full py-2 bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-bold rounded mt-2">
                             Save Configuration Settings
                         </button>
                     </div>
 
                     <!-- Dynamic QR Previewer -->
                     <div class="bg-slate-950/80 p-4 rounded-xl border border-slate-800 flex flex-col justify-between items-center text-center space-y-3">
-                        <span class="block text-[10px] font-bold text-indigo-400 uppercase tracking-wider self-start">Plan QR Code Previewer</span>
+                        <span class="block text-[10px] font-bold text-fuchsia-400 uppercase tracking-wider self-start">Plan QR Code Previewer</span>
                         
                         <div class="flex bg-slate-900 p-1 rounded border border-slate-800 text-[10px] w-full">
-                            <button onclick="selectAdminQR('p1')" id="admin-qr-tab-p1" class="flex-1 py-1 rounded bg-indigo-600 text-white font-bold">1d</button>
+                            <button onclick="selectAdminQR('p1')" id="admin-qr-tab-p1" class="flex-1 py-1 rounded bg-fuchsia-600 text-white font-bold">1d</button>
                             <button onclick="selectAdminQR('p2')" id="admin-qr-tab-p2" class="flex-1 py-1 rounded text-slate-400">7d</button>
                             <button onclick="selectAdminQR('p3')" id="admin-qr-tab-p3" class="flex-1 py-1 rounded text-slate-400">14d</button>
                             <button onclick="selectAdminQR('p4')" id="admin-qr-tab-p4" class="flex-1 py-1 rounded text-slate-400">30d</button>
@@ -270,12 +401,12 @@
                     </div>
                 </div>
 
-                <!-- Channels & Schedules Configuration -->
+                <!-- Curated Songs Directory Configuration -->
                 <div class="space-y-3">
                     <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                        <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Dynamic Channel & EPG Manager</span>
+                        <span class="text-[10px] font-bold text-fuchsia-400 uppercase tracking-wider">Karaoke Tracks Manager</span>
                         <div class="flex space-x-3 text-xs">
-                            <button onclick="addNewChannelTemplate()" class="text-indigo-400 hover:text-indigo-300 font-bold hover:underline">+ Add Custom Network</button>
+                            <button onclick="addNewChannelTemplate()" class="text-fuchsia-400 hover:text-fuchsia-300 font-bold hover:underline">+ Add Custom Track</button>
                             <span class="text-slate-700">|</span>
                             <button onclick="resetToPresets()" class="text-slate-400 hover:text-slate-350 hover:underline">Reset to Presets</button>
                         </div>
@@ -288,43 +419,858 @@
             </div>
 
             <div class="p-4 border-t border-slate-800 bg-slate-950/40 flex justify-between items-center sticky bottom-0 z-10 backdrop-blur-md">
-                <span class="text-[9px] text-slate-500">All stream URLs undergo standard Base64 obfuscation automatically upon save.</span>
-                <button onclick="saveChannelsAndEPG()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl">
+                <span class="text-[9px] text-slate-500">Track targets undergo standard base64 encryption sequences upon saving.</span>
+                <button onclick="saveChannelsAndEPG()" class="px-5 py-2 bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-bold text-xs rounded-xl">
                     Apply Layout Updates
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Persistent Global Footer -->
+    <!-- Custom Modals Systems -->
+    <div id="passcode-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 hidden">
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-sm w-full text-center space-y-4 shadow-2xl">
+            <h3 class="text-xs font-bold text-fuchsia-400 uppercase tracking-wider">Administration Entry Gate</h3>
+            <p class="text-[10px] text-slate-400 leading-normal">Smart TVs block native browser prompt windows. Use the keyboard panel to input your passcode sequence.</p>
+            <input type="password" id="custom-passcode-input" placeholder="••••••••" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-center tracking-widest text-white focus:outline-none focus:border-fuchsia-500">
+            <div class="flex gap-2">
+                <button onclick="closePasscodeModal()" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-lg text-[10px] tracking-wide uppercase transition">Cancel</button>
+                <button onclick="submitCustomPasscode()" class="flex-1 py-2 bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-bold rounded-lg text-[10px] tracking-wide uppercase transition">Verify Code</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="confirm-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 hidden">
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-sm w-full text-center space-y-4 shadow-2xl">
+            <h3 class="text-xs font-bold text-red-400 uppercase tracking-wider" id="confirm-modal-title">Reset Settings</h3>
+            <p class="text-[10px] text-slate-400 leading-relaxed" id="confirm-modal-body">Are you sure you want to proceed with this operation?</p>
+            <div class="flex gap-2">
+                <button id="confirm-btn-cancel" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-lg text-[10px] tracking-wide uppercase transition">Cancel</button>
+                <button id="confirm-btn-yes" class="flex-1 py-2 bg-red-600 hover:bg-red-500 text-white font-bold rounded-lg text-[10px] tracking-wide uppercase transition">Proceed</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="alert-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 hidden">
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-sm w-full text-center space-y-4 shadow-2xl">
+            <h3 class="text-xs font-bold text-fuchsia-400 uppercase tracking-wider" id="alert-modal-title">System Alert</h3>
+            <p class="text-[10px] text-slate-400 leading-relaxed" id="alert-modal-body">System Notification Detail</p>
+            <button id="alert-btn-ok" class="w-full py-2 bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-bold rounded-lg text-[10px] tracking-wide uppercase transition">OK</button>
+        </div>
+    </div>
+
     <footer class="w-full border-t border-slate-900 bg-slate-950/80 p-4 md:p-6 mt-6 z-30">
         <div class="max-w-7xl mx-auto text-center space-y-2">
             <p class="text-[10px] md:text-xs text-slate-400 font-bold tracking-wider uppercase">Legal Disclaimer</p>
             <p class="text-[9px] md:text-[10px] text-slate-500 leading-normal max-w-4xl mx-auto">
-                This platform operates strictly as a web-based streaming middleware interface. We do not own, manage, host, or distribute any proprietary media files, streams, or broadcast signals. All channels shown here are dynamic directories mapped from publicly available, third-party network streams. Access is completed under full user discretion.
-            </p>
-            <p class="text-[8px] text-slate-600 mt-2">
-                &copy; 2026 Integrated Streaming Middleware. All Rights Reserved.
+                This platform operates strictly as a web-based karaoke lookup interface. We do not own or distribute any copyrighted visual or audio assets. All directories are mapped dynamically to publicly shared external feeds.
             </p>
         </div>
     </footer>
 
+    <!-- YouTube IFrame Player Core Integration -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+
     <!-- Execution Logic -->
     <script>
-        // Secure token decoder
+        // ==========================================
+        // SAFE STORAGE INTERFACE (CRASH-PROOF FALLBACK)
+        // ==========================================
+        const safeStorage = {
+            getItem: function(key) {
+                try {
+                    return localStorage.getItem(key);
+                } catch (e) {
+                    return this[key] || null;
+                }
+            },
+            setItem: function(key, val) {
+                try {
+                    localStorage.setItem(key, val);
+                } catch (e) {
+                    this[key] = val;
+                }
+            },
+            removeItem: function(key) {
+                try {
+                    localStorage.removeItem(key);
+                } catch (e) {
+                    delete this[key];
+                }
+            }
+        };
+
+        // ==========================================
+        // PHONE BRIDGE HANDLER (RECEIVER INTERFACE)
+        // ==========================================
+        async function submitPhoneBridgeKey(targetId) {
+            const key = document.getElementById('phone-bridge-key').value.trim();
+            const statusDiv = document.getElementById('phone-bridge-status');
+            statusDiv.classList.remove('hidden');
+            statusDiv.textContent = "Verifying key signature on server...";
+            statusDiv.className = "text-xs font-semibold text-fuchsia-400";
+            
+            if(!key) {
+                statusDiv.textContent = "Please enter an activation key.";
+                statusDiv.className = "text-xs font-semibold text-red-405";
+                return;
+            }
+            
+            const apiEndpoint = appData.paymentApi || "https://fambondtym.netlify.app/.netlify/functions/verify-payment";
+            
+            try {
+                let response = await fetch(apiEndpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'activate_key',
+                        deviceId: targetId,
+                        key: key
+                    })
+                });
+                
+                let result = await response.json();
+                if (response.ok && result.success) {
+                    statusDiv.textContent = "Success! Console activated.";
+                    statusDiv.className = "text-xs font-bold text-emerald-400";
+                    return;
+                }
+                
+                response = await fetch(apiEndpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'apply_license_key',
+                        deviceId: targetId,
+                        licenseKey: key
+                    })
+                });
+                result = await response.json();
+                if (response.ok && result.success) {
+                    statusDiv.textContent = "Success! Console activated.";
+                    statusDiv.className = "text-xs font-bold text-emerald-400";
+                } else {
+                    statusDiv.textContent = result.error || "Verification failed. Check code.";
+                    statusDiv.className = "text-xs font-semibold text-red-405";
+                }
+            } catch(e) {
+                statusDiv.textContent = "Connection error. Ensure server is online.";
+                statusDiv.className = "text-xs font-semibold text-red-405";
+            }
+        }
+
+        // Parse bridge parameter on startup
+        (function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const bridgeTargetId = urlParams.get('bridge');
+            if (bridgeTargetId) {
+                document.title = "TV Input Activation Bridge";
+                document.body.innerHTML = `
+                    <div class="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center p-6 font-sans">
+                        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-md w-full space-y-6 shadow-2xl text-center">
+                            <div>
+                                <h1 class="text-xl font-black text-fuchsia-400 tracking-wider">KARAOKE ACTIVATION BRIDGE</h1>
+                                <p class="text-xs text-slate-400 mt-1">Submit your activation key from your phone to unlock your karaoke console.</p>
+                            </div>
+                            
+                            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800/80">
+                                <span class="text-[10px] text-slate-500 block uppercase font-mono tracking-wider">Target Console ID</span>
+                                <span class="text-lg font-mono font-bold text-white tracking-widest">${bridgeTargetId}</span>
+                            </div>
+                            
+                            <div class="space-y-3 text-left">
+                                <label class="block text-xs font-semibold text-slate-300">Enter Activation Key</label>
+                                <input type="text" id="phone-bridge-key" placeholder="WP-XXXX-XXXX-XXD-XXXX-XXXXXX" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-sm text-center font-mono tracking-wider text-white focus:outline-none focus:border-fuchsia-500 uppercase">
+                                <button onclick="submitPhoneBridgeKey('${bridgeTargetId}')" class="w-full py-3 bg-fuchsia-600 hover:bg-fuchsia-500 font-bold rounded-xl text-xs tracking-wide transition uppercase">
+                                    🚀 Activate Target TV
+                                </button>
+                            </div>
+                            <div id="phone-bridge-status" class="text-xs font-semibold text-slate-400 p-3 bg-slate-950 rounded-lg border border-slate-855 hidden"></div>
+                        </div>
+                    </div>
+                `;
+                throw new Error("Activation Bridge session context active.");
+            }
+        })();
+
+        // ==========================================
+        // DUAL-DELAY OVERLAP-ADD PITCH SHIFTER (JunglePitchShifter)
+        // ==========================================
+        class JunglePitchShifter {
+            constructor(audioCtx) {
+                this.ctx = audioCtx;
+                this.input = audioCtx.createGain();
+                this.output = audioCtx.createGain();
+
+                // Delay lines
+                this.delayA = audioCtx.createDelay(1.0);
+                this.delayB = audioCtx.createDelay(1.0);
+
+                // Crossfading gain nodes
+                this.fadeA = audioCtx.createGain();
+                this.fadeB = audioCtx.createGain();
+
+                // LFO Modulators (Sawtooth sweeps)
+                this.modA = audioCtx.createOscillator();
+                this.modB = audioCtx.createOscillator();
+
+                // Wave Shapers to create clean sawtooth control signals
+                this.modGainA = audioCtx.createGain();
+                this.modGainB = audioCtx.createGain();
+
+                // Setup delay/fade values
+                this.delayTime = 0.100; // 100ms baseline buffer
+                this.delayA.delayTime.value = this.delayTime;
+                this.delayB.delayTime.value = this.delayTime;
+
+                this.configureModulation();
+                this.connectNodes();
+            }
+
+            configureModulation() {
+                // Create custom curve to convert standard triangle/sine waves into sawtooth shapes
+                const bufferSize = 512;
+                const curve = new Float32Array(bufferSize);
+                for (let i = 0; i < bufferSize; i++) {
+                    const x = (i / bufferSize) * 2 - 1;
+                    curve[i] = (Math.asin(x) / Math.PI) + 0.5;
+                }
+
+                const waveShaperA = this.ctx.createWaveShaper();
+                waveShaperA.curve = curve;
+
+                const waveShaperB = this.ctx.createWaveShaper();
+                waveShaperB.curve = curve;
+
+                // Configure oscillators
+                this.modA.type = 'triangle';
+                this.modA.frequency.value = 10.0; // 10Hz modulation frequency
+
+                this.modB.type = 'triangle';
+                this.modB.frequency.value = 10.0;
+
+                // Phase offset of 180 degrees for Modulator B
+                const delayOffset = this.ctx.createDelay();
+                delayOffset.delayTime.value = 0.05; // 50ms delay creates half-cycle phase shift
+
+                // Modulation Gain controls depth of the pitch shift
+                this.modGainA.gain.value = 0.0; 
+                this.modGainB.gain.value = 0.0;
+
+                // Connect modulator chains
+                this.modA.connect(waveShaperA);
+                waveShaperA.connect(this.modGainA);
+                this.modGainA.connect(this.delayA.delayTime);
+
+                this.modA.connect(delayOffset);
+                delayOffset.connect(waveShaperB);
+                waveShaperB.connect(this.modGainB);
+                this.modGainB.connect(this.delayB.delayTime);
+
+                // Connect dry crossfaders to volume sweeps
+                const volumeShaperA = this.ctx.createWaveShaper();
+                const volumeShaperB = this.ctx.createWaveShaper();
+                
+                const volCurveA = new Float32Array(bufferSize);
+                const volCurveB = new Float32Array(bufferSize);
+                for (let i = 0; i < bufferSize; i++) {
+                    const x = (i / bufferSize) * 2 - 1;
+                    volCurveA[i] = Math.sqrt(0.5 * (1 + x));
+                    volCurveB[i] = Math.sqrt(0.5 * (1 - x));
+                }
+                volumeShaperA.curve = volCurveA;
+                volumeShaperB.curve = volCurveB;
+
+                waveShaperA.connect(volumeShaperA);
+                volumeShaperA.connect(this.fadeA.gain);
+
+                waveShaperB.connect(volumeShaperB);
+                volumeShaperB.connect(this.fadeB.gain);
+
+                // Initialize LFO sweeps
+                this.modA.start(0);
+            }
+
+            connectNodes() {
+                this.input.connect(this.delayA);
+                this.input.connect(this.delayB);
+
+                this.delayA.connect(this.fadeA);
+                this.delayB.connect(this.fadeB);
+
+                this.fadeA.connect(this.output);
+                this.fadeB.connect(this.output);
+            }
+
+            setPitchOffset(semitones) {
+                // Maps semitones range (-6 to +6) to modulation depths
+                const factor = semitones / 12.0;
+                this.modGainA.gain.value = this.delayTime * factor;
+                this.modGainB.gain.value = this.delayTime * factor;
+            }
+        }
+
+        // ==========================================
+        // REAL-TIME AUDIO EFFECT PROCESSOR (Vocal & Backing Track DSP)
+        // ==========================================
+        let vocalAudioCtx = null;
+        let vocalMicStream = null;
+        let vocalInputNode = null;
+        let vocalAnalyserNode = null;
+        let dspGainNode = null;
+        let dspDelayNode = null;
+        let dspFeedbackNode = null;
+        let dspPitchShifter = null;
+        let dspOutputMix = null;
+        let vuAnimationId = null;
+
+        // Backing Track DSP Nodes (CORS-enabled Native Stream)
+        let backingAudioSourceNode = null;
+        let backingPitchShifter = null;
+        let backingGainNode = null;
+        let syncIntervalId = null;
+
+        async function initAudioContext() {
+            if (!vocalAudioCtx) {
+                vocalAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (vocalAudioCtx.state === 'suspended') {
+                await vocalAudioCtx.resume();
+            }
+        }
+
+        async function toggleVocalInput() {
+            const btn = document.getElementById('mic-toggle-btn');
+            const led = document.getElementById('mic-led');
+            const txt = document.getElementById('mic-btn-text');
+
+            if (vocalMicStream) {
+                // Terminate Vocal Capture
+                if (vuAnimationId) cancelAnimationFrame(vuAnimationId);
+                vocalMicStream.getTracks().forEach(track => track.stop());
+                vocalMicStream = null;
+                
+                if (dspPitchShifter) {
+                    try { dspPitchShifter.modA.stop(); } catch(e){}
+                    dspPitchShifter = null;
+                }
+
+                // Close AudioContext only if backing track is not active
+                const audioElement = document.getElementById('karaoke-audio-stream');
+                if (audioElement.paused && vocalAudioCtx) {
+                    await vocalAudioCtx.close();
+                    vocalAudioCtx = null;
+                }
+
+                led.className = "w-2 h-2 rounded-full bg-slate-500";
+                txt.textContent = "Mic: OFF";
+                resetVUMeters();
+                return;
+            }
+
+            try {
+                vocalMicStream = await navigator.mediaDevices.getUserMedia({
+                    audio: {
+                        echoCancellation: false,
+                        noiseSuppression: false,
+                        autoGainControl: false
+                    }
+                });
+
+                await initAudioContext();
+
+                vocalInputNode = vocalAudioCtx.createMediaStreamSource(vocalMicStream);
+                
+                vocalAnalyserNode = vocalAudioCtx.createAnalyser();
+                vocalAnalyserNode.fftSize = 256;
+
+                dspGainNode = vocalAudioCtx.createGain();
+                dspGainNode.gain.value = 1.0;
+
+                // Build Feedback Echo Loop
+                dspDelayNode = vocalAudioCtx.createDelay(1.0);
+                dspDelayNode.delayTime.value = 0.28;
+
+                dspFeedbackNode = vocalAudioCtx.createGain();
+                const echoSliderVal = parseInt(document.getElementById('mic-echo-slider').value);
+                dspFeedbackNode.gain.value = (echoSliderVal / 100) * 0.75; // Safe ceiling limit
+
+                // Instantiate Jungle Pitch Shifter module
+                dspPitchShifter = new JunglePitchShifter(vocalAudioCtx);
+                const initialPitch = parseInt(document.getElementById('mic-pitch-slider').value);
+                dspPitchShifter.setPitchOffset(initialPitch);
+
+                dspOutputMix = vocalAudioCtx.createGain();
+                dspOutputMix.gain.value = 1.0;
+
+                // Connection Matrix routing
+                vocalInputNode.connect(vocalAnalyserNode);
+                vocalInputNode.connect(dspGainNode);
+                
+                // Route dry through Pitch Shifter module
+                dspGainNode.connect(dspPitchShifter.input);
+                dspPitchShifter.output.connect(dspOutputMix);
+
+                // Inject parallel feedback echo loops post-pitch shift
+                dspPitchShifter.output.connect(dspDelayNode);
+                dspDelayNode.connect(dspFeedbackNode);
+                dspFeedbackNode.connect(dspDelayNode); // circular loop
+                dspFeedbackNode.connect(dspOutputMix);
+
+                // Terminal out mix
+                dspOutputMix.connect(vocalAudioCtx.destination);
+
+                led.className = "w-2 h-2 rounded-full bg-emerald-500 animate-pulse";
+                txt.textContent = "Mic: LIVE";
+                
+                startVUMeterLoop();
+            } catch (err) {
+                console.warn("Input stream failed:", err);
+                tvAlert("Access Error", "Microphone input was blocked. Allow device browser permissions.");
+            }
+        }
+
+        // Initialize and bind the HTML5 Audio element through Web Audio Context
+        async function setupBackingTrackDSP() {
+            await initAudioContext();
+            const audioElement = document.getElementById('karaoke-audio-stream');
+
+            if (!backingAudioSourceNode) {
+                backingAudioSourceNode = vocalAudioCtx.createMediaElementSource(audioElement);
+                backingPitchShifter = new JunglePitchShifter(vocalAudioCtx);
+                backingGainNode = vocalAudioCtx.createGain();
+
+                // Apply initial UI values
+                const initialPitch = parseInt(document.getElementById('music-pitch-slider').value);
+                backingPitchShifter.setPitchOffset(initialPitch);
+                backingGainNode.gain.value = 1.0;
+
+                // Connections
+                backingAudioSourceNode.connect(backingPitchShifter.input);
+                backingPitchShifter.output.connect(backingGainNode);
+                backingGainNode.connect(vocalAudioCtx.destination);
+            }
+        }
+
+        function adjustMicVocalPitch(semitones) {
+            document.getElementById('pitch-val-display').textContent = `${semitones > 0 ? '+' : ''}${semitones} ST`;
+            if (vocalAudioCtx && dspPitchShifter) {
+                dspPitchShifter.setPitchOffset(parseInt(semitones));
+            }
+        }
+
+        function adjustBackingMusicPitch(semitones) {
+            document.getElementById('music-pitch-val-display').textContent = `${semitones > 0 ? '+' : ''}${semitones} ST`;
+            if (vocalAudioCtx && backingPitchShifter) {
+                backingPitchShifter.setPitchOffset(parseInt(semitones));
+            }
+        }
+
+        function adjustMicEchoFeedback(percent) {
+            document.getElementById('echo-val-display').textContent = `${percent}%`;
+            if (vocalAudioCtx && dspFeedbackNode) {
+                dspFeedbackNode.gain.value = (parseFloat(percent) / 100) * 0.75;
+            }
+        }
+
+        function startVUMeterLoop() {
+            const bufferLen = vocalAnalyserNode.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLen);
+
+            const greenBar = document.getElementById('vu-bar-green');
+            const orangeBar = document.getElementById('vu-bar-orange');
+            const redBar = document.getElementById('vu-bar-red');
+            const dbDisplay = document.getElementById('vu-db-display');
+
+            function updateVU() {
+                if (!vocalMicStream) return;
+                vocalAnalyserNode.getByteFrequencyData(dataArray);
+
+                let sum = 0;
+                for (let i = 0; i < bufferLen; i++) {
+                    sum += dataArray[i];
+                }
+                const average = sum / bufferLen;
+                const normalizedVal = Math.min(100, (average / 128) * 100);
+
+                if (normalizedVal <= 0) {
+                    dbDisplay.textContent = "-INF";
+                } else {
+                    const computedDB = Math.round((normalizedVal / 100) * 12 - 12);
+                    dbDisplay.textContent = `${computedDB > 0 ? '+' : ''}${computedDB} dB`;
+                }
+
+                // Smooth mapping layout calculations
+                if (normalizedVal < 60) {
+                    greenBar.style.width = `${normalizedVal}%`;
+                    orangeBar.style.width = `0%`;
+                    redBar.style.width = `0%`;
+                } else if (normalizedVal < 85) {
+                    greenBar.style.width = `60%`;
+                    orangeBar.style.width = `${normalizedVal - 60}%`;
+                    redBar.style.width = `0%`;
+                } else {
+                    greenBar.style.width = `60%`;
+                    orangeBar.style.width = `25%`;
+                    redBar.style.width = `${normalizedVal - 85}%`;
+                }
+
+                vuAnimationId = requestAnimationFrame(updateVU);
+            }
+            updateVU();
+        }
+
+        function resetVUMeters() {
+            document.getElementById('vu-bar-green').style.width = '0%';
+            document.getElementById('vu-bar-orange').style.width = '0%';
+            document.getElementById('vu-bar-red').style.width = '0%';
+            document.getElementById('vu-db-display').textContent = "-INF";
+        }
+
+        // ==========================================
+        // YOUTUBE CUSTOM PLAYER WRAPPER API
+        // ==========================================
+        let ytPlayer = null;
+        let isYtApiReady = false;
+
+        function onYouTubeIframeAPIReady() {
+            isYtApiReady = true;
+            instantiateVideoPlayerContainer();
+        }
+
+        function instantiateVideoPlayerContainer() {
+            if (!isYtApiReady) return;
+
+            // Dynamically configure player variables to prevent Error 153 on local file setups
+            const playerVars = {
+                'autoplay': 1,
+                'controls': 1,
+                'rel': 0,
+                'modestbranding': 1,
+                'mute': 1 // Force iframe to play in mute; native <audio> controls real sound
+            };
+
+            const origin = window.location.origin;
+            if (origin && origin !== 'null' && !origin.startsWith('file://')) {
+                playerVars['origin'] = origin;
+            }
+
+            ytPlayer = new YT.Player('yt-player-target', {
+                height: '100%',
+                width: '100%',
+                videoId: 'ZcZxLcGhUkQ', // Updated to a stable, embed-friendly track
+                playerVars: playerVars,
+                events: {
+                    'onReady': onYtPlayerReady,
+                    'onError': onYtPlayerError,
+                    'onStateChange': onYtPlayerStateChange
+                }
+            });
+        }
+
+        function onYtPlayerReady(event) {
+            if (activeChannel) {
+                loadEmbeddedKaraokeVideo(activeChannel.src);
+            }
+        }
+
+        function onYtPlayerStateChange(event) {
+            const audioElement = document.getElementById('karaoke-audio-stream');
+            
+            if (event.data === YT.PlayerState.PLAYING) {
+                audioElement.play();
+                startPlaybackSynchronizer();
+            } else if (event.data === YT.PlayerState.PAUSED) {
+                audioElement.pause();
+                stopPlaybackSynchronizer();
+            } else if (event.data === YT.PlayerState.ENDED) {
+                audioElement.pause();
+                stopPlaybackSynchronizer();
+                surfChannels(1); // Auto-advances queue list upon song completion
+            }
+        }
+
+        function startPlaybackSynchronizer() {
+            if (syncIntervalId) clearInterval(syncIntervalId);
+            const audioElement = document.getElementById('karaoke-audio-stream');
+
+            syncIntervalId = setInterval(() => {
+                if (!ytPlayer || typeof ytPlayer.getCurrentTime !== 'function') return;
+                const ytTime = ytPlayer.getCurrentTime();
+                const audioTime = audioElement.currentTime;
+
+                // Sync audio target back if offset is wider than 150ms
+                if (Math.abs(ytTime - audioTime) > 0.150) {
+                    audioElement.currentTime = ytTime;
+                }
+            }, 500);
+        }
+
+        function stopPlaybackSynchronizer() {
+            if (syncIntervalId) {
+                clearInterval(syncIntervalId);
+                syncIntervalId = null;
+            }
+        }
+
+        function onYtPlayerError(event) {
+            showPlayerError(
+                "Streaming Blocked",
+                "Embedding restrictions from YouTube prevent this specific video from playing. Please search or select another track."
+            );
+        }
+
+        // ==========================================
+        // ROBUST YOUTUBE VIDEO ID EXTRACTOR
+        // ==========================================
+        function extractYouTubeVideoId(url) {
+            if (!url) return null;
+            url = url.trim();
+
+            if (url.length === 11 && !url.includes('/') && !url.includes('?')) {
+                return url;
+            }
+
+            try {
+                const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
+                const match = url.match(regExp);
+                if (match && match[2].length === 11) {
+                    return match[2];
+                }
+            } catch (e) {
+                console.warn("Regex parsing exception:", e);
+            }
+            return null;
+        }
+
+        async function loadEmbeddedKaraokeVideo(encodedB64Val) {
+            const videoId = secureDecode(encodedB64Val);
+            if (!videoId || !ytPlayer || typeof ytPlayer.loadVideoById !== 'function') return;
+            
+            hidePlayerError();
+            
+            // Build the proxy path targeting your Netlify streaming function
+            const streamProxyUrl = `${appData.paymentApi.replace('/verify-payment', '/get-audio')}?id=${videoId}`;
+            
+            // Register backend audio stream to standard HTML5 Element
+            const audioElement = document.getElementById('karaoke-audio-stream');
+            audioElement.src = streamProxyUrl;
+            audioElement.load();
+
+            await setupBackingTrackDSP();
+            ytPlayer.loadVideoById(videoId);
+        }
+
+        async function executeInAppSongLookup() {
+            const isVerified = checkSubscription();
+            if (!isVerified) {
+                openPaymentModal();
+                return;
+            }
+
+            const inputField = document.getElementById('karaoke-search-input');
+            const inputVal = inputField ? inputField.value.trim() : "";
+            
+            if (!inputVal) {
+                tvAlert("Empty Input", "Please enter or paste a valid YouTube video link first.");
+                return;
+            }
+
+            const parsedVideoId = extractYouTubeVideoId(inputVal);
+
+            if (parsedVideoId) {
+                activeChannel = {
+                    id: "custom-load-" + Date.now(),
+                    name: `Custom Track (${parsedVideoId})`,
+                    src: secureEncode(parsedVideoId)
+                };
+                
+                document.getElementById('current-channel-title').textContent = activeChannel.name.toUpperCase();
+                document.getElementById('epg-now-title').textContent = "Loading Custom Track...";
+                
+                hidePlayerError();
+                
+                // Register backend audio stream to standard HTML5 Element
+                const streamProxyUrl = `${appData.paymentApi.replace('/verify-payment', '/get-audio')}?id=${parsedVideoId}`;
+                const audioElement = document.getElementById('karaoke-audio-stream');
+                audioElement.src = streamProxyUrl;
+                audioElement.load();
+
+                await setupBackingTrackDSP();
+
+                if (ytPlayer && typeof ytPlayer.loadVideoById === 'function') {
+                    ytPlayer.loadVideoById(parsedVideoId);
+                } else {
+                    instantiateVideoPlayerContainer();
+                    setTimeout(() => {
+                        if (ytPlayer && typeof ytPlayer.loadVideoById === 'function') {
+                            ytPlayer.loadVideoById(parsedVideoId);
+                        } else {
+                            tvAlert("Player Error", "The YouTube API is not fully initialized. Please refresh the page and try again.");
+                        }
+                    }, 1000);
+                }
+            } else {
+                tvAlert(
+                    "Invalid Link",
+                    "The link format is not recognized. Please copy the complete URL from your browser's address bar (e.g. https://www.youtube.com/watch?v=...)."
+                );
+            }
+        }
+
+        // ==========================================
+        // CLIENT-SIDE DEVTOOLS PROTECTION LAYER
+        // ==========================================
+        (function() {
+            window.addEventListener('keydown', function (e) {
+                const smartTvKeys = ["ChannelUp", "ChannelDown", "PageUp", "PageDown", "ArrowUp", "ArrowDown"];
+                if (smartTvKeys.includes(e.key) || [33, 34, 38, 40, 427, 428].includes(e.keyCode)) {
+                    return;
+                }
+                if (e.keyCode === 123) { e.preventDefault(); return false; }
+                if (e.ctrlKey && e.shiftKey && e.keyCode === 73) { e.preventDefault(); return false; }
+                if (e.ctrlKey && e.shiftKey && e.keyCode === 74) { e.preventDefault(); return false; }
+                if (e.ctrlKey && e.keyCode === 85) { e.preventDefault(); return false; }
+            }, false);
+
+            function monitorDimensions() {
+                const threshold = 220;
+                const isDeveloper = safeStorage.getItem('saas_developer_bypass') === 'true';
+                if ((window.outerWidth - window.innerWidth > threshold || window.outerHeight - window.innerHeight > threshold) && !isDeveloper) {
+                    console.warn("Please close Developer Tools.");
+                }
+            }
+            setInterval(monitorDimensions, 3000);
+        })();
+
+        // ==========================================
+        // SMART TV PHYSICAL REMOTE CHANNEL SURFING ENGINE
+        // ==========================================
+        (function() {
+            window.addEventListener('keydown', function (e) {
+                if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+                const isTvModeActive = safeStorage.getItem('saas_tv_mode_active') === 'true';
+                if (!isTvModeActive) return;
+
+                const key = e.key;
+                const code = e.keyCode || e.which;
+
+                const channelUpIdentified = (key === 'ChannelUp' || key === 'PageUp' || code === 33 || code === 427 || code === 166);
+                const channelDownIdentified = (key === 'ChannelDown' || key === 'PageDown' || code === 34 || code === 428 || code === 167);
+
+                if (channelUpIdentified) {
+                    e.preventDefault();
+                    surfChannels(1);
+                } else if (channelDownIdentified) {
+                    e.preventDefault();
+                    surfChannels(-1);
+                }
+            }, false);
+
+            window.surfChannels = function(direction) {
+                if (!appData.channels || appData.channels.length === 0) return;
+                const playlistPool = appData.channels.filter(ch => ch.src && ch.src.trim() !== "");
+                if (playlistPool.length <= 1) return;
+
+                let currentIndex = playlistPool.findIndex(ch => ch.id === activeChannel.id);
+                if (currentIndex === -1) currentIndex = 0;
+
+                let targetIndex = currentIndex + direction;
+                if (targetIndex >= playlistPool.length) targetIndex = 0;
+                else if (targetIndex < 0) targetIndex = playlistPool.length - 1;
+
+                const targetChannel = playlistPool[targetIndex];
+                if (targetChannel) {
+                    selectChannel(targetChannel.id);
+                }
+            }
+        })();
+
+        function toggleSmartTvMode() {
+            const current = safeStorage.getItem('saas_tv_mode_active') === 'true';
+            const nextState = !current;
+            safeStorage.setItem('saas_tv_mode_active', nextState ? 'true' : 'false');
+            updateSmartTvUIState(nextState);
+        }
+
+        function updateSmartTvUIState(isActive) {
+            const led = document.getElementById('tv-mode-led');
+            const text = document.getElementById('tv-mode-text');
+            const btn = document.getElementById('tv-mode-toggle-btn');
+
+            if (isActive) {
+                led.className = "w-2 h-2 rounded-full bg-emerald-500 animate-pulse";
+                text.textContent = "TV Remote: ON";
+                btn.className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-955 text-indigo-300 border border-indigo-800 flex items-center gap-2 transition";
+            } else {
+                led.className = "w-2 h-2 rounded-full bg-slate-500";
+                text.textContent = "TV Remote: OFF";
+                btn.className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center gap-2 transition";
+            }
+        }
+
+        // ==========================================
+        // SMART TV TV-COMPATIBLE MODAL WRAPPERS
+        // ==========================================
+        let currentConfirmCallback = null;
+
+        function tvConfirm(title, message, onYes) {
+            document.getElementById('confirm-modal-title').textContent = title;
+            document.getElementById('confirm-modal-body').textContent = message;
+            document.getElementById('confirm-modal').classList.remove('hidden');
+            
+            currentConfirmCallback = onYes;
+
+            document.getElementById('confirm-btn-cancel').onclick = () => {
+                document.getElementById('confirm-modal').classList.add('hidden');
+                currentConfirmCallback = null;
+            };
+
+            document.getElementById('confirm-btn-yes').onclick = () => {
+                document.getElementById('confirm-modal').classList.add('hidden');
+                if (currentConfirmCallback) currentConfirmCallback();
+                currentConfirmCallback = null;
+            };
+        }
+
+        function tvAlert(title, message, callback = null) {
+            document.getElementById('alert-modal-title').textContent = title;
+            document.getElementById('alert-modal-body').textContent = message;
+            document.getElementById('alert-modal').classList.remove('hidden');
+            
+            document.getElementById('alert-btn-ok').onclick = () => {
+                document.getElementById('alert-modal').classList.add('hidden');
+                if (callback) callback();
+            };
+        }
+
+        function promptDevPasscode() {
+            document.getElementById('passcode-modal').classList.remove('hidden');
+            document.getElementById('custom-passcode-input').value = '';
+            document.getElementById('custom-passcode-input').focus();
+        }
+
+        function closePasscodeModal() {
+            document.getElementById('passcode-modal').classList.add('hidden');
+        }
+
+        function submitCustomPasscode() {
+            const rawInput = document.getElementById('custom-passcode-input').value.trim();
+            if (rawInput === "!12345678*") {
+                safeStorage.setItem('saas_developer_bypass', 'true');
+                checkSubscription();
+                closePasscodeModal();
+                openAdminModal();
+            } else {
+                tvAlert("Access Denied", "Invalid Passcode sequence submitted.");
+            }
+        }
+
         function secureDecode(b64) {
             try {
                 if (!b64) return "";
-                let decoded = decodeURIComponent(atob(b64.trim()));
-                if (decoded && !decoded.startsWith("http") && !decoded.startsWith("/") && /^[a-zA-Z0-9+/=]+$/.test(decoded)) {
-                    try {
-                        const secondPass = decodeURIComponent(atob(decoded.trim()));
-                        if (secondPass && secondPass.startsWith("http")) {
-                            return secondPass;
-                        }
-                    } catch (innerErr) {}
-                }
-                return decoded;
+                const cleaned = b64.trim().replace(/[^A-Za-z0-9+/=]/g, "");
+                return atob(cleaned);
             } catch(e) { return ""; }
         }
 
@@ -332,76 +1278,31 @@
             try { return btoa(str); } catch(e) { return ""; }
         }
 
+        // Popular Curated Karaoke Tracks (Corrected 11-Character Base64 IDs)
         const liveChannelsData = [
-            {
-                id: "new-kmovies",
-                name: "Movies 1",
-                group: "Movies",
-                logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/new-kmovies.png",
-                src: "YUhSMGNITTZMeTloWkhNdWFYUnpMVzVsZDJsc0xtNWxkQzloY0drdmJXRnVhVlp6ZEM1dTN1ODlkRndMWmVkamFHRnViMlZ6TDJScFlXNXBabVZ6ZEM1dTN1OD9kSEF0YmVkM2FXUnNMWGNoWVc1dVpXeHZZbVZ5Y3pwaGNuTjFjbVZmZEhWc1gyMXBkSFU9",
-                schedule: [
-                    { title: "Morning Romance Selections", start: "00:00", end: "08:00" },
-                    { title: "Blockbuster Mystery Hits", start: "08:00", end: "16:00" },
-                    { title: "Late Night Thriller Premieres", start: "16:00", end: "24:00" }
-                ]
-            },
-            {
-                id: "mix-hollywood",
-                name: "Movies 2",
-                group: "Movies",
-                logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/mix-hollywood.png",
-                src: "YUhSMGNITTZMeTltYFMtcWR4c2FXZDNhbU5vTG0xNWMyOHVhbThvVFdseVZGWXVkR3hmYVc1a1pYZ3VpM1U9",
-                schedule: [
-                    { title: "Golden Era Block", start: "00:00", end: "08:00" },
-                    { title: "Modern Action & Sci-Fi features", start: "08:00", end: "16:00" },
-                    { title: "Late Night Indie Masterpieces", start: "16:00", end: "24:00" }
-                ]
-            },
-            {
-                id: "universal-movies",
-                name: "Movies 3",
-                group: "Movies",
-                logo: "https://raw.githubusercontent.com/touchze/m3u-logos/main/logos/universal-movies.png",
-                src: "YUhSMGNITTZMeTlrTUhkaGJYWjNiaTB0Y21KeWVHbHVMbU5zYjNWaFptSnliMjUwTG01bGRDOW1ZVzVwWm1WemREMHpabVZqTTJWallXTXpPV0V6TWpJeXpJeFp6Sm1ZelppTnpFeFpEUTNjbTkyWkY5a1pXWmhkVHgxZFc4dGJtSmpkMT",
-                schedule: [
-                    { title: "Classics Selection", start: "00:00", end: "08:00" },
-                    { title: "Action Comedy Blockbuster", start: "08:00", end: "16:00" },
-                    { title: "Late Night Suspense & Film Noir", start: "16:00", end: "24:00" }
-                ]
-            }
+            { id: "kar-sweet-caroline", name: "Sweet Caroline - Karaoke", group: "Popular Classics", src: "bXN3XzBkaUtWYU0=" }, // msw_0diKVaM
+            { id: "kar-bohemian", name: "Bohemian Rhapsody - Queen", group: "Rock Classics", src: "dUp0RlZnbmExTTg=" },     // uJtFVgna1M8
+            { id: "kar-dancing-queen", name: "Dancing Queen - ABBA", group: "Popular Classics", src: "NGR0dkxSMVJnNlk=" },     // 4dtvLR1Rg6Y
+            { id: "kar-dont-stop-believin", name: "Don't Stop Believin' - Journey", group: "Rock Classics", src: "cTBtTGgxVnkyX1k=" } // q0mLh1Vy2_Y
         ];
 
         const defaultConfig = {
-            brandName: "Family Bonding Time",
-            paymentApi: "https://ph.famtymbond.cc/api/verify-payment", // Custom back-end payment processing URL
+            brandName: "Vocal Portal",
+            paymentApi: "https://fambondtym.netlify.app/.netlify/functions/verify-payment", 
+            sandboxMode: false,
             channels: [...liveChannelsData]
         };
 
         let appData = {};
         let activeChannel = null;
         let vendingDays = 1;
-        let hlsInstance = null;
         let activeAdminPlanId = 'p1';
         let deviceId = '';
         let paymentPollingInterval = null;
+        let bridgePollingInterval = null;
+        let expiryWhenOpened = 0;
 
         const SECRETS_SALT = "FAMILY_BONDING_TIME_SALT_2026_SECURE";
-        const GCASH_TARGET_NUMBER = "09608754210"; // Custom Receiving GCash
-
-        function generateUniqueDeviceID() {
-            let id = localStorage.getItem('saas_device_id');
-            if (!id) {
-                const hex = '0123456789ABCDEF';
-                let part1 = '', part2 = '';
-                for (let i = 0; i < 4; i++) {
-                    part1 += hex[Math.floor(Math.random() * 16)];
-                    part2 += hex[Math.floor(Math.random() * 16)];
-                }
-                id = `WP-${part1}-${part2}`;
-                localStorage.setItem('saas_device_id', id);
-            }
-            return id;
-        }
 
         function calculateVendingCost(days) {
             if (days === 1) return 25;
@@ -425,111 +1326,200 @@
             document.getElementById('qr-loading-overlay').textContent = "Tap button to generate link";
             document.getElementById('payment-status-label').textContent = "Awaiting Payment Generation";
             document.getElementById('status-spinner').classList.add('hidden');
-            document.getElementById('reference-input-container').classList.add('hidden');
+            document.getElementById('mobile-redirect-link').classList.add('hidden');
             document.getElementById('pay-btn').disabled = false;
         }
 
-        function initializeAutomatedPayment() {
+        async function initializeAutomatedPayment() {
             const payBtn = document.getElementById('pay-btn');
             const qrOverlay = document.getElementById('qr-loading-overlay');
             const statusLabel = document.getElementById('payment-status-label');
             const spinner = document.getElementById('status-spinner');
             const qrImage = document.getElementById('viewer-checkout-qr');
-            const refContainer = document.getElementById('reference-input-container');
+            const mobileBtn = document.getElementById('mobile-redirect-link');
 
             payBtn.disabled = true;
-            statusLabel.textContent = "Setting up payment QR...";
+            statusLabel.textContent = "Requesting official QR Ph payload...";
             spinner.classList.remove('hidden');
 
             const cost = calculateVendingCost(vendingDays);
 
-            // Generates a local QR Ph scan structure directing to your personal GCash number
-            // and the calculated payment amount.
-            const qrPhPayload = `GCash://${GCASH_TARGET_NUMBER}?amount=${cost}&ref=${deviceId}`;
-            
-            qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrPhPayload)}`;
-            
-            setTimeout(() => {
-                qrOverlay.classList.add('hidden');
-                statusLabel.textContent = "Waiting for GCash Payment...";
-                refContainer.classList.remove('hidden');
-                
-                // Continuous 3-second rapid status polling
-                startLocalVerificationLoop(deviceId, cost, vendingDays);
-            }, 800);
-        }
+            if (appData.sandboxMode) {
+                setTimeout(() => {
+                    const mockSessionId = "MOCK-SESS-" + Date.now();
+                    safeStorage.setItem('saas_pending_session_id', mockSessionId);
+                    safeStorage.setItem('saas_pending_days', vendingDays);
 
-        function startLocalVerificationLoop(devId, amount, days) {
-            if (paymentPollingInterval) clearInterval(paymentPollingInterval);
-
-            paymentPollingInterval = setInterval(async () => {
-                try {
-                    const response = await fetch(`${appData.paymentApi}?deviceId=${devId}&amount=${amount}`);
-                    if (!response.ok) return;
+                    const simulatedQrText = `https://fambondtym.netlify.app/pay-mock?session=${mockSessionId}&amount=${cost}`;
+                    qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(simulatedQrText)}`;
                     
-                    const resData = await response.json();
-                    if (resData.verified === true) {
-                        clearInterval(paymentPollingInterval);
-                        grantPremiumAccess(days);
-                    }
-                } catch (e) {
-                    // Fail silently to keep interface running during intermittent connection losses
-                }
-            }, 3000);
-        }
-
-        async function checkRefManual() {
-            const refNo = document.getElementById('manual-ref-no').value.trim();
-            if (!refNo || refNo.length < 5) {
-                alert("Please enter a valid Reference Number.");
+                    qrOverlay.classList.add('hidden');
+                    statusLabel.textContent = "Sandbox QR Generated. (Auto-verifies in 5s)";
+                    
+                    setTimeout(() => {
+                        grantPremiumAccess(vendingDays);
+                    }, 5000);
+                }, 800);
                 return;
             }
 
-            const statusLabel = document.getElementById('payment-status-label');
-            statusLabel.textContent = "Checking Reference Number...";
-
             try {
-                const cost = calculateVendingCost(vendingDays);
-                const response = await fetch(`${appData.paymentApi}`, {
+                const response = await fetch(appData.paymentApi, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
+                        action: 'create_checkout',
                         deviceId: deviceId,
-                        refNo: refNo,
                         amount: cost,
                         days: vendingDays
                     })
                 });
 
-                const data = await response.json();
-                if (data.verified === true) {
-                    grantPremiumAccess(vendingDays);
+                const result = await response.json();
+
+                if (result.success && result.qr_code_data) {
+                    const rawQrPhData = result.qr_code_data;
+                    const referenceSessionId = result.session_id;
+
+                    safeStorage.setItem('saas_pending_session_id', referenceSessionId);
+                    safeStorage.setItem('saas_pending_days', vendingDays);
+
+                    qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(rawQrPhData)}`;
+                    qrOverlay.classList.add('hidden');
+                    statusLabel.textContent = "Scan this QR Ph directly inside GCash or Maya!";
+                    
+                    if (result.fallback_url) {
+                        mobileBtn.href = result.fallback_url;
+                        mobileBtn.classList.remove('hidden');
+                    }
+
+                    startLocalVerificationLoop(referenceSessionId, vendingDays);
                 } else {
-                    alert(data.message || "Reference number not yet registered. Ensure transaction is complete.");
-                    statusLabel.textContent = "Waiting for GCash Payment...";
+                    tvAlert("Checkout Error", result.error || "Could not generate QR Ph payload.");
+                    resetQRState();
                 }
             } catch (err) {
-                alert("Verification request could not be completed. Please try again.");
+                tvAlert("Connection Failed", "Could not connect to server. Check environment configurations.");
+                resetQRState();
             }
+        }
+
+        function startLocalVerificationLoop(sessionId, days) {
+            if (paymentPollingInterval) clearInterval(paymentPollingInterval);
+
+            paymentPollingInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(appData.paymentApi, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'check_status',
+                            sessionId: sessionId
+                        })
+                    });
+                    
+                    if (!response.ok) return;
+                    const resData = await response.json();
+                    if (resData.verified === true) {
+                        clearInterval(paymentPollingInterval);
+                        grantPremiumAccess(days);
+                    }
+                } catch (e) {}
+            }, 2550);
+        }
+
+        async function checkActivePendingSession() {
+            if (appData.sandboxMode) return;
+            const pendingSession = safeStorage.getItem('saas_pending_session_id');
+            const pendingDays = safeStorage.getItem('saas_pending_days');
+
+            if (pendingSession && pendingDays) {
+                try {
+                    const response = await fetch(appData.paymentApi, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'check_status',
+                            sessionId: pendingSession
+                        })
+                    });
+                    if (response.ok) {
+                        const resData = await response.json();
+                        if (resData.verified === true) {
+                            grantPremiumAccess(parseInt(pendingDays));
+                        }
+                    }
+                } catch (e) {}
+            }
+        }
+
+        async function checkDeviceSessionWithServer() {
+            if (appData.sandboxMode) return;
+            try {
+                const response = await fetch(appData.paymentApi, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'check_device',
+                        deviceId: deviceId
+                    })
+                });
+                if (response.ok) {
+                    const result = await response.json();
+                    
+                    if (result.trial_consumed) {
+                        safeStorage.setItem('saas_trial_consumed', 'true');
+                    } else {
+                        safeStorage.removeItem('saas_trial_consumed');
+                    }
+                    
+                    if (result.premium_expiry) {
+                        safeStorage.setItem('saas_premium_expiry', result.premium_expiry);
+                        const currentSessionType = safeStorage.getItem('saas_session_type');
+                        safeStorage.setItem('saas_session_type', result.session_type || currentSessionType || 'premium');
+                    } else {
+                        safeStorage.removeItem('saas_premium_expiry');
+                        safeStorage.removeItem('saas_session_type');
+                    }
+                    
+                    checkSubscription();
+                    checkTrialState();
+                } else {
+                    invalidateAccess();
+                }
+            } catch (e) {
+                checkSubscription();
+            }
+        }
+
+        function invalidateAccess() {
+            safeStorage.removeItem('saas_premium_expiry');
+            safeStorage.removeItem('saas_session_type');
+            checkSubscription();
         }
 
         function grantPremiumAccess(days) {
             const addedTime = days * 24 * 60 * 60 * 1000;
-            const currentExpiry = parseInt(localStorage.getItem('saas_premium_expiry')) || new Date().getTime();
+            const currentExpiry = parseInt(safeStorage.getItem('saas_premium_expiry')) || new Date().getTime();
             const newExpiry = Math.max(currentExpiry, new Date().getTime()) + addedTime;
 
-            localStorage.setItem('saas_premium_expiry', newExpiry);
+            safeStorage.setItem('saas_premium_expiry', newExpiry);
+            safeStorage.setItem('saas_session_type', 'premium');
+            
+            safeStorage.removeItem('saas_pending_session_id');
+            safeStorage.removeItem('saas_pending_days');
             
             if (paymentPollingInterval) clearInterval(paymentPollingInterval);
             
-            document.getElementById('payment-status-label').textContent = "Payment Verified!";
-            document.getElementById('status-spinner').classList.add('hidden');
+            const label = document.getElementById('payment-status-label');
+            if (label) label.textContent = "Payment Verified!";
             
-            alert(`Payment recognized. Unlocked Portal for ${days} days.`);
             closePaymentModal();
             checkSubscription();
             
-            if (activeChannel) selectChannel(activeChannel.id);
+            if (activeChannel) {
+                loadEmbeddedKaraokeVideo(activeChannel.src);
+            }
         }
 
         function calculateSignature(devId, days, serial) {
@@ -542,6 +1532,7 @@
             return Math.abs(hash).toString(16).toUpperCase().substring(0, 8);
         }
 
+        // Generate manual validation key parameters
         function buildLicenseKey(devId, days, serial) {
             const sig = calculateSignature(devId, days, serial);
             return `${devId}-${days}D-${serial}-${sig}`;
@@ -561,7 +1552,11 @@
                 return { valid: false, error: "Key tied to another gadget" };
             }
 
-            let usedSerials = JSON.parse(localStorage.getItem('saas_used_serials') || '[]');
+            let usedSerials = [];
+            try {
+                usedSerials = JSON.parse(safeStorage.getItem('saas_used_serials') || '[]');
+            } catch(e){}
+            
             if (usedSerials.includes(serial)) {
                 return { valid: false, error: "This key signature was already consumed" };
             }
@@ -577,27 +1572,62 @@
             return { valid: false, error: "Invalid cryptographic validation" };
         }
 
-        function initSaaS() {
+        async function initSaaS() {
             deviceId = generateUniqueDeviceID();
             document.getElementById('client-device-display').textContent = `Device ID: ${deviceId}`;
             document.getElementById('gen-client-id').value = deviceId;
 
-            const saved = localStorage.getItem('family_bonding_portal_config_v7');
+            const isTvModeActive = safeStorage.getItem('saas_tv_mode_active') === 'true';
+            updateSmartTvUIState(isTvModeActive);
+
+            const saved = safeStorage.getItem('family_bonding_portal_config_v8');
+            let needsSync = false;
+
             if (saved) {
-                appData = JSON.parse(saved);
-                if (!appData.paymentApi || appData.paymentApi.includes("fambond.cc")) {
-                    appData.paymentApi = defaultConfig.paymentApi;
+                try {
+                    appData = JSON.parse(saved);
+                    if (!appData.paymentApi || appData.paymentApi.includes("fambond.cc")) {
+                        appData.paymentApi = defaultConfig.paymentApi;
+                    }
+                    if (appData.sandboxMode === undefined) {
+                        appData.sandboxMode = defaultConfig.sandboxMode;
+                    }
+                    if (!appData.channels) {
+                        needsSync = true;
+                    } else {
+                        const defaultIds = defaultConfig.channels.map(c => c.id);
+                        const hasAllPresets = defaultIds.every(id => appData.channels.some(ch => ch.id === id));
+                        if (!hasAllPresets) {
+                            needsSync = true;
+                        }
+                    }
+                } catch(e) {
+                    needsSync = true;
                 }
             } else {
-                appData = JSON.parse(JSON.stringify(defaultConfig));
-                localStorage.setItem('family_bonding_portal_config_v7', JSON.stringify(appData));
+                needsSync = true;
+            }
+
+            if (needsSync) {
+                appData = defaultConfig;
+                safeStorage.setItem('family_bonding_portal_config_v8', JSON.stringify(appData));
+            }
+
+            const indicator = document.getElementById('sandbox-indicator');
+            if (indicator) {
+                if (appData.sandboxMode) indicator.classList.remove('hidden');
+                else indicator.classList.add('hidden');
             }
 
             populateDashboard();
             updateViewerPortalUI();
             updateAdminQRDisplay();
+            
             checkSubscription();
             checkTrialState();
+
+            await checkDeviceSessionWithServer();
+            checkActivePendingSession();
         }
 
         function getPlanPayloadUrl(planId) {
@@ -620,7 +1650,7 @@
                 const el = document.getElementById(`admin-qr-tab-${tab}`);
                 if (!el) return;
                 if (tab === planId) {
-                    el.className = "flex-1 py-1 rounded bg-indigo-600 text-white font-bold";
+                    el.className = "flex-1 py-1 rounded bg-fuchsia-600 text-white font-bold";
                 } else {
                     el.className = "flex-1 py-1 rounded text-slate-400";
                 }
@@ -631,6 +1661,7 @@
         function populateDashboard() {
             document.getElementById('cfg-brand-name').value = appData.brandName;
             document.getElementById('cfg-payment-api').value = appData.paymentApi;
+            document.getElementById('cfg-sandbox-mode').checked = !!appData.sandboxMode;
 
             const container = document.getElementById('channels-editor-container');
             container.innerHTML = '';
@@ -640,49 +1671,27 @@
                 div.className = "channel-editor-item bg-slate-950 p-4 rounded-xl border border-slate-855 space-y-3";
                 div.setAttribute('data-channel-id', channel.id);
                 
-                let scheduleInputsHTML = ``;
-                for (let i = 0; i < 3; i++) {
-                    const prog = channel.schedule && channel.schedule[i] ? channel.schedule[i] : { title: `Program Slot ${i+1}`, start: "00:00", end: "24:00" };
-                    scheduleInputsHTML += `
-                        <div class="grid grid-cols-12 gap-1 items-center">
-                            <span class="col-span-2 text-[9px] text-slate-500 font-bold">Slot ${i+1}</span>
-                            <input type="text" id="epg-title-${channel.id}-${i}" value="${prog.title}" placeholder="Program Name" class="col-span-5 bg-slate-900 border border-slate-800 rounded px-2 py-1 text-[10px] text-white">
-                            <input type="text" id="epg-start-${channel.id}-${i}" value="${prog.start}" placeholder="00:00" class="col-span-2 bg-slate-900 border border-slate-800 rounded px-2 py-1 text-[10px] text-white text-center font-mono">
-                            <span class="col-span-1 text-center text-slate-600 text-xs">-</span>
-                            <input type="text" id="epg-end-${channel.id}-${i}" value="${prog.end}" placeholder="24:00" class="col-span-2 bg-slate-900 border border-slate-800 rounded px-2 py-1 text-[10px] text-white text-center font-mono">
-                        </div>
-                    `;
-                }
-
                 const decodedUrl = secureDecode(channel.src);
 
                 div.innerHTML = `
                     <div class="flex items-center justify-between border-b border-slate-900 pb-3">
                         <div class="flex items-center space-x-2">
-                            <span class="text-xs font-mono text-indigo-400 font-bold">ID: ${channel.id}</span>
-                            <input type="text" id="edit-name-${channel.id}" value="${channel.name}" placeholder="Network Name" class="bg-slate-900 border border-slate-800 rounded px-2.5 py-1 text-xs font-bold text-white w-48">
+                            <span class="text-xs font-mono text-fuchsia-400 font-bold">ID: ${channel.id}</span>
+                            <input type="text" id="edit-name-${channel.id}" value="${channel.name}" placeholder="Track Name" class="bg-slate-900 border border-slate-800 rounded px-2.5 py-1 text-xs font-bold text-white w-48">
                         </div>
-                        <button onclick="removeChannel('${channel.id}')" class="text-[9px] uppercase px-2 py-1 bg-red-950 hover:bg-red-900 rounded text-red-400 border border-red-850">
-                            Delete Channel
+                        <button onclick="removeChannel('${channel.id}')" class="text-[9px] uppercase px-2 py-1 bg-red-955 hover:bg-red-900 rounded text-red-400 border border-red-850">
+                            Delete Track
                         </button>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="grid grid-cols-1 gap-3">
                         <div>
                             <label class="block text-[9px] text-slate-400 mb-1">Group Identifier</label>
-                            <input type="text" id="edit-group-${channel.id}" value="${channel.group || 'Movies'}" class="w-full bg-slate-900 border border-slate-800 rounded p-2 text-xs text-white">
-                        </div>
-                        <div>
-                            <label class="block text-[9px] text-slate-400 mb-1">Logo URL (Optional)</label>
-                            <input type="text" id="edit-logo-${channel.id}" value="${channel.logo || ''}" class="w-full bg-slate-900 border border-slate-800 rounded p-2 text-xs text-white">
+                            <input type="text" id="edit-group-${channel.id}" value="${channel.group || 'Popular Classics'}" class="w-full bg-slate-900 border border-slate-800 rounded p-2 text-xs text-white">
                         </div>
                     </div>
                     <div>
-                        <label class="block text-[9px] text-slate-400 mb-1">M3U8 Stream URL (Decoded Raw Text)</label>
-                        <input type="text" id="edit-src-${channel.id}" value="${decodedUrl}" placeholder="https://domain.com/index.m3u8" class="w-full bg-slate-900 border border-slate-800 rounded p-2 text-xs font-mono text-indigo-300">
-                    </div>
-                    <div class="space-y-1.5 pt-1">
-                        <span class="block text-[9px] text-indigo-400 font-semibold uppercase tracking-wider">Configure EPG Schedules</span>
-                        ${scheduleInputsHTML}
+                        <label class="block text-[9px] text-slate-400 mb-1">YouTube Video ID (Raw Unencoded text)</label>
+                        <input type="text" id="edit-src-${channel.id}" value="${decodedUrl}" placeholder="e.g. dQw4w9WgXcQ" class="w-full bg-slate-900 border border-slate-800 rounded p-2 text-xs font-mono text-fuchsia-300">
                     </div>
                 `;
                 container.appendChild(div);
@@ -690,18 +1699,13 @@
         }
 
         function addNewChannelTemplate() {
-            const uniqueId = "chan-" + Date.now();
+            const uniqueId = "track-" + Date.now();
             const newChan = {
                 id: uniqueId,
-                name: "New Movies Channel",
-                group: "Movies",
+                name: "New Karaoke Track",
+                group: "Popular Classics",
                 logo: "",
-                src: secureEncode("https://example.com/stream/index.m3u8"),
-                schedule: [
-                    { title: "Continuous Broadcast Block 1", start: "00:00", end: "08:00" },
-                    { title: "Continuous Broadcast Block 2", start: "08:00", end: "16:00" },
-                    { title: "Continuous Broadcast Block 3", start: "16:00", end: "24:00" }
-                ]
+                src: secureEncode("dQw4w9WgXcQ")
             };
             appData.channels.push(newChan);
             populateDashboard();
@@ -711,71 +1715,14 @@
         }
 
         function removeChannel(id) {
-            if (confirm("Are you sure you want to remove this channel from the lineup?")) {
-                appData.channels = appData.channels.filter(ch => ch.id !== id);
-                populateDashboard();
-            }
-        }
-
-        function saveBrandSettings() {
-            appData.brandName = document.getElementById('cfg-brand-name').value;
-            appData.paymentApi = document.getElementById('cfg-payment-api').value;
-
-            localStorage.setItem('family_bonding_portal_config_v7', JSON.stringify(appData));
-            alert("Platform configuration updated.");
-            updateViewerPortalUI();
-            updateAdminQRDisplay();
-        }
-
-        function saveChannelsAndEPG() {
-            const updatedChannels = [];
-            const channelNodes = document.querySelectorAll('.channel-editor-item');
-
-            channelNodes.forEach(node => {
-                const id = node.getAttribute('data-channel-id');
-                const nameVal = document.getElementById(`edit-name-${id}`).value.trim();
-                const groupVal = document.getElementById(`edit-group-${id}`).value.trim();
-                const logoVal = document.getElementById(`edit-logo-${id}`).value.trim();
-                const srcVal = document.getElementById(`edit-src-${id}`).value.trim();
-
-                const schedule = [];
-                for (let i = 0; i < 3; i++) {
-                    const titleVal = document.getElementById(`epg-title-${id}-${i}`).value.trim();
-                    const startVal = document.getElementById(`epg-start-${id}-${i}`).value.trim();
-                    const endVal = document.getElementById(`epg-end-${id}-${i}`).value.trim();
-                    
-                    schedule.push({
-                        title: titleVal || `Continuous Broadcast Slot ${i+1}`,
-                        start: startVal || "00:00",
-                        end: endVal || "24:00"
-                    });
+            tvConfirm(
+                "Delete Track",
+                "Are you sure you want to remove this track from your curation directory?",
+                () => {
+                    appData.channels = appData.channels.filter(ch => ch.id !== id);
+                    populateDashboard();
                 }
-
-                updatedChannels.push({
-                    id: id,
-                    name: nameVal || "Unnamed Network",
-                    group: groupVal || "Movies",
-                    logo: logoVal,
-                    src: secureEncode(srcVal),
-                    schedule: schedule
-                });
-            });
-
-            appData.channels = updatedChannels;
-            localStorage.setItem('family_bonding_portal_config_v7', JSON.stringify(appData));
-            alert("Lineup and EPG settings saved successfully.");
-            updateViewerPortalUI();
-            closeAdminModal();
-        }
-
-        function resetToPresets() {
-            if (confirm("Reset layout to default channel presets? Custom networks will be deleted.")) {
-                appData = JSON.parse(JSON.stringify(defaultConfig));
-                localStorage.setItem('family_bonding_portal_config_v7', JSON.stringify(appData));
-                populateDashboard();
-                updateViewerPortalUI();
-                updateAdminQRDisplay();
-            }
+            );
         }
 
         function updateViewerPortalUI() {
@@ -786,7 +1733,7 @@
 
             const categories = {};
             appData.channels.forEach(channel => {
-                const grp = channel.group || "Movies";
+                const grp = channel.group || "Popular Classics";
                 if (!categories[grp]) categories[grp] = [];
                 categories[grp].push(channel);
             });
@@ -808,27 +1755,17 @@
                     const hasSource = channel.src && channel.src.trim() !== "";
                     btn.className = `w-full text-left p-2 rounded-xl flex items-center justify-between border transition duration-150 ${!hasSource ? 'opacity-40 cursor-not-allowed bg-slate-950/20 border-slate-900 text-slate-500' : 'bg-slate-900/30 border-slate-855 text-slate-300 hover:bg-slate-900/60'}`;
 
-                    let logoHTML = '';
-                    if (channel.logo && channel.logo.trim() !== "") {
-                        logoHTML = `<img src="${channel.logo}" alt="logo" class="w-6 h-6 object-contain rounded bg-slate-950 p-0.5 border border-slate-800 flex-shrink-0">`;
-                    } else {
-                        const initials = channel.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
-                        logoHTML = `<div class="w-6 h-6 rounded bg-indigo-950/80 border border-indigo-900/40 text-indigo-400 font-bold text-[9px] flex items-center justify-center flex-shrink-0">${initials}</div>`;
-                    }
-
                     btn.innerHTML = `
                         <div class="flex items-center space-x-2 overflow-hidden">
-                            ${logoHTML}
+                            <div class="w-6 h-6 rounded bg-fuchsia-955/80 border border-fuchsia-900/40 text-fuchsia-400 font-bold text-[9px] flex items-center justify-center flex-shrink-0">🎙️</div>
                             <div class="truncate text-left leading-tight">
                                 <span class="text-xs font-bold block truncate max-w-[180px] text-slate-100">${channel.name}</span>
-                                <span class="text-[8px] text-slate-500 block truncate max-w-[180px]" id="channel-playing-${channel.id}">Calculating...</span>
                             </div>
                         </div>
                     `;
 
                     if (!hasSource) btn.disabled = true;
                     section.appendChild(btn);
-                    updateChannelNowPlayingLabel(channel);
                 });
 
                 viewerContainer.appendChild(section);
@@ -839,65 +1776,31 @@
                 activeChannel = activeSet;
                 document.getElementById('current-channel-title').textContent = activeSet.name.toUpperCase();
             }
-            
-            updateEPGDisplay();
-        }
-
-        function getNowPlayingProgram(channel) {
-            if (!channel.schedule || channel.schedule.length === 0) {
-                return { title: "Continuous Broadcast Loop", start: "00:00", end: "24:00" };
-            }
-
-            const now = new Date();
-            const currentMinutes = now.getHours() * 60 + now.getMinutes();
-
-            for (let item of channel.schedule) {
-                const startParts = item.start.split(":");
-                const endParts = item.end.split(":");
-                const startMin = parseInt(startParts[0]) * 60 + parseInt(startParts[1]);
-                const endMin = parseInt(endParts[0]) * 60 + parseInt(endParts[1]);
-
-                if (currentMinutes >= startMin && currentMinutes < endMin) {
-                    return item;
-                }
-            }
-            return channel.schedule[0]; 
-        }
-
-        function updateChannelNowPlayingLabel(channel) {
-            const label = document.getElementById(`channel-playing-${channel.id}`);
-            if (label) {
-                const prog = getNowPlayingProgram(channel);
-                label.textContent = prog.title;
-            }
-        }
-
-        function updateEPGDisplay() {
-            if (!activeChannel) return;
-            const currentProg = getNowPlayingProgram(activeChannel);
-            document.getElementById('epg-now-title').textContent = currentProg.title;
-            document.getElementById('epg-now-time').textContent = `${currentProg.start} - ${currentProg.end}`;
         }
 
         function checkSubscription() {
-            const isDeveloper = localStorage.getItem('saas_developer_bypass') === 'true';
-            const expirationTime = localStorage.getItem('saas_premium_expiry');
+            const isDeveloper = safeStorage.getItem('saas_developer_bypass') === 'true';
+            const expirationTime = safeStorage.getItem('saas_premium_expiry');
+            const sessionType = safeStorage.getItem('saas_session_type') || 'premium';
             const overlay = document.getElementById('paywall-overlay');
             const subBadge = document.getElementById('sub-badge');
             const countdownEl = document.getElementById('subscription-countdown');
+            const expDateEl = document.getElementById('expiration-date-display');
             const statusBar = document.getElementById('status-bar');
+            const logoutDevBtn = document.getElementById('logout-dev-btn');
 
             if (isDeveloper) {
                 overlay.classList.add('hidden');
                 statusBar.classList.remove('hidden');
+                if (logoutDevBtn) logoutDevBtn.classList.remove('hidden');
                 
-                subBadge.className = "px-3 py-1 rounded-full text-[10px] md:text-xs font-semibold bg-indigo-950 text-indigo-400 border border-indigo-800 animate-pulse";
+                subBadge.className = "px-3 py-1 rounded-full text-[10px] md:text-xs font-semibold bg-fuchsia-955 text-fuchsia-400 border border-fuchsia-800 animate-pulse";
                 subBadge.textContent = "Developer Lifetime Access";
                 countdownEl.textContent = "Infinite Bypass Active";
+                if (expDateEl) expDateEl.textContent = "";
 
-                if (!document.getElementById('video').src && activeChannel) {
-                    const decryptedStreamUrl = secureDecode(activeChannel.src);
-                    loadVideoStream(decryptedStreamUrl);
+                if (ytPlayer && activeChannel) {
+                    loadEmbeddedKaraokeVideo(activeChannel.src);
                 }
                 return true;
             }
@@ -909,9 +1812,19 @@
                 if (timeLeft > 0) {
                     overlay.classList.add('hidden');
                     statusBar.classList.remove('hidden');
+                    if (logoutDevBtn) logoutDevBtn.classList.add('hidden');
                     
-                    subBadge.className = "px-3 py-1 rounded-full text-[10px] md:text-xs font-semibold bg-emerald-950 text-emerald-400 border border-emerald-800";
-                    subBadge.textContent = "Access Granted";
+                    if (sessionType === 'trial') {
+                        subBadge.className = "px-3 py-1 rounded-full text-[10px] md:text-xs font-semibold bg-amber-955 text-amber-400 border border-amber-800";
+                        subBadge.textContent = "trial activated";
+                        const trialSection = document.getElementById('free-trial-container');
+                        if (trialSection) trialSection.classList.remove('hidden');
+                    } else {
+                        subBadge.className = "px-3 py-1 rounded-full text-[10px] md:text-xs font-semibold bg-emerald-955 text-emerald-400 border border-emerald-800";
+                        subBadge.textContent = "premium activated";
+                        const trialSection = document.getElementById('free-trial-container');
+                        if (trialSection) trialSection.classList.add('hidden');
+                    }
 
                     const hrs = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                     const mins = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
@@ -922,9 +1835,14 @@
                         countdownEl.textContent = `${hrs}h ${mins}m`;
                     }
 
-                    if (!document.getElementById('video').src && activeChannel) {
-                        const decryptedStreamUrl = secureDecode(activeChannel.src);
-                        loadVideoStream(decryptedStreamUrl);
+                    if (expDateEl) {
+                        const dateObj = new Date(parseInt(expirationTime));
+                        const formatted = dateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) + " at " + dateObj.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', hour12: true });
+                        expDateEl.textContent = `(Ends: ${formatted})`;
+                    }
+
+                    if (ytPlayer && activeChannel) {
+                        loadEmbeddedKaraokeVideo(activeChannel.src);
                     }
                     return true;
                 }
@@ -932,50 +1850,32 @@
 
             overlay.classList.remove('hidden');
             statusBar.classList.add('hidden');
-            subBadge.className = "px-3 py-1 rounded-full text-[10px] md:text-xs font-semibold bg-red-950 text-red-400 border border-red-800";
+            if (logoutDevBtn) logoutDevBtn.classList.add('hidden');
+            subBadge.className = "px-3 py-1 rounded-full text-[10px] md:text-xs font-semibold bg-red-955 text-red-400 border border-red-800";
             subBadge.textContent = "Awaiting Verification";
-            unloadVideo();
+            if (expDateEl) expDateEl.textContent = "";
+            const trialSection = document.getElementById('free-trial-container');
+            if (trialSection) trialSection.classList.remove('hidden');
+            
+            if (ytPlayer && typeof ytPlayer.stopVideo === 'function') {
+                ytPlayer.stopVideo();
+            }
             return false;
         }
 
-        function loadVideoStream(src) {
-            const video = document.getElementById('video');
-            if (!src) return;
-
-            if (hlsInstance) {
-                hlsInstance.destroy();
-                hlsInstance = null;
-            }
-
-            if (Hls.isSupported()) {
-                hlsInstance = new Hls({
-                    maxMaxBufferLength: 10,
-                    enableWorker: true
-                });
-                hlsInstance.loadSource(src);
-                hlsInstance.attachMedia(video);
-                hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(() => {}));
-            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                video.src = src;
-                video.addEventListener('loadedmetadata', () => video.play().catch(() => {}));
-            } else {
-                video.src = src;
-                video.play().catch(() => {});
-            }
+        function showPlayerError(title, message) {
+            document.getElementById('error-title').textContent = title;
+            document.getElementById('error-message').textContent = message;
+            document.getElementById('player-error-overlay').classList.remove('hidden');
         }
 
-        function unloadVideo() {
-            const video = document.getElementById('video');
-            video.pause();
-            video.removeAttribute('src');
-            video.load();
-            if (hlsInstance) {
-                hlsInstance.destroy();
-                hlsInstance = null;
-            }
+        function hidePlayerError() {
+            document.getElementById('player-error-overlay').classList.add('hidden');
         }
 
-        function selectChannel(id) {
+        async function selectChannel(id) {
+            await checkDeviceSessionWithServer();
+            
             const isSubscribed = checkSubscription();
             if (!isSubscribed) {
                 openPaymentModal();
@@ -987,22 +1887,20 @@
 
             activeChannel = target;
             document.getElementById('current-channel-title').textContent = target.name.toUpperCase();
+            document.getElementById('epg-now-title').textContent = target.name;
             
             appData.channels.forEach(ch => {
                 const el = document.getElementById(`view-chan-${ch.id}`);
                 if (!el) return;
                 const hasSource = ch.src && ch.src.trim() !== "";
                 if (ch.id === id) {
-                    el.className = "w-full text-left p-2 rounded-xl flex items-center justify-between border transition duration-150 bg-indigo-950/20 border-indigo-500 text-white";
+                    el.className = "w-full text-left p-2 rounded-xl flex items-center justify-between border transition duration-150 bg-fuchsia-955/20 border-fuchsia-550 text-white";
                 } else {
                     el.className = `w-full text-left p-2 rounded-xl flex items-center justify-between border transition duration-150 ${!hasSource ? 'opacity-40 cursor-not-allowed bg-slate-950/20 border-slate-900 text-slate-500' : 'bg-slate-900/30 border-slate-855 text-slate-300 hover:bg-slate-900/60'}`;
                 }
             });
 
-            updateEPGDisplay();
-            
-            const stream = secureDecode(target.src);
-            loadVideoStream(stream);
+            loadEmbeddedKaraokeVideo(target.src);
         }
 
         function openPaymentModal() {
@@ -1012,15 +1910,36 @@
             document.getElementById('vending-cost-display').textContent = `₱${calculateVendingCost(vendingDays)}`;
             resetQRState();
             checkTrialState();
+
+            expiryWhenOpened = parseInt(safeStorage.getItem('saas_premium_expiry')) || 0;
+
+            const bridgeUrl = window.location.origin + window.location.pathname + "?bridge=" + deviceId;
+            document.getElementById('phone-bridge-qr').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(bridgeUrl)}`;
+            document.getElementById('phone-bridge-link-display').textContent = bridgeUrl;
+
+            if (bridgePollingInterval) clearInterval(bridgePollingInterval);
+            bridgePollingInterval = setInterval(async () => {
+                await checkDeviceSessionWithServer();
+                const now = new Date().getTime();
+                const currentExpiry = parseInt(safeStorage.getItem('saas_premium_expiry')) || 0;
+                
+                if (currentExpiry > now && currentExpiry > expiryWhenOpened) {
+                    closePaymentModal();
+                }
+            }, 3000);
         }
 
         function closePaymentModal() {
             document.getElementById('payment-modal').classList.add('hidden');
             if (paymentPollingInterval) clearInterval(paymentPollingInterval);
+            if (bridgePollingInterval) {
+                clearInterval(bridgePollingInterval);
+                bridgePollingInterval = null;
+            }
         }
 
         function checkTrialState() {
-            const trialConsumed = localStorage.getItem('saas_trial_consumed') === 'true';
+            const trialConsumed = safeStorage.getItem('saas_trial_consumed') === 'true';
             const modalBtn = document.getElementById('trial-button');
             const overlayBtn = document.getElementById('trial-button-overlay');
 
@@ -1044,60 +1963,167 @@
                 if (overlayBtn) {
                     overlayBtn.textContent = "🚀 Start 24-Hour Free Trial";
                     overlayBtn.disabled = false;
-                    overlayBtn.className = "flex-1 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition duration-150 shadow-lg shadow-indigo-950";
+                    overlayBtn.className = "flex-1 py-3 bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-bold rounded-xl text-xs transition duration-150 shadow-lg shadow-fuchsia-950";
                 }
             }
         }
 
-        function activateOneTimeTrial() {
-            const trialConsumed = localStorage.getItem('saas_trial_consumed') === 'true';
-            if (trialConsumed) {
-                alert("The trial period has already been activated on this device.");
+        async function activateOneTimeTrial() {
+            const currentExpiry = parseInt(safeStorage.getItem('saas_premium_expiry')) || 0;
+            const now = new Date().getTime();
+            if (currentExpiry > now) {
+                tvAlert("Subscription Active", "You currently have an active subscription on this device.");
                 return;
             }
 
-            localStorage.setItem('saas_trial_consumed', 'true');
-            const expirationTimestamp = new Date().getTime() + (24 * 60 * 60 * 1000);
-            localStorage.setItem('saas_premium_expiry', expirationTimestamp);
+            const trialConsumed = safeStorage.getItem('saas_trial_consumed') === 'true';
+            if (trialConsumed) {
+                tvAlert("Trial Claimed", "The trial period has already been activated on this device.");
+                return;
+            }
 
-            alert("24-Hour Trial Activated.");
-            closePaymentModal();
-            checkSubscription();
-            checkTrialState();
+            const modalBtn = document.getElementById('trial-button');
+            const overlayBtn = document.getElementById('trial-button-overlay');
+            
+            if (modalBtn) modalBtn.disabled = true;
+            if (overlayBtn) overlayBtn.disabled = true;
 
-            if (activeChannel) selectChannel(activeChannel.id);
+            if (appData.sandboxMode) {
+                setTimeout(() => {
+                    safeStorage.setItem('saas_trial_consumed', 'true');
+                    const expirationTimestamp = new Date().getTime() + (24 * 60 * 60 * 1000);
+                    safeStorage.setItem('saas_premium_expiry', expirationTimestamp);
+                    safeStorage.setItem('saas_session_type', 'trial');
+
+                    tvAlert("Trial Active", "24-Hour Free Trial Activated (Sandbox Mode).");
+                    closePaymentModal();
+                    checkSubscription();
+                    checkTrialState();
+
+                    if (activeChannel) selectChannel(activeChannel.id);
+                }, 500);
+                return;
+            }
+
+            try {
+                const response = await fetch(appData.paymentApi, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'claim_trial',
+                        deviceId: deviceId
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error("Handshake connection failure.");
+                }
+
+                const result = await response.json();
+
+                if (result.success) {
+                    safeStorage.setItem('saas_trial_consumed', 'true');
+                    
+                    const durationHours = result.duration_hours || 24;
+                    const expirationTimestamp = new Date().getTime() + (durationHours * 60 * 60 * 1000);
+                    safeStorage.setItem('saas_premium_expiry', expirationTimestamp);
+                    safeStorage.setItem('saas_session_type', 'trial');
+
+                    tvAlert("Trial Activated", "24-Hour Trial Activated.");
+                    closePaymentModal();
+                    checkSubscription();
+                    checkTrialState();
+
+                    if (activeChannel) selectChannel(activeChannel.id);
+                } else {
+                    tvAlert("Trial Error", result.error || "A trial period has already been activated.");
+                    safeStorage.setItem('saas_trial_consumed', 'true');
+                    checkTrialState();
+                }
+            } catch (err) {
+                console.warn("Trial API Handshake Failure:", err);
+                tvAlert("Connection Failure", "Could not register free trial.");
+                if (modalBtn) modalBtn.disabled = false;
+                if (overlayBtn) overlayBtn.disabled = false;
+            }
         }
 
-        function processSubscription() {
+        async function processSubscription() {
             const rawKey = document.getElementById('activation-key').value.trim();
             
             if (rawKey === "!12345678*") {
-                localStorage.setItem('saas_developer_bypass', 'true');
-                alert("Developer Bypass Access Activated.");
+                safeStorage.setItem('saas_developer_bypass', 'true');
+                tvAlert("Success", "Developer Bypass Access Activated.");
                 closePaymentModal();
                 checkSubscription();
                 if (activeChannel) selectChannel(activeChannel.id);
                 return;
             }
 
-            const check = verifyLicenseKey(rawKey);
-            if (!check.valid) {
-                alert(`Verification Error: ${check.error}`);
+            if (!rawKey) {
+                tvAlert("Validation Error", "Please enter an activation key.");
                 return;
             }
 
-            let usedSerials = JSON.parse(localStorage.getItem('saas_used_serials') || '[]');
-            usedSerials.push(check.serial);
-            localStorage.setItem('saas_used_serials', JSON.stringify(usedSerials));
+            let success = false;
+            let responseData = null;
 
-            const expirationTimestamp = new Date().getTime() + (check.days * 24 * 60 * 60 * 1000);
-            localStorage.setItem('saas_premium_expiry', expirationTimestamp);
-            
-            alert(`Key Activated. Access granted for ${check.days} days.`);
-            closePaymentModal();
-            checkSubscription();
-            
-            if (activeChannel) selectChannel(activeChannel.id);
+            try {
+                const response = await fetch(appData.paymentApi, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'activate_key',
+                        deviceId: deviceId,
+                        key: rawKey
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        responseData = result;
+                        success = true;
+                    }
+                }
+            } catch (err) {
+                console.warn("Primary API check bypassed.");
+            }
+
+            if (success && responseData) {
+                safeStorage.setItem('saas_premium_expiry', responseData.expiry);
+                safeStorage.setItem('saas_session_type', 'premium');
+                
+                tvAlert("Key Activated", `Access granted for ${responseData.days || 'custom'} days.`);
+                closePaymentModal();
+                checkSubscription();
+                if (activeChannel) selectChannel(activeChannel.id);
+            } else {
+                console.warn("Server connection offline. Trying client key verification.");
+                const check = verifyLicenseKey(rawKey);
+                if (!check.valid) {
+                    tvAlert("Verification Error", check.error);
+                    return;
+                }
+
+                let usedSerials = [];
+                try {
+                    usedSerials = JSON.parse(safeStorage.getItem('saas_used_serials') || '[]');
+                } catch(e){}
+                
+                usedSerials.push(check.serial);
+                safeStorage.setItem('saas_used_serials', JSON.stringify(usedSerials));
+
+                const expirationTimestamp = new Date().getTime() + (check.days * 24 * 60 * 60 * 1000);
+                safeStorage.setItem('saas_premium_expiry', expirationTimestamp);
+                safeStorage.setItem('saas_session_type', 'premium');
+                
+                tvAlert("Key Activated", `Offline Access granted for ${check.days} days.`);
+                closePaymentModal();
+                checkSubscription();
+                
+                if (activeChannel) selectChannel(activeChannel.id);
+            }
         }
 
         function generateActivationKey() {
@@ -1105,12 +2131,12 @@
             const days = parseInt(document.getElementById('gen-client-days').value);
             
             if (!inputId.startsWith("WP-") || inputId.split('-').length !== 3) {
-                alert("Input a valid target Client Device ID (e.g., WP-A1B2-C3D4).");
+                tvAlert("Verification Error", "Input a valid target Client Device ID (e.g., WP-A1B2-C3D4).");
                 return;
             }
 
             if (isNaN(days) || days < 1) {
-                alert("Select a valid day count.");
+                tvAlert("Verification Error", "Select a valid day count.");
                 return;
             }
 
@@ -1125,24 +2151,116 @@
             document.getElementById('gen-result-container').classList.remove('hidden');
         }
 
-        function promptDevPasscode() {
-            const rawInput = prompt("Enter Administration Passcode:");
-            if (rawInput === null) return;
-            
-            const sanitizedInput = rawInput.trim();
-            if (sanitizedInput === "!12345678*") {
-                localStorage.setItem('saas_developer_bypass', 'true');
-                checkSubscription();
-                openAdminModal();
-            } else {
-                alert("Invalid Passcode.");
+        function copyGeneratedKey() {
+            const keyText = document.getElementById('gen-result-key').textContent;
+            const btn = document.getElementById('copy-key-btn');
+            const btnText = document.getElementById('copy-btn-text') || btn;
+            if (!keyText || keyText === "...") return;
+
+            navigator.clipboard.writeText(keyText).then(() => {
+                showCopySuccess(btn, btnText);
+            }).catch(() => {
+                tryExecCommandCopy(keyText, btn, btnText);
+            });
+        }
+
+        function tryExecCommandCopy(text, btn, btnText) {
+            let copiedSuccessfully = false;
+            try {
+                const textArea = document.createElement("textarea");
+                textArea.value = text;
+                textArea.style.position = "fixed";
+                textArea.style.opacity = "0";
+                document.body.appendChild(textArea);
+                textArea.select();
+                copiedSuccessfully = document.execCommand('copy');
+                document.body.removeChild(textArea);
+            } catch (err) {}
+
+            if (copiedSuccessfully) {
+                showCopySuccess(btn, btnText);
+            }
+        }
+
+        function showCopySuccess(btn, btnText) {
+            const originalText = btnText.textContent;
+            btnText.textContent = "Copied!";
+            setTimeout(() => { btnText.textContent = originalText; }, 2500);
+        }
+
+        function pasteClipboardToActivationField() {
+            if (navigator.clipboard && typeof navigator.clipboard.readText === 'function') {
+                navigator.clipboard.readText()
+                    .then(text => {
+                        const input = document.getElementById('activation-key');
+                        if (input) input.value = text.trim();
+                    })
+                    .catch(() => {
+                        tvAlert("Notice", "Clipboard block active on browser. Paste manually.");
+                    });
             }
         }
 
         function logoutDeveloperAccess() {
-            localStorage.removeItem('saas_developer_bypass');
-            alert("Developer credentials cleared.");
+            safeStorage.removeItem('saas_developer_bypass');
             window.location.reload();
+        }
+
+        function resetLocalSession() {
+            tvConfirm(
+                "Reset Local Memory",
+                "Are you sure you want to clear session cache, trial status, and developer bypass access?",
+                () => {
+                    safeStorage.removeItem('saas_premium_expiry');
+                    safeStorage.removeItem('saas_session_type');
+                    safeStorage.removeItem('saas_developer_bypass');
+                    safeStorage.removeItem('saas_trial_consumed');
+                    safeStorage.removeItem('saas_used_serials');
+                    tvAlert("Cleared", "Local storage cleared.", () => {
+                        window.location.reload();
+                    });
+                }
+            );
+        }
+
+        async function resetDeveloperDatabaseState() {
+            const isDeveloper = safeStorage.getItem('saas_developer_bypass') === 'true';
+            if (!isDeveloper) {
+                tvAlert("Unauthorized", "Access denied.");
+                return;
+            }
+
+            tvConfirm(
+                "Purge Cloud Records",
+                "Wipe database records for this device globally?",
+                async () => {
+                    try {
+                        const response = await fetch(appData.paymentApi, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                action: 'developer_reset_db',
+                                deviceId: deviceId,
+                                passcode: "!12345678*"
+                            })
+                        });
+
+                        const result = await response.json();
+                        if (response.ok && result.success) {
+                            safeStorage.removeItem('saas_premium_expiry');
+                            safeStorage.removeItem('saas_session_type');
+                            safeStorage.removeItem('saas_trial_consumed');
+                            safeStorage.removeItem('saas_developer_bypass');
+                            
+                            tvAlert("Purge Succeeded", "Database reset complete.", () => {
+                                window.location.reload();
+                            });
+                        }
+                    } catch (e) {
+                        tvAlert("Wipe Failed", "Database connection error.");
+                    }
+                }
+            );
         }
 
         function openAdminModal() {
@@ -1155,8 +2273,35 @@
             document.getElementById('gen-result-container').classList.add('hidden');
         }
 
+        function generateUniqueDeviceID() {
+            let id = safeStorage.getItem('saas_device_id');
+            if (id && id.startsWith("WP-")) return id;
+
+            let randomSegment = '';
+            try {
+                if (window.crypto && typeof window.crypto.getRandomValues === 'function') {
+                    const arr = new Uint32Array(2);
+                    window.crypto.getRandomValues(arr);
+                    randomSegment = Array.from(arr, num => num.toString(16).padStart(8, '0')).join('-');
+                } else {
+                    throw new Error();
+                }
+            } catch (e) {
+                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+                let segment1 = ''; let segment2 = '';
+                for (let i = 0; i < 8; i++) {
+                    segment1 += chars.charAt(Math.floor(Math.random() * chars.length));
+                    segment2 += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+                randomSegment = `${segment1}-${segment2}`;
+            }
+
+            id = `WP-${randomSegment.toUpperCase()}`;
+            safeStorage.setItem('saas_device_id', id);
+            return id;
+        }
+
         initSaaS();
     </script>
 </body>
 </html>
-
