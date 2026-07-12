@@ -139,7 +139,7 @@
                             <input type="range" id="mic-echo-slider" min="0" max="75" value="25" step="5" oninput="adjustMicEchoFeedback(this.value)" class="w-full h-1 bg-slate-950 rounded-lg appearance-none cursor-pointer accent-fuchsia-500">
                         </div>
                         
-                        <!-- Backing Music Key Transpose Slider (Drives the CORS audio tag) -->
+                        <!-- Backing Music Key Transpose Slider -->
                         <div class="space-y-1 col-span-2 pt-1 border-t border-slate-800/60 mt-1">
                             <div class="flex justify-between text-[9px] text-slate-400 uppercase tracking-wide">
                                 <span>Backing Track Pitch (Music Key):</span>
@@ -243,7 +243,7 @@
                         </div>
                         <div class="relative flex items-center">
                             <input type="text" id="activation-key" placeholder="WP-XXXX-XXXX-XXD-XXXX-XXXXXX" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 pr-12 text-[10px] text-center font-mono tracking-wider text-white focus:outline-none focus:border-fuchsia-500">
-                            <!-- Quick Paste Trigger for Activation Key Field -->
+                            <!-- Quick Paste Trigger -->
                             <button onclick="pasteClipboardToActivationField()" class="absolute right-1.5 px-2 py-1 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-[8px] font-bold text-slate-400 hover:text-white rounded-md transition uppercase">
                                 Paste
                             </button>
@@ -324,10 +324,9 @@
                             <button onclick="resetLocalSession()" class="text-[9px] uppercase px-3 py-1 rounded bg-amber-955/60 hover:bg-amber-900/80 text-amber-400 border border-amber-900 font-bold tracking-wide transition">
                                 Reset Local Session
                             </button>
-                            <button onclick="logoutDeveloperAccess()" class="text-[9px] uppercase px-3 py-1 rounded bg-red-955/60 hover:bg-red-900/80 text-red-400 border border-red-900 font-bold tracking-wide transition">
+                            <button onclick="logoutDeveloperAccess()" class="text-[9px] uppercase px-3 py-1 rounded bg-red-955/60 hover:bg-red-900/80 text-red-405 border border-red-900 font-bold tracking-wide transition">
                                 Log Out Developer
                             </button>
-                            <!-- Secure Developer DB Purge Button -->
                             <button onclick="resetDeveloperDatabaseState()" class="text-[9px] uppercase px-3 py-1 rounded bg-rose-955/60 hover:bg-rose-900/80 text-rose-400 border border-rose-900 font-bold tracking-wide transition">
                                 Purge DB Records
                             </button>
@@ -594,7 +593,7 @@
         })();
 
         // ==========================================
-        // DUAL-DELAY OVERLAP-ADD PITCH SHIFTER (JunglePitchShifter)
+        // DUAL-DELAY OVERLAP-ADD PITCH SHIFTER
         // ==========================================
         class JunglePitchShifter {
             constructor(audioCtx) {
@@ -602,23 +601,18 @@
                 this.input = audioCtx.createGain();
                 this.output = audioCtx.createGain();
 
-                // Delay lines
                 this.delayA = audioCtx.createDelay(1.0);
                 this.delayB = audioCtx.createDelay(1.0);
 
-                // Crossfading gain nodes
                 this.fadeA = audioCtx.createGain();
                 this.fadeB = audioCtx.createGain();
 
-                // LFO Modulators (Sawtooth sweeps)
                 this.modA = audioCtx.createOscillator();
                 this.modB = audioCtx.createOscillator();
 
-                // Wave Shapers to create clean sawtooth control signals
                 this.modGainA = audioCtx.createGain();
                 this.modGainB = audioCtx.createGain();
 
-                // Setup delay/fade values
                 this.delayTime = 0.100; // 100ms baseline buffer
                 this.delayA.delayTime.value = this.delayTime;
                 this.delayB.delayTime.value = this.delayTime;
@@ -628,7 +622,6 @@
             }
 
             configureModulation() {
-                // Create custom curve to convert standard triangle/sine waves into sawtooth shapes
                 const bufferSize = 512;
                 const curve = new Float32Array(bufferSize);
                 for (let i = 0; i < bufferSize; i++) {
@@ -642,22 +635,18 @@
                 const waveShaperB = this.ctx.createWaveShaper();
                 waveShaperB.curve = curve;
 
-                // Configure oscillators
                 this.modA.type = 'triangle';
-                this.modA.frequency.value = 10.0; // 10Hz modulation frequency
+                this.modA.frequency.value = 10.0;
 
                 this.modB.type = 'triangle';
                 this.modB.frequency.value = 10.0;
 
-                // Phase offset of 180 degrees for Modulator B
                 const delayOffset = this.ctx.createDelay();
-                delayOffset.delayTime.value = 0.05; // 50ms delay creates half-cycle phase shift
+                delayOffset.delayTime.value = 0.05;
 
-                // Modulation Gain controls depth of the pitch shift
                 this.modGainA.gain.value = 0.0; 
                 this.modGainB.gain.value = 0.0;
 
-                // Connect modulator chains
                 this.modA.connect(waveShaperA);
                 waveShaperA.connect(this.modGainA);
                 this.modGainA.connect(this.delayA.delayTime);
@@ -667,7 +656,6 @@
                 waveShaperB.connect(this.modGainB);
                 this.modGainB.connect(this.delayB.delayTime);
 
-                // Connect dry crossfaders to volume sweeps
                 const volumeShaperA = this.ctx.createWaveShaper();
                 const volumeShaperB = this.ctx.createWaveShaper();
                 
@@ -687,7 +675,6 @@
                 waveShaperB.connect(volumeShaperB);
                 volumeShaperB.connect(this.fadeB.gain);
 
-                // Initialize LFO sweeps
                 this.modA.start(0);
             }
 
@@ -703,7 +690,6 @@
             }
 
             setPitchOffset(semitones) {
-                // Maps semitones range (-6 to +6) to modulation depths
                 const factor = semitones / 12.0;
                 this.modGainA.gain.value = this.delayTime * factor;
                 this.modGainB.gain.value = this.delayTime * factor;
@@ -711,7 +697,7 @@
         }
 
         // ==========================================
-        // REAL-TIME AUDIO EFFECT PROCESSOR (Vocal & Backing Track DSP)
+        // REAL-TIME AUDIO EFFECT PROCESSOR
         // ==========================================
         let vocalAudioCtx = null;
         let vocalMicStream = null;
@@ -724,7 +710,6 @@
         let dspOutputMix = null;
         let vuAnimationId = null;
 
-        // Backing Track DSP Nodes (CORS-enabled Native Stream)
         let backingAudioSourceNode = null;
         let backingPitchShifter = null;
         let backingGainNode = null;
@@ -745,7 +730,6 @@
             const txt = document.getElementById('mic-btn-text');
 
             if (vocalMicStream) {
-                // Terminate Vocal Capture
                 if (vuAnimationId) cancelAnimationFrame(vuAnimationId);
                 vocalMicStream.getTracks().forEach(track => track.stop());
                 vocalMicStream = null;
@@ -755,7 +739,17 @@
                     dspPitchShifter = null;
                 }
 
-                // Close AudioContext only if backing track is not active
+                // Explicitly clear references to nodes assigned to the old context to avoid memory leak
+                backingAudioSourceNode = null;
+                backingPitchShifter = null;
+                backingGainNode = null;
+                vocalInputNode = null;
+                vocalAnalyserNode = null;
+                dspGainNode = null;
+                dspDelayNode = null;
+                dspFeedbackNode = null;
+                dspOutputMix = null;
+
                 const audioElement = document.getElementById('karaoke-audio-stream');
                 if (audioElement.paused && vocalAudioCtx) {
                     await vocalAudioCtx.close();
@@ -787,15 +781,13 @@
                 dspGainNode = vocalAudioCtx.createGain();
                 dspGainNode.gain.value = 1.0;
 
-                // Build Feedback Echo Loop
                 dspDelayNode = vocalAudioCtx.createDelay(1.0);
                 dspDelayNode.delayTime.value = 0.28;
 
                 dspFeedbackNode = vocalAudioCtx.createGain();
                 const echoSliderVal = parseInt(document.getElementById('mic-echo-slider').value);
-                dspFeedbackNode.gain.value = (echoSliderVal / 100) * 0.75; // Safe ceiling limit
+                dspFeedbackNode.gain.value = (echoSliderVal / 100) * 0.75;
 
-                // Instantiate Jungle Pitch Shifter module
                 dspPitchShifter = new JunglePitchShifter(vocalAudioCtx);
                 const initialPitch = parseInt(document.getElementById('mic-pitch-slider').value);
                 dspPitchShifter.setPitchOffset(initialPitch);
@@ -803,21 +795,17 @@
                 dspOutputMix = vocalAudioCtx.createGain();
                 dspOutputMix.gain.value = 1.0;
 
-                // Connection Matrix routing
                 vocalInputNode.connect(vocalAnalyserNode);
                 vocalInputNode.connect(dspGainNode);
                 
-                // Route dry through Pitch Shifter module
                 dspGainNode.connect(dspPitchShifter.input);
                 dspPitchShifter.output.connect(dspOutputMix);
 
-                // Inject parallel feedback echo loops post-pitch shift
                 dspPitchShifter.output.connect(dspDelayNode);
                 dspDelayNode.connect(dspFeedbackNode);
-                dspFeedbackNode.connect(dspDelayNode); // circular loop
+                dspFeedbackNode.connect(dspDelayNode);
                 dspFeedbackNode.connect(dspOutputMix);
 
-                // Terminal out mix
                 dspOutputMix.connect(vocalAudioCtx.destination);
 
                 led.className = "w-2 h-2 rounded-full bg-emerald-500 animate-pulse";
@@ -830,7 +818,6 @@
             }
         }
 
-        // Initialize and bind the HTML5 Audio element through Web Audio Context
         async function setupBackingTrackDSP() {
             await initAudioContext();
             const audioElement = document.getElementById('karaoke-audio-stream');
@@ -840,12 +827,10 @@
                 backingPitchShifter = new JunglePitchShifter(vocalAudioCtx);
                 backingGainNode = vocalAudioCtx.createGain();
 
-                // Apply initial UI values
                 const initialPitch = parseInt(document.getElementById('music-pitch-slider').value);
                 backingPitchShifter.setPitchOffset(initialPitch);
                 backingGainNode.gain.value = 1.0;
 
-                // Connections
                 backingAudioSourceNode.connect(backingPitchShifter.input);
                 backingPitchShifter.output.connect(backingGainNode);
                 backingGainNode.connect(vocalAudioCtx.destination);
@@ -900,7 +885,6 @@
                     dbDisplay.textContent = `${computedDB > 0 ? '+' : ''}${computedDB} dB`;
                 }
 
-                // Smooth mapping layout calculations
                 if (normalizedVal < 60) {
                     greenBar.style.width = `${normalizedVal}%`;
                     orangeBar.style.width = `0%`;
@@ -941,13 +925,12 @@
         function instantiateVideoPlayerContainer() {
             if (!isYtApiReady) return;
 
-            // Dynamically configure player variables to prevent Error 153 on local file setups
             const playerVars = {
                 'autoplay': 1,
                 'controls': 1,
                 'rel': 0,
                 'modestbranding': 1,
-                'mute': 1 // Force iframe to play in mute; native <audio> controls real sound
+                'mute': 1
             };
 
             const origin = window.location.origin;
@@ -958,7 +941,7 @@
             ytPlayer = new YT.Player('yt-player-target', {
                 height: '100%',
                 width: '100%',
-                videoId: 'ZcZxLcGhUkQ', // Updated to a stable, embed-friendly track
+                videoId: 'ZcZxLcGhUkQ', 
                 playerVars: playerVars,
                 events: {
                     'onReady': onYtPlayerReady,
@@ -978,7 +961,7 @@
             const audioElement = document.getElementById('karaoke-audio-stream');
             
             if (event.data === YT.PlayerState.PLAYING) {
-                audioElement.play();
+                audioElement.play().catch(() => {});
                 startPlaybackSynchronizer();
             } else if (event.data === YT.PlayerState.PAUSED) {
                 audioElement.pause();
@@ -986,7 +969,7 @@
             } else if (event.data === YT.PlayerState.ENDED) {
                 audioElement.pause();
                 stopPlaybackSynchronizer();
-                surfChannels(1); // Auto-advances queue list upon song completion
+                surfChannels(1); 
             }
         }
 
@@ -999,8 +982,8 @@
                 const ytTime = ytPlayer.getCurrentTime();
                 const audioTime = audioElement.currentTime;
 
-                // Sync audio target back if offset is wider than 150ms
-                if (Math.abs(ytTime - audioTime) > 0.150) {
+                // Sync audio elements together if desynchronization drifts beyond 250ms
+                if (Math.abs(ytTime - audioTime) > 0.250) {
                     audioElement.currentTime = ytTime;
                 }
             }, 500);
@@ -1043,9 +1026,7 @@
             return null;
         }
 
-        // Automatically resolves backend calls to match whatever Netlify domain the app is running on
         function getApiEndpoint(action) {
-            // Direct audio proxy requests directly to your Cloudflare Worker edge proxy
             if (action === 'get-audio') {
                 return "https://vocal-portal-streamer.rubix012025.workers.dev";
             }
@@ -1063,10 +1044,8 @@
             
             hidePlayerError();
             
-            // Build the proxy path targeting your Netlify streaming function dynamically
             const streamProxyUrl = `${getApiEndpoint('get-audio')}?id=${videoId}`;
             
-            // Register backend audio stream to standard HTML5 Element
             const audioElement = document.getElementById('karaoke-audio-stream');
             audioElement.src = streamProxyUrl;
             audioElement.load();
@@ -1104,7 +1083,6 @@
                 
                 hidePlayerError();
                 
-                // Register backend audio stream to standard HTML5 Element
                 const streamProxyUrl = `${getApiEndpoint('get-audio')}?id=${parsedVideoId}`;
                 const audioElement = document.getElementById('karaoke-audio-stream');
                 audioElement.src = streamProxyUrl;
@@ -1127,7 +1105,7 @@
             } else {
                 tvAlert(
                     "Invalid Link",
-                    "The link format is not recognized. Please copy the complete URL from your browser's address bar (e.g. https://www.youtube.com/watch?v=...)."
+                    "The link format is not recognized. Please copy the complete URL from your browser's address bar."
                 );
             }
         }
@@ -1158,7 +1136,7 @@
         })();
 
         // ==========================================
-        // SMART TV PHYSICAL REMOTE CHANNEL SURFING ENGINE
+        // SMART TV PHYSICAL REMOTE CHANNEL SURFING
         // ==========================================
         (function() {
             window.addEventListener('keydown', function (e) {
@@ -1224,7 +1202,7 @@
         }
 
         // ==========================================
-        // SMART TV TV-COMPATIBLE MODAL WRAPPERS
+        // TV-COMPATIBLE MODAL WRAPPERS
         // ==========================================
         let currentConfirmCallback = null;
 
@@ -1280,6 +1258,9 @@
             }
         }
 
+        // ==========================================
+        // CRYPTOGRAPHIC DATA TRANSLATORS
+        // ==========================================
         function secureDecode(b64) {
             try {
                 if (!b64) return "";
@@ -1288,12 +1269,19 @@
             } catch(e) { return ""; }
         }
 
+        function secureEncode(str) {
+            try {
+                if (!str) return "";
+                return btoa(unescape(encodeURIComponent(str)));
+            } catch(e) { return ""; }
+        }
+
         // Popular Curated Karaoke Tracks (Corrected 11-Character Base64 IDs)
         const liveChannelsData = [
-            { id: "kar-sweet-caroline", name: "Sweet Caroline - Karaoke", group: "Popular Classics", src: "bXN3XzBkaUtWYU0=" }, // msw_0diKVaM
-            { id: "kar-bohemian", name: "Bohemian Rhapsody - Queen", group: "Rock Classics", src: "dUp0RlZnbmExTTg=" },     // uJtFVgna1M8
-            { id: "kar-dancing-queen", name: "Dancing Queen - ABBA", group: "Popular Classics", src: "NGR0dkxSMVJnNlk=" },     // 4dtvLR1Rg6Y
-            { id: "kar-dont-stop-believin", name: "Don't Stop Believin' - Journey", group: "Rock Classics", src: "cTBtTGgxVnkyX1k=" } // q0mLh1Vy2_Y
+            { id: "kar-sweet-caroline", name: "Sweet Caroline - Karaoke", group: "Popular Classics", src: "bXN3XzBkaUtWYU0=" }, 
+            { id: "kar-bohemian", name: "Bohemian Rhapsody - Queen", group: "Rock Classics", src: "dUp0RlZnbmExTTg=" },     
+            { id: "kar-dancing-queen", name: "Dancing Queen - ABBA", group: "Popular Classics", src: "NGR0dkxSMVJnNlk=" },     
+            { id: "kar-dont-stop-believin", name: "Don't Stop Believin' - Journey", group: "Rock Classics", src: "cTBtTGgxVnkyX1k=" } 
         ];
 
         const defaultConfig = {
@@ -1542,7 +1530,6 @@
             return Math.abs(hash).toString(16).toUpperCase().substring(0, 8);
         }
 
-        // Generate manual validation key parameters
         function buildLicenseKey(devId, days, serial) {
             const sig = calculateSignature(devId, days, serial);
             return `${devId}-${days}D-${serial}-${sig}`;
@@ -1689,7 +1676,7 @@
                             <span class="text-xs font-mono text-fuchsia-400 font-bold">ID: ${channel.id}</span>
                             <input type="text" id="edit-name-${channel.id}" value="${channel.name}" placeholder="Track Name" class="bg-slate-900 border border-slate-800 rounded px-2.5 py-1 text-xs font-bold text-white w-48">
                         </div>
-                        <button onclick="removeChannel('${channel.id}')" class="text-[9px] uppercase px-2 py-1 bg-red-955 hover:bg-red-900 rounded text-red-450 border border-red-850">
+                        <button onclick="removeChannel('${channel.id}')" class="text-[9px] uppercase px-2 py-1 bg-red-955 hover:bg-red-900 rounded text-red-405 border border-red-850">
                             Delete Track
                         </button>
                     </div>
@@ -1700,7 +1687,7 @@
                         </div>
                     </div>
                     <div>
-                        <label class="block text-[9px] text-slate-400 mb-1">YouTube Video ID (Raw Unencoded text)</label>
+                        <label class="block text-[9px] text-slate-400 mb-1">YouTube Video ID (Raw Unencoded Text)</label>
                         <input type="text" id="edit-src-${channel.id}" value="${decodedUrl}" placeholder="e.g. dQw4w9WgXcQ" class="w-full bg-slate-900 border border-slate-800 rounded p-2 text-xs font-mono text-fuchsia-300">
                     </div>
                 `;
@@ -2273,6 +2260,56 @@
             );
         }
 
+        function saveBrandSettings() {
+            const name = document.getElementById('cfg-brand-name').value.trim();
+            const api = document.getElementById('cfg-payment-api').value.trim();
+            const sandbox = document.getElementById('cfg-sandbox-mode').checked;
+            
+            appData.brandName = name;
+            appData.paymentApi = api;
+            appData.sandboxMode = sandbox;
+            
+            safeStorage.setItem('family_bonding_portal_config_v8', JSON.stringify(appData));
+            
+            const indicator = document.getElementById('sandbox-indicator');
+            if (indicator) {
+                if (appData.sandboxMode) indicator.classList.remove('hidden');
+                else indicator.classList.add('hidden');
+            }
+            
+            updateViewerPortalUI();
+            closeAdminModal();
+            tvAlert("Settings Saved", "Brand settings and gateway API configurations saved.");
+        }
+
+        // Apply Layout Updates
+        function saveChannelsAndEPG() {
+            const items = document.querySelectorAll('.channel-editor-item');
+            const updatedChannels = [];
+            
+            items.forEach(item => {
+                const chId = item.getAttribute('data-channel-id');
+                const nameVal = document.getElementById(`edit-name-${chId}`).value.trim();
+                const groupVal = document.getElementById(`edit-group-${chId}`).value.trim();
+                const rawSrc = document.getElementById(`edit-src-${chId}`).value.trim();
+                
+                updatedChannels.push({
+                    id: chId,
+                    name: nameVal,
+                    group: groupVal,
+                    logo: "",
+                    src: secureEncode(rawSrc) 
+                });
+            });
+            
+            appData.channels = updatedChannels;
+            safeStorage.setItem('family_bonding_portal_config_v8', JSON.stringify(appData));
+            
+            updateViewerPortalUI();
+            closeAdminModal();
+            tvAlert("Configuration Saved", "Dynamic tracks directory has been updated.");
+        }
+
         function openAdminModal() {
             populateDashboard();
             document.getElementById('admin-modal').classList.remove('hidden');
@@ -2281,6 +2318,20 @@
         function closeAdminModal() {
             document.getElementById('admin-modal').classList.add('hidden');
             document.getElementById('gen-result-container').classList.add('hidden');
+        }
+
+        function resetToPresets() {
+            tvConfirm(
+                "Reset Directory",
+                "Are you sure you want to restore the channel listing directory back to original presets?",
+                () => {
+                    appData.channels = [...defaultConfig.channels];
+                    safeStorage.setItem('family_bonding_portal_config_v8', JSON.stringify(appData));
+                    populateDashboard();
+                    updateViewerPortalUI();
+                    tvAlert("Reset Successful", "Preset listings restored.");
+                }
+            );
         }
 
         function generateUniqueDeviceID() {
