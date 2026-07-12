@@ -39,7 +39,6 @@ export default {
           "Accept-Ranges": "bytes",
         });
 
-        // Handle partial content header responses if a Range query was sent
         let status = 200;
         if (rangeHeader && cachedObject.range) {
           status = 206;
@@ -55,10 +54,37 @@ export default {
         return new Response(cachedObject.body, { status, headers });
       }
 
-      // 2. Cache Miss: Resolve stream URL via YouTube inner Client API
+      // 2. Cache Miss: Resolve stream URL via YouTube InnerTube Android API
       const directAudioStreamUrl = await fetchYouTubeAudioStream(videoId);
 
-      // Fetch the raw stream from the resolved URL
+      // 3. Trigger Background Caching if client requests starting block (0-) or no range
+      const isStartRange = !rangeHeader || rangeHeader.replace(/\s/g, "").includes("bytes=0-");
+
+      if (isStartRange) {
+        // Fetch full stream in background to save into R2 cache asynchronously
+        ctx.waitUntil(
+          (async () => {
+            try {
+              const fullStreamResponse = await fetch(directAudioStreamUrl, {
+                headers: {
+                  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+                }
+              });
+              if (fullStreamResponse.ok) {
+                const targetContentType = fullStreamResponse.headers.get("content-type") || "audio/webm";
+                await env.AUDIO_BUCKET.put(cacheKey, fullStreamResponse.body, {
+                  httpMetadata: { contentType: targetContentType }
+                });
+                console.log(`Successfully cached ${cacheKey} to R2`);
+              }
+            } catch (cacheErr) {
+              console.error(`Background cache write failed for ID ${videoId}:`, cacheErr.message);
+            }
+          })()
+        );
+      }
+
+      // 4. Fetch the raw stream segment to satisfy the current client request
       const youtubeResponse = await fetch(directAudioStreamUrl, {
         headers: {
           "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
@@ -72,29 +98,6 @@ export default {
 
       const contentType = youtubeResponse.headers.get("content-type") || "audio/webm";
 
-      // 3. Process Caching and Streaming Simultaneously
-      if (!rangeHeader) {
-        // If the client requested the full stream, clone it and cache it to R2 in the background
-        const [clientStream, cacheStream] = youtubeResponse.body.tee();
-
-        ctx.waitUntil(
-          env.AUDIO_BUCKET.put(cacheKey, cacheStream, {
-            httpMetadata: { contentType: contentType },
-          })
-        );
-
-        return new Response(clientStream, {
-          status: youtubeResponse.status,
-          headers: {
-            "Access-Control-Allow-Origin": "*",
-            "Content-Type": contentType,
-            "Cache-Control": "public, max-age=31536000",
-            "Accept-Ranges": "bytes",
-          },
-        });
-      }
-
-      // If client requested a partial Range stream, return it directly without full caching
       return new Response(youtubeResponse.body, {
         status: youtubeResponse.status,
         headers: {
@@ -117,8 +120,7 @@ export default {
 };
 
 /**
- * Native, lightweight YouTube API Client scraper.
- * Uses the inner ANDROID client context to retrieve direct audio URLs without signature decipher problems.
+ * YouTube API Client scraper using InnerTube ANDROID endpoints.
  */
 async function fetchYouTubeAudioStream(videoId) {
   const payload = {
@@ -150,7 +152,6 @@ async function fetchYouTubeAudioStream(videoId) {
   const data = await response.json();
   const formats = data.streamingData?.adaptiveFormats || [];
 
-  // Filter out video tracks, keeping only audio
   const audioFormats = formats.filter(
     (f) => f.mimeType && f.mimeType.startsWith("audio/")
   );
@@ -159,7 +160,6 @@ async function fetchYouTubeAudioStream(videoId) {
     throw new Error("No suitable audio-only streams found for this track.");
   }
 
-  // Choose the stream with the highest bitrate
   audioFormats.sort((a, b) => (b.bitrate || 0) - (a.bitrate || 0));
   const bestAudio = audioFormats[0];
 
