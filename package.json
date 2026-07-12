@@ -1,1 +1,8 @@
-
+{
+  "name": "family-bonding-karaoke",
+  "version": "1.0.0",
+  "description": "Vocal Portal serverless backend configurations",
+  "dependencies": {
+    "ytdl-core": "^4.11.5"
+  }
+}
