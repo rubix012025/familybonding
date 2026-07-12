@@ -33,7 +33,7 @@
                 <span class="w-2 h-2 rounded-full bg-slate-500" id="tv-mode-led"></span>
                 <span id="tv-mode-text">TV Remote: OFF</span>
             </button>
-            <span id="sub-badge" class="px-3 py-1 rounded-full text-[10px] md:text-xs font-semibold bg-red-955 text-red-400 border border-red-800">
+            <span id="sub-badge" class="px-3 py-1 rounded-full text-[10px] md:text-xs font-semibold bg-red-955 text-red-405 border border-red-800">
                 Awaiting Verification
             </span>
             <button onclick="openPaymentModal()" class="px-4 py-1.5 rounded-lg text-xs font-bold bg-fuchsia-600 hover:bg-fuchsia-500 transition duration-150">
@@ -442,7 +442,7 @@
 
     <div id="confirm-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 hidden">
         <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-sm w-full text-center space-y-4 shadow-2xl">
-            <h3 class="text-xs font-bold text-red-400 uppercase tracking-wider" id="confirm-modal-title">Reset Settings</h3>
+            <h3 class="text-xs font-bold text-red-405 uppercase tracking-wider" id="confirm-modal-title">Reset Settings</h3>
             <p class="text-[10px] text-slate-400 leading-relaxed" id="confirm-modal-body">Are you sure you want to proceed with this operation?</p>
             <div class="flex gap-2">
                 <button id="confirm-btn-cancel" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-lg text-[10px] tracking-wide uppercase transition">Cancel</button>
@@ -1043,14 +1043,23 @@
             return null;
         }
 
+        // Automatically resolves backend calls to match whatever Netlify domain the app is running on
+        function getApiEndpoint(action) {
+            let base = appData.paymentApi || "https://fambondtymkar.netlify.app/.netlify/functions/verify-payment";
+            if (window.location.hostname.includes("netlify.app")) {
+                base = `${window.location.origin}/.netlify/functions/verify-payment`;
+            }
+            return base.replace('/verify-payment', `/${action}`);
+        }
+
         async function loadEmbeddedKaraokeVideo(encodedB64Val) {
             const videoId = secureDecode(encodedB64Val);
             if (!videoId || !ytPlayer || typeof ytPlayer.loadVideoById !== 'function') return;
             
             hidePlayerError();
             
-            // Build the proxy path targeting your Netlify streaming function
-            const streamProxyUrl = `${appData.paymentApi.replace('/verify-payment', '/get-audio')}?id=${videoId}`;
+            // Build the proxy path targeting your Netlify streaming function dynamically
+            const streamProxyUrl = `${getApiEndpoint('get-audio')}?id=${videoId}`;
             
             // Register backend audio stream to standard HTML5 Element
             const audioElement = document.getElementById('karaoke-audio-stream');
@@ -1091,7 +1100,7 @@
                 hidePlayerError();
                 
                 // Register backend audio stream to standard HTML5 Element
-                const streamProxyUrl = `${appData.paymentApi.replace('/verify-payment', '/get-audio')}?id=${parsedVideoId}`;
+                const streamProxyUrl = `${getApiEndpoint('get-audio')}?id=${parsedVideoId}`;
                 const audioElement = document.getElementById('karaoke-audio-stream');
                 audioElement.src = streamProxyUrl;
                 audioElement.load();
@@ -1274,10 +1283,6 @@
             } catch(e) { return ""; }
         }
 
-        function secureEncode(str) {
-            try { return btoa(str); } catch(e) { return ""; }
-        }
-
         // Popular Curated Karaoke Tracks (Corrected 11-Character Base64 IDs)
         const liveChannelsData = [
             { id: "kar-sweet-caroline", name: "Sweet Caroline - Karaoke", group: "Popular Classics", src: "bXN3XzBkaUtWYU0=" }, // msw_0diKVaM
@@ -1288,7 +1293,7 @@
 
         const defaultConfig = {
             brandName: "Vocal Portal",
-            paymentApi: "https://fambondtym.netlify.app/.netlify/functions/verify-payment", 
+            paymentApi: "https://fambondtym.app/.netlify/functions/verify-payment", 
             sandboxMode: false,
             channels: [...liveChannelsData]
         };
@@ -1350,7 +1355,7 @@
                     safeStorage.setItem('saas_pending_session_id', mockSessionId);
                     safeStorage.setItem('saas_pending_days', vendingDays);
 
-                    const simulatedQrText = `https://fambondtym.netlify.app/pay-mock?session=${mockSessionId}&amount=${cost}`;
+                    const simulatedQrText = `https://fambondtym.app/pay-mock?session=${mockSessionId}&amount=${cost}`;
                     qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(simulatedQrText)}`;
                     
                     qrOverlay.classList.add('hidden');
@@ -1679,7 +1684,7 @@
                             <span class="text-xs font-mono text-fuchsia-400 font-bold">ID: ${channel.id}</span>
                             <input type="text" id="edit-name-${channel.id}" value="${channel.name}" placeholder="Track Name" class="bg-slate-900 border border-slate-800 rounded px-2.5 py-1 text-xs font-bold text-white w-48">
                         </div>
-                        <button onclick="removeChannel('${channel.id}')" class="text-[9px] uppercase px-2 py-1 bg-red-955 hover:bg-red-900 rounded text-red-400 border border-red-850">
+                        <button onclick="removeChannel('${channel.id}')" class="text-[9px] uppercase px-2 py-1 bg-red-955 hover:bg-red-900 rounded text-red-450 border border-red-850">
                             Delete Track
                         </button>
                     </div>
@@ -1851,7 +1856,7 @@
             overlay.classList.remove('hidden');
             statusBar.classList.add('hidden');
             if (logoutDevBtn) logoutDevBtn.classList.add('hidden');
-            subBadge.className = "px-3 py-1 rounded-full text-[10px] md:text-xs font-semibold bg-red-955 text-red-400 border border-red-800";
+            subBadge.className = "px-3 py-1 rounded-full text-[10px] md:text-xs font-semibold bg-red-955 text-red-405 border border-red-800";
             subBadge.textContent = "Awaiting Verification";
             if (expDateEl) expDateEl.textContent = "";
             const trialSection = document.getElementById('free-trial-container');
