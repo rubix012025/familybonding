@@ -1,5 +1,4 @@
 const ytdl = require('ytdl-core');
-const fetch = require('node-fetch'); // Ensure node-fetch is supported, or use global fetch in Node 18+
 
 exports.handler = async function(event, context) {
     const videoId = event.queryStringParameters.id;
@@ -15,7 +14,7 @@ exports.handler = async function(event, context) {
     try {
         const info = await ytdl.getInfo(videoId);
         
-        // Select the best audio-only format
+        // Isolate the highest quality audio-only stream
         const audioFormat = ytdl.chooseFormat(info.formats, { 
             quality: 'highestaudio', 
             filter: 'audioonly' 
@@ -25,7 +24,7 @@ exports.handler = async function(event, context) {
             throw new Error("No direct audio formats resolved.");
         }
 
-        // Fetch the raw audio stream from Google Video servers on the backend
+        // Use global native fetch (no require('node-fetch') needed)
         const response = await fetch(audioFormat.url);
         if (!response.ok) {
             throw new Error(`Failed to fetch raw stream from YouTube: ${response.statusText}`);
@@ -38,7 +37,7 @@ exports.handler = async function(event, context) {
         return {
             statusCode: 200,
             headers: {
-                "Content-Type": "audio/webm", // or audio/mp4 depending on format
+                "Content-Type": "audio/webm",
                 "Access-Control-Allow-Origin": "*",
                 "Access-Control-Allow-Headers": "Content-Type, Range",
                 "Access-Control-Allow-Methods": "GET",
