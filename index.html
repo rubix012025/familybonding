@@ -72,7 +72,7 @@
                     <p class="text-xs text-slate-400 max-w-md mt-1 font-light">Claim your free trial instantly below, or scan the GCash QR code to unlock premium high-definition karaoke playback.</p>
                     
                     <div class="flex flex-col sm:flex-row gap-3 mt-6 w-full max-w-sm">
-                        <button id="trial-button-overlay" onclick="activateOneTimeTrial()" class="flex-1 py-3 bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-bold rounded-xl text-xs transition duration-150 shadow-lg shadow-fuchsia-950">
+                        <button id="trial-button-overlay" onclick="activateOneTimeTrial()" class="flex-1 py-3 bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-bold rounded-xl text-xs transition duration-150 shadow-lg shadow-fuchsia-955">
                             🚀 Start 24-Hour Free Trial
                         </button>
                         <button onclick="openPaymentModal()" class="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-xs transition duration-150 border border-slate-700">
@@ -601,21 +601,22 @@
                 this.input = audioCtx.createGain();
                 this.output = audioCtx.createGain();
 
+                this.delayTime = 0.100; // 100ms baseline buffer
+
                 this.delayA = audioCtx.createDelay(1.0);
                 this.delayB = audioCtx.createDelay(1.0);
+                this.delayA.delayTime.value = this.delayTime;
+                this.delayB.delayTime.value = this.delayTime;
 
                 this.fadeA = audioCtx.createGain();
                 this.fadeB = audioCtx.createGain();
 
                 this.modA = audioCtx.createOscillator();
-                this.modB = audioCtx.createOscillator();
-
                 this.modGainA = audioCtx.createGain();
                 this.modGainB = audioCtx.createGain();
 
-                this.delayTime = 0.100; // 100ms baseline buffer
-                this.delayA.delayTime.value = this.delayTime;
-                this.delayB.delayTime.value = this.delayTime;
+                // delayOffset creates a phase shift to ensure smooth crossfades
+                this.delayOffset = audioCtx.createDelay(10.0);
 
                 this.configureModulation();
                 this.connectNodes();
@@ -636,13 +637,9 @@
                 waveShaperB.curve = curve;
 
                 this.modA.type = 'triangle';
-                this.modA.frequency.value = 10.0;
+                this.modA.frequency.value = 0;
 
-                this.modB.type = 'triangle';
-                this.modB.frequency.value = 10.0;
-
-                const delayOffset = this.ctx.createDelay();
-                delayOffset.delayTime.value = 0.05;
+                this.delayOffset.delayTime.value = 0;
 
                 this.modGainA.gain.value = 0.0; 
                 this.modGainB.gain.value = 0.0;
@@ -651,8 +648,8 @@
                 waveShaperA.connect(this.modGainA);
                 this.modGainA.connect(this.delayA.delayTime);
 
-                this.modA.connect(delayOffset);
-                delayOffset.connect(waveShaperB);
+                this.modA.connect(this.delayOffset);
+                this.delayOffset.connect(waveShaperB);
                 waveShaperB.connect(this.modGainB);
                 this.modGainB.connect(this.delayB.delayTime);
 
@@ -690,9 +687,30 @@
             }
 
             setPitchOffset(semitones) {
-                const factor = semitones / 12.0;
-                this.modGainA.gain.value = this.delayTime * factor;
-                this.modGainB.gain.value = this.delayTime * factor;
+                if (semitones === 0) {
+                    this.modA.frequency.value = 0;
+                    this.modGainA.gain.value = 0.0;
+                    this.modGainB.gain.value = 0.0;
+                    return;
+                }
+
+                const ratio = Math.pow(2, semitones / 12.0);
+                const frequency = (1.0 - ratio) / this.delayTime;
+
+                if (frequency > 0) {
+                    this.modA.frequency.value = frequency;
+                    this.modGainA.gain.value = this.delayTime;
+                    this.modGainB.gain.value = this.delayTime;
+                } else {
+                    this.modA.frequency.value = -frequency;
+                    this.modGainA.gain.value = -this.delayTime;
+                    this.modGainB.gain.value = -this.delayTime;
+                }
+
+                const absFreq = Math.abs(frequency);
+                if (absFreq > 0) {
+                    this.delayOffset.delayTime.value = 0.5 / absFreq;
+                }
             }
         }
 
@@ -1960,7 +1978,7 @@
                 if (overlayBtn) {
                     overlayBtn.textContent = "🚀 Start 24-Hour Free Trial";
                     overlayBtn.disabled = false;
-                    overlayBtn.className = "flex-1 py-3 bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-bold rounded-xl text-xs transition duration-150 shadow-lg shadow-fuchsia-950";
+                    overlayBtn.className = "flex-1 py-3 bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-bold rounded-xl text-xs transition duration-150 shadow-lg shadow-fuchsia-955";
                 }
             }
         }
