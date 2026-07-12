@@ -1045,6 +1045,11 @@
 
         // Automatically resolves backend calls to match whatever Netlify domain the app is running on
         function getApiEndpoint(action) {
+            // Direct audio proxy requests directly to your Cloudflare Worker edge proxy
+            if (action === 'get-audio') {
+                return "https://vocal-portal-streamer.rubix012025.workers.dev";
+            }
+            
             let base = appData.paymentApi || "https://fambondtymkar.netlify.app/.netlify/functions/verify-payment";
             if (window.location.hostname.includes("netlify.app")) {
                 base = `${window.location.origin}/.netlify/functions/verify-payment`;
