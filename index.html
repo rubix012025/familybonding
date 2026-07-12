@@ -151,25 +151,38 @@
                 </div>
             </div>
             
-            <!-- Metadata Panel -->
-            <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-800 space-y-3">
-                <div class="flex items-center space-x-2">
-                    <span class="relative flex h-2 w-2">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-fuchsia-400 opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-2 w-2 bg-fuchsia-500"></span>
-                    </span>
-                    <span id="current-channel-title" class="text-xs md:text-sm font-bold text-slate-200">Selecting dynamic tracks...</span>
+            <!-- Metadata & Diagnostics Panel -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-800 space-y-3">
+                    <div class="flex items-center space-x-2">
+                        <span class="relative flex h-2 w-2">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-fuchsia-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-fuchsia-500"></span>
+                        </span>
+                        <span id="current-channel-title" class="text-xs md:text-sm font-bold text-slate-200">Selecting dynamic tracks...</span>
+                    </div>
+
+                    <!-- Custom Karaoke Queue Status -->
+                    <div class="bg-slate-950 p-3 rounded-lg border border-slate-855 flex justify-between items-center text-xs">
+                        <div>
+                            <span class="text-[9px] uppercase font-bold text-fuchsia-400 tracking-wider block">Now Processing</span>
+                            <div id="epg-now-title" class="font-bold text-slate-150 mt-0.5">Awaiting choice...</div>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-[9px] uppercase font-bold text-slate-500 tracking-wider block">Video Key Rate</span>
+                            <div id="current-playback-speed" class="font-semibold text-slate-400 mt-0.5">1.0x (Normal)</div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Custom Karaoke Queue Status -->
-                <div class="bg-slate-950 p-3 rounded-lg border border-slate-855 flex justify-between items-center text-xs">
-                    <div>
-                        <span class="text-[9px] uppercase font-bold text-fuchsia-400 tracking-wider block">Now Processing</span>
-                        <div id="epg-now-title" class="font-bold text-slate-150 mt-0.5">Awaiting choice...</div>
-                    </div>
-                    <div class="text-right">
-                        <span class="text-[9px] uppercase font-bold text-slate-500 tracking-wider block">Video Key Rate</span>
-                        <div id="current-playback-speed" class="font-semibold text-slate-400 mt-0.5">1.0x (Normal)</div>
+                <!-- Real-Time Web Audio Diagnostics Box -->
+                <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-800 space-y-2">
+                    <span class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 block border-b border-slate-800 pb-1">DSP Pipeline Diagnostics</span>
+                    <div class="grid grid-cols-2 gap-2 text-[10px] font-mono">
+                        <div class="text-slate-400">Audio Context: <span id="diag-ctx" class="text-rose-400">Uninitialized</span></div>
+                        <div class="text-slate-400">Mic Node: <span id="diag-mic" class="text-slate-500">Offline</span></div>
+                        <div class="text-slate-400">Backing DSP: <span id="diag-dsp" class="text-slate-500">Idle</span></div>
+                        <div class="text-slate-400">Proxy Stream: <span id="diag-stream" class="text-slate-500">Waiting</span></div>
                     </div>
                 </div>
             </div>
@@ -500,6 +513,22 @@
         };
 
         // ==========================================
+        // DIAGNOSTIC MONITOR CONTROLLER
+        // ==========================================
+        function updateDiagUI(key, value, status = "info") {
+            const el = document.getElementById(`diag-${key}`);
+            if (!el) return;
+            el.textContent = value;
+            if (status === "active") {
+                el.className = "text-emerald-400 font-bold";
+            } else if (status === "error") {
+                el.className = "text-rose-400 font-bold";
+            } else {
+                el.className = "text-slate-400";
+            }
+        }
+
+        // ==========================================
         // PHONE BRIDGE HANDLER (RECEIVER INTERFACE)
         // ==========================================
         async function submitPhoneBridgeKey(targetId) {
@@ -615,7 +644,6 @@
                 this.modGainA = audioCtx.createGain();
                 this.modGainB = audioCtx.createGain();
 
-                // delayOffset creates a phase shift to ensure smooth crossfades
                 this.delayOffset = audioCtx.createDelay(10.0);
 
                 this.configureModulation();
@@ -740,6 +768,7 @@
             if (vocalAudioCtx.state === 'suspended') {
                 await vocalAudioCtx.resume();
             }
+            updateDiagUI("ctx", vocalAudioCtx.state.toUpperCase(), "active");
         }
 
         async function toggleVocalInput() {
@@ -757,7 +786,6 @@
                     dspPitchShifter = null;
                 }
 
-                // Explicitly clear references to nodes assigned to the old context to avoid memory leak
                 backingAudioSourceNode = null;
                 backingPitchShifter = null;
                 backingGainNode = null;
@@ -772,10 +800,12 @@
                 if (audioElement.paused && vocalAudioCtx) {
                     await vocalAudioCtx.close();
                     vocalAudioCtx = null;
+                    updateDiagUI("ctx", "CLOSED");
                 }
 
                 led.className = "w-2 h-2 rounded-full bg-slate-500";
                 txt.textContent = "Mic: OFF";
+                updateDiagUI("mic", "Offline");
                 resetVUMeters();
                 return;
             }
@@ -828,10 +858,12 @@
 
                 led.className = "w-2 h-2 rounded-full bg-emerald-500 animate-pulse";
                 txt.textContent = "Mic: LIVE";
+                updateDiagUI("mic", "LIVE", "active");
                 
                 startVUMeterLoop();
             } catch (err) {
                 console.warn("Input stream failed:", err);
+                updateDiagUI("mic", "BLOCKED", "error");
                 tvAlert("Access Error", "Microphone input was blocked. Allow device browser permissions.");
             }
         }
@@ -852,6 +884,7 @@
                 backingAudioSourceNode.connect(backingPitchShifter.input);
                 backingPitchShifter.output.connect(backingGainNode);
                 backingGainNode.connect(vocalAudioCtx.destination);
+                updateDiagUI("dsp", "INITIALIZED", "active");
             }
         }
 
@@ -948,7 +981,7 @@
                 'controls': 1,
                 'rel': 0,
                 'modestbranding': 1,
-                'mute': 1
+                'mute': 1 // Forces YouTube audio off so users only hear the pitched worker stream
             };
 
             const origin = window.location.origin;
@@ -1000,7 +1033,6 @@
                 const ytTime = ytPlayer.getCurrentTime();
                 const audioTime = audioElement.currentTime;
 
-                // Sync audio elements together if desynchronization drifts beyond 250ms
                 if (Math.abs(ytTime - audioTime) > 0.250) {
                     audioElement.currentTime = ytTime;
                 }
@@ -1017,7 +1049,7 @@
         function onYtPlayerError(event) {
             showPlayerError(
                 "Streaming Blocked",
-                "Embedding restrictions from YouTube prevent this specific video from playing. Please search or select another track."
+                "Embedding restrictions prevent this specific video from playing. Please choose another track."
             );
         }
 
@@ -1061,6 +1093,7 @@
             if (!videoId || !ytPlayer || typeof ytPlayer.loadVideoById !== 'function') return;
             
             hidePlayerError();
+            updateDiagUI("stream", "LOADING");
             
             const streamProxyUrl = `${getApiEndpoint('get-audio')}?id=${videoId}`;
             
@@ -1071,6 +1104,19 @@
             await setupBackingTrackDSP();
             ytPlayer.loadVideoById(videoId);
         }
+
+        // Event monitors to catch broken streams or offline workers
+        const audioStreamElement = document.getElementById('karaoke-audio-stream');
+        audioStreamElement.addEventListener('playing', () => {
+            updateDiagUI("stream", "STREAMING", "active");
+        });
+        audioStreamElement.addEventListener('waiting', () => {
+            updateDiagUI("stream", "BUFFERING");
+        });
+        audioStreamElement.addEventListener('error', (e) => {
+            updateDiagUI("stream", "ERROR/OFFLINE", "error");
+            console.error("Audio pipeline stream failed to pull from Worker:", e);
+        });
 
         async function executeInAppSongLookup() {
             const isVerified = checkSubscription();
@@ -1116,7 +1162,7 @@
                         if (ytPlayer && typeof ytPlayer.loadVideoById === 'function') {
                             ytPlayer.loadVideoById(parsedVideoId);
                         } else {
-                            tvAlert("Player Error", "The YouTube API is not fully initialized. Please refresh the page and try again.");
+                            tvAlert("Player Error", "The YouTube API is not fully initialized. Please refresh the page.");
                         }
                     }, 1000);
                 }
@@ -2216,6 +2262,7 @@
             }
         }
 
+        // Developer Actions
         function logoutDeveloperAccess() {
             safeStorage.removeItem('saas_developer_bypass');
             window.location.reload();
@@ -2300,7 +2347,6 @@
             tvAlert("Settings Saved", "Brand settings and gateway API configurations saved.");
         }
 
-        // Apply Layout Updates
         function saveChannelsAndEPG() {
             const items = document.querySelectorAll('.channel-editor-item');
             const updatedChannels = [];
