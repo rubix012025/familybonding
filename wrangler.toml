@@ -1,0 +1,9 @@
+name = "vocal-portal-streamer"
+main = "src/index.js"
+compatibility_date = "2024-03-01"
+
+# Bind your R2 bucket to the Worker
+[[r2_buckets]]
+binding = "AUDIO_BUCKET"
+bucket_name = "vocal-portal-audio-cache"
+preview_bucket_name = "vocal-portal-audio-cache"
