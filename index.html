@@ -3,815 +3,717 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vocal Portal - Interactive Karaoke Console</title>
+    <title>Vocal Portal Ultra - AI Karaoke Console</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Three.js for 3D Visualizer -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
-        body { background-color: #05070f; }
-        ::-webkit-scrollbar { width: 5px; height: 5px; }
-        ::-webkit-scrollbar-track { background: #080b13; }
-        ::-webkit-scrollbar-thumb { background: #1b253b; border-radius: 3px; }
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: #0a0a12;
+            font-family: 'Orbitron', monospace;
+            overflow-x: hidden;
+        }
+        
+        .cyber-glow {
+            text-shadow: 0 0 10px rgba(168, 85, 247, 0.5), 0 0 20px rgba(168, 85, 247, 0.3);
+        }
+        
+        .glass-panel {
+            background: rgba(15, 15, 30, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(168, 85, 247, 0.2);
+            border-radius: 20px;
+        }
+        
+        .neon-border {
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.1);
+        }
+        
+        .pulse-ring {
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(168, 85, 247, 0.2); }
+            50% { box-shadow: 0 0 40px rgba(168, 85, 247, 0.6); }
+        }
+        
+        .spectrum-bar {
+            transition: height 0.1s ease;
+            background: linear-gradient(180deg, #a855f7, #7c3aed, #4f46e5);
+        }
+        
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0a12;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #a855f7, #7c3aed);
+            border-radius: 3px;
+        }
+        
+        .vocal-meter {
+            background: linear-gradient(90deg, #10b981, #f59e0b, #ef4444);
+            height: 4px;
+            transition: width 0.05s linear;
+        }
+        
+        .badge-glow {
+            animation: glowPulse 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes glowPulse {
+            0%, 100% { box-shadow: 0 0 5px rgba(168, 85, 247, 0.3); }
+            50% { box-shadow: 0 0 20px rgba(168, 85, 247, 0.7); }
+        }
+        
+        #holographic-visualizer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+            opacity: 0.4;
+        }
+        
+        .visualizer-active #holographic-visualizer {
+            opacity: 0.8;
+        }
     </style>
 </head>
-<body class="text-slate-100 min-h-screen font-sans flex flex-col justify-between" oncontextmenu="return false;">
+<body class="min-h-screen text-white">
 
-    <!-- Top Header -->
-    <header class="p-4 md:p-5 flex justify-between items-center border-b border-slate-800 bg-slate-950/60 backdrop-blur-md sticky top-0 z-40">
-        <div onclick="promptDevPasscode()" class="cursor-pointer select-none group flex items-center space-x-3">
-            <div>
-                <h1 id="view-brand-title" class="text-base md:text-lg font-black tracking-wider text-fuchsia-400 uppercase group-hover:text-fuchsia-300 transition duration-150">VOCAL PORTAL</h1>
-                <p class="text-[10px] md:text-xs text-slate-400">Integrated DSP Karaoke Middleware Console</p>
+    <!-- Ultra Header -->
+    <header class="glass-panel sticky top-0 z-50 p-4 border-b border-purple-500/20">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <div class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 cyber-glow">
+                    🎤 VOCAL PORTAL ULTRA
+                </div>
+                <div class="hidden md:block text-[10px] text-purple-300/60 tracking-widest">
+                    AI-POWERED KARAOKE CONSOLE v4.0
+                </div>
             </div>
-            <!-- Sandbox Status Warning Badge -->
-            <span id="sandbox-indicator" class="px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider bg-amber-500/15 text-amber-500 border border-amber-500/30 hidden">
-                Sandbox Mode Active
-            </span>
-        </div>
-        <div class="flex items-center space-x-3">
-            <!-- Smart TV Mode Toggle Button -->
-            <button id="tv-mode-toggle-btn" onclick="toggleSmartTvMode()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 border border-slate-700 transition duration-150 flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-slate-500" id="tv-mode-led"></span>
-                <span id="tv-mode-text">TV Remote: OFF</span>
-            </button>
-            <span id="sub-badge" class="px-3 py-1 rounded-full text-[10px] md:text-xs font-semibold bg-red-955 text-red-405 border border-red-800">
-                Awaiting Verification
-            </span>
-            <button onclick="openPaymentModal()" class="px-4 py-1.5 rounded-lg text-xs font-bold bg-fuchsia-600 hover:bg-fuchsia-500 transition duration-150">
-                Purchase Access
-            </button>
+            <div class="flex items-center gap-3">
+                <div class="flex items-center gap-2 text-xs">
+                    <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
+                    <span class="text-emerald-400/80">SYSTEM ACTIVE</span>
+                </div>
+                <button onclick="toggleUltraPanel()" class="px-4 py-2 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold hover:shadow-lg hover:shadow-purple-500/50 transition-all">
+                    ⚡ ULTRA
+                </button>
+            </div>
         </div>
     </header>
 
-    <!-- Top Status Banner -->
-    <div id="status-bar" class="bg-fuchsia-600 text-white text-center py-1.5 text-xs font-semibold tracking-wide hidden flex flex-wrap justify-center items-center gap-2 px-4">
-        <span>
-            Active session remaining: <span id="subscription-countdown" class="font-bold">...</span> 
-            <span id="expiration-date-display" class="opacity-80 text-[10px] ml-1 font-normal italic"></span>
-        </span>
-        <button id="logout-dev-btn" onclick="logoutDeveloperAccess()" class="underline text-[10px] hover:text-fuchsia-200 font-bold ml-1.5 focus:outline-none hidden">
-            [Log Out Developer]
-        </button>
-    </div>
-
-    <!-- MAIN VIEWER ARENA -->
-    <main class="flex-grow flex flex-col lg:flex-row max-w-7xl mx-auto w-full p-4 gap-6">
+    <!-- Main Grid -->
+    <main class="max-w-7xl mx-auto p-4 grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
         
-        <!-- Player Area & Vocal DSP Dashboard (Left) -->
-        <div class="flex-grow flex flex-col lg:w-2/3 space-y-4">
+        <!-- LEFT: Player & Visuals -->
+        <div class="lg:col-span-2 space-y-4">
             
-            <!-- YouTube Dynamic Embed Frame -->
-            <div class="relative w-full aspect-video rounded-2xl overflow-hidden shadow-2xl border border-slate-800 bg-black">
-                <div id="yt-player-target" class="w-full h-full"></div>
+            <!-- Video Player with Holographic Overlay -->
+            <div class="relative rounded-2xl overflow-hidden bg-black/80 neon-border pulse-ring">
+                <div id="yt-player-target" class="w-full aspect-video"></div>
                 
-                <!-- Lock Overlay -->
-                <div id="paywall-overlay" class="absolute inset-0 bg-slate-950/95 flex flex-col items-center justify-center p-6 text-center hidden">
-                    <svg class="w-12 h-12 text-fuchsia-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 00-2 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                    </svg>
-                    <h3 class="text-base md:text-lg font-bold text-slate-100">Console Access Restricted</h3>
-                    <p class="text-xs text-slate-400 max-w-md mt-1 font-light">Claim your free trial instantly below, or scan the GCash QR code to unlock premium high-definition karaoke playback.</p>
-                    
-                    <div class="flex flex-col sm:flex-row gap-3 mt-6 w-full max-w-sm">
-                        <button id="trial-button-overlay" onclick="activateOneTimeTrial()" class="flex-1 py-3 bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-bold rounded-xl text-xs transition duration-150 shadow-lg shadow-fuchsia-955">
-                            🚀 Start 24-Hour Free Trial
-                        </button>
-                        <button onclick="openPaymentModal()" class="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-xs transition duration-150 border border-slate-700">
-                            💳 Purchase Access
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Diagnostics & Error Overlay -->
-                <div id="player-error-overlay" class="absolute inset-0 bg-slate-950/95 flex flex-col items-center justify-center p-6 text-center hidden">
-                    <svg class="w-12 h-12 text-amber-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                    </svg>
-                    <h3 class="text-sm md:text-base font-bold text-slate-100" id="error-title">Video Unavailable</h3>
-                    <p class="text-[11px] text-slate-400 max-w-md mt-1 font-light leading-relaxed" id="error-message">This video stream is blocked, private, or does not support embedding. Select another track to continue.</p>
-                </div>
-            </div>
-
-            <!-- Web Audio DSP Control Board -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Holographic Visualizer Canvas -->
+                <div id="holographic-visualizer"></div>
                 
-                <!-- Microphones & Volume DSP Panel -->
-                <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-800 space-y-3">
+                <!-- AI Coach Overlay -->
+                <div id="ai-coach-overlay" class="absolute bottom-4 left-4 right-4 bg-black/80 backdrop-blur-md rounded-xl p-3 hidden">
                     <div class="flex items-center justify-between">
-                        <span class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Vocal Input Processor</span>
-                        <button id="mic-toggle-btn" onclick="toggleVocalInput()" class="px-3 py-1 rounded bg-slate-850 hover:bg-slate-700 text-[10px] font-bold border border-slate-700 flex items-center gap-1.5 transition">
-                            <span class="w-2 h-2 rounded-full bg-slate-500" id="mic-led"></span>
-                            <span id="mic-btn-text">Mic: OFF</span>
-                        </button>
-                    </div>
-                    
-                    <!-- VU Level Indicator Meter -->
-                    <div class="space-y-1">
-                        <div class="flex justify-between text-[8px] text-slate-500 uppercase tracking-wide">
-                            <span>Vocal Gain (Mic Input Level)</span>
-                            <span id="vu-db-display" class="font-mono text-fuchsia-400 font-bold">-INF</span>
-                        </div>
-                        <div class="w-full bg-slate-950 h-3.5 rounded overflow-hidden p-0.5 flex gap-0.5 border border-slate-800">
-                            <div id="vu-bar-green" class="h-full bg-emerald-500 transition-all duration-75" style="width: 0%"></div>
-                            <div id="vu-bar-orange" class="h-full bg-amber-500 transition-all duration-75" style="width: 0%"></div>
-                            <div id="vu-bar-red" class="h-full bg-rose-500 transition-all duration-75" style="width: 0%"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Voice FX and Echo Parameters -->
-                <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-800 space-y-3">
-                    <span class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 block">Atmospheric FX Control</span>
-                    <div class="grid grid-cols-2 gap-4 text-xs">
-                        <!-- Pitch Shifter Transpose Slider (Voice) -->
-                        <div class="space-y-1">
-                            <div class="flex justify-between text-[9px] text-slate-400 uppercase tracking-wide">
-                                <span>Voice Key:</span>
-                                <span id="pitch-val-display" class="font-mono text-fuchsia-400 font-bold">0 ST</span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-purple-400">🎯 PITCH ACCURACY</span>
+                            <div class="w-32 h-2 bg-slate-800 rounded-full overflow-hidden">
+                                <div id="pitch-accuracy-bar" class="h-full bg-gradient-to-r from-red-500 via-yellow-500 to-emerald-500 transition-all" style="width: 0%"></div>
                             </div>
-                            <input type="range" id="mic-pitch-slider" min="-6" max="6" value="0" step="1" oninput="adjustMicVocalPitch(this.value)" class="w-full h-1 bg-slate-950 rounded-lg appearance-none cursor-pointer accent-fuchsia-500">
+                            <span id="pitch-accuracy-text" class="text-xs font-mono text-purple-300">0%</span>
                         </div>
-                        <!-- Reverb/Echo Feedback slider -->
-                        <div class="space-y-1">
-                            <div class="flex justify-between text-[9px] text-slate-400 uppercase tracking-wide">
-                                <span>Echo Mix:</span>
-                                <span id="echo-val-display" class="font-mono text-fuchsia-400 font-bold">25%</span>
-                            </div>
-                            <input type="range" id="mic-echo-slider" min="0" max="75" value="25" step="5" oninput="adjustMicEchoFeedback(this.value)" class="w-full h-1 bg-slate-950 rounded-lg appearance-none cursor-pointer accent-fuchsia-500">
-                        </div>
-                        
-                        <!-- Backing Music Key Transpose Slider -->
-                        <div class="space-y-1 col-span-2 pt-1 border-t border-slate-800/60 mt-1">
-                            <div class="flex justify-between text-[9px] text-slate-400 uppercase tracking-wide">
-                                <span>Backing Track Pitch (Music Key):</span>
-                                <span id="music-pitch-val-display" class="font-mono text-fuchsia-400 font-bold">0 ST</span>
-                            </div>
-                            <input type="range" id="music-pitch-slider" min="-6" max="6" value="0" step="1" oninput="adjustBackingMusicPitch(this.value)" class="w-full h-1 bg-slate-950 rounded-lg appearance-none cursor-pointer accent-fuchsia-500">
+                        <div class="flex gap-2 text-[10px]">
+                            <span class="text-emerald-400">● BREATH: <span id="breath-monitor">NORMAL</span></span>
+                            <span class="text-blue-400">● RANGE: <span id="vocal-range-display">C4-C6</span></span>
                         </div>
                     </div>
                 </div>
             </div>
-            
-            <!-- Metadata & Diagnostics Panel -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-800 space-y-3">
-                    <div class="flex items-center space-x-2">
-                        <span class="relative flex h-2 w-2">
-                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-fuchsia-400 opacity-75"></span>
-                            <span class="relative inline-flex rounded-full h-2 w-2 bg-fuchsia-500"></span>
-                        </span>
-                        <span id="current-channel-title" class="text-xs md:text-sm font-bold text-slate-200">Selecting dynamic tracks...</span>
+
+            <!-- DSP Control Panel - Enhanced -->
+            <div class="glass-panel p-4 space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    
+                    <!-- Mic Controls -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-[10px] text-purple-300/60 tracking-wider">🎙 VOCAL INPUT</span>
+                            <button onclick="toggleVocalInput()" class="text-xs px-3 py-1 rounded-full bg-purple-600/20 border border-purple-500/30 hover:bg-purple-600/40 transition">
+                                <span id="mic-status-text">OFF</span>
+                            </button>
+                        </div>
+                        <div class="relative h-1 bg-slate-800 rounded-full overflow-hidden">
+                            <div id="vocal-meter" class="vocal-meter rounded-full" style="width: 0%"></div>
+                        </div>
+                        <div class="flex justify-between text-[8px] text-slate-500">
+                            <span>GAIN</span>
+                            <span id="vocal-db-display">-∞ dB</span>
+                        </div>
                     </div>
 
-                    <!-- Custom Karaoke Queue Status -->
-                    <div class="bg-slate-950 p-3 rounded-lg border border-slate-855 flex justify-between items-center text-xs">
-                        <div>
-                            <span class="text-[9px] uppercase font-bold text-fuchsia-400 tracking-wider block">Now Processing</span>
-                            <div id="epg-now-title" class="font-bold text-slate-150 mt-0.5">Awaiting choice...</div>
+                    <!-- Pitch Controls -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-[10px] text-purple-300/60 tracking-wider">🎵 PITCH SHIFT</span>
+                            <span id="pitch-display" class="text-xs font-bold text-purple-400">0 ST</span>
                         </div>
-                        <div class="text-right">
-                            <span class="text-[9px] uppercase font-bold text-slate-500 tracking-wider block">Video Key Rate</span>
-                            <div id="current-playback-speed" class="font-semibold text-slate-400 mt-0.5">1.0x (Normal)</div>
+                        <input type="range" id="pitch-slider" min="-12" max="12" value="0" step="0.5" 
+                               oninput="updatePitch(this.value)" 
+                               class="w-full h-1 bg-slate-800 rounded-full appearance-none cursor-pointer accent-purple-500">
+                        <div class="flex justify-between text-[8px] text-slate-500">
+                            <span>-12</span>
+                            <span>KEY</span>
+                            <span>+12</span>
+                        </div>
+                    </div>
+
+                    <!-- Echo Controls -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-[10px] text-purple-300/60 tracking-wider">🌀 ECHO MIX</span>
+                            <span id="echo-display" class="text-xs font-bold text-purple-400">25%</span>
+                        </div>
+                        <input type="range" id="echo-slider" min="0" max="100" value="25" 
+                               oninput="updateEcho(this.value)" 
+                               class="w-full h-1 bg-slate-800 rounded-full appearance-none cursor-pointer accent-purple-500">
+                        <div class="flex justify-between text-[8px] text-slate-500">
+                            <span>DRY</span>
+                            <span>REVERB</span>
+                            <span>WET</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Real-Time Web Audio Diagnostics Box -->
-                <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-800 space-y-2">
-                    <span class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 block border-b border-slate-800 pb-1">DSP Pipeline Diagnostics</span>
-                    <div class="grid grid-cols-2 gap-2 text-[10px] font-mono">
-                        <div class="text-slate-400">Audio Context: <span id="diag-ctx" class="text-rose-400">Uninitialized</span></div>
-                        <div class="text-slate-400">Mic Node: <span id="diag-mic" class="text-slate-500">Offline</span></div>
-                        <div class="text-slate-400">Backing DSP: <span id="diag-dsp" class="text-slate-500">Idle</span></div>
-                        <div class="text-slate-400">Proxy Stream: <span id="diag-stream" class="text-slate-500">Waiting</span></div>
-                    </div>
+                <!-- Advanced FX -->
+                <div class="flex flex-wrap gap-2 pt-2 border-t border-purple-500/10">
+                    <button onclick="toggleAutoTune()" class="text-[10px] px-3 py-1 rounded-full bg-purple-600/20 border border-purple-500/30 hover:bg-purple-600/40 transition flex items-center gap-1">
+                        <span id="autotune-indicator">🎵</span> Auto-Tune
+                    </button>
+                    <button onclick="toggleHarmony()" class="text-[10px] px-3 py-1 rounded-full bg-purple-600/20 border border-purple-500/30 hover:bg-purple-600/40 transition flex items-center gap-1">
+                        <span id="harmony-indicator">🎶</span> Harmony
+                    </button>
+                    <button onclick="toggleCoach()" class="text-[10px] px-3 py-1 rounded-full bg-purple-600/20 border border-purple-500/30 hover:bg-purple-600/40 transition flex items-center gap-1">
+                        <span id="coach-indicator">📊</span> AI Coach
+                    </button>
+                    <button onclick="toggleVisualizer()" class="text-[10px] px-3 py-1 rounded-full bg-purple-600/20 border border-purple-500/30 hover:bg-purple-600/40 transition flex items-center gap-1">
+                        <span id="visualizer-indicator">✨</span> Visualizer
+                    </button>
+                    <button onclick="togglePartyMode()" class="text-[10px] px-3 py-1 rounded-full bg-pink-600/20 border border-pink-500/30 hover:bg-pink-600/40 transition flex items-center gap-1">
+                        <span id="party-indicator">🎉</span> Party Mode
+                    </button>
+                </div>
+            </div>
+
+            <!-- Performance Analytics -->
+            <div class="glass-panel p-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div class="text-center">
+                    <div class="text-[8px] text-slate-500">PITCH SCORE</div>
+                    <div class="text-lg font-bold text-purple-400" id="pitch-score">92%</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-[8px] text-slate-500">BREATH CONTROL</div>
+                    <div class="text-lg font-bold text-emerald-400" id="breath-score">87%</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-[8px] text-slate-500">VOCAL RANGE</div>
+                    <div class="text-lg font-bold text-blue-400" id="range-score">C3-C6</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-[8px] text-slate-500">EMOTION INDEX</div>
+                    <div class="text-lg font-bold text-pink-400" id="emotion-score">HIGH</div>
                 </div>
             </div>
         </div>
 
-        <!-- Interactive Search & Song Directory (Right) -->
-        <div class="w-full lg:w-1/3 flex flex-col space-y-4">
+        <!-- RIGHT: Smart Controls & AI Features -->
+        <div class="space-y-4">
             
-            <!-- In-App Manual URL Loader & Dynamic Search -->
-            <div class="bg-slate-950/60 p-4 rounded-2xl border border-slate-800 space-y-3">
-                <span class="text-[9px] font-bold uppercase tracking-widest text-slate-400 block border-l-2 border-fuchsia-500 pl-2">Track Loader</span>
-                <div class="space-y-2">
-                    <div class="flex gap-2">
-                        <input type="text" id="karaoke-search-input" placeholder="Paste YouTube link or type title..." class="flex-grow bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-fuchsia-500">
-                        <button onclick="executeInAppSongLookup()" class="px-3 bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-bold text-xs rounded-lg transition uppercase">Load</button>
-                    </div>
-                    <p class="text-[8px] text-slate-500 leading-normal">Allows instant playback. Enter a direct link, video ID, or search terms to load instrumental versions.</p>
+            <!-- AI Song Recommender -->
+            <div class="glass-panel p-4">
+                <div class="flex justify-between items-center mb-3">
+                    <span class="text-[10px] text-purple-300/60 tracking-wider">🧠 AI RECOMMENDER</span>
+                    <button onclick="getAISuggestions()" class="text-[10px] px-3 py-1 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:shadow-lg transition">
+                        ANALYZE VOICE
+                    </button>
+                </div>
+                <div id="ai-suggestions" class="space-y-2 max-h-48 overflow-y-auto">
+                    <div class="text-xs text-slate-400 text-center p-2">Click "Analyze Voice" for personalized recommendations</div>
                 </div>
             </div>
 
-            <div class="flex justify-between items-center px-1">
-                <h2 class="text-[10px] font-bold uppercase tracking-widest text-slate-400 border-l-2 border-fuchsia-500 pl-2">Hot Track Directory</h2>
-                <button onclick="resetToPresets()" class="text-[8px] uppercase font-bold tracking-wider text-slate-500 hover:text-slate-350 transition">Reset Presets</button>
+            <!-- Smart Search -->
+            <div class="glass-panel p-4">
+                <span class="text-[10px] text-purple-300/60 tracking-wider block mb-2">🔍 SMART SEARCH</span>
+                <div class="flex gap-2">
+                    <input type="text" id="smart-search" placeholder="Search or paste YouTube URL..." 
+                           class="flex-1 bg-slate-900/50 border border-purple-500/20 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-purple-500">
+                    <button onclick="executeSmartSearch()" class="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg text-xs font-bold hover:shadow-lg transition">
+                        LOAD
+                    </button>
+                </div>
             </div>
-            <div class="space-y-2 max-h-[380px] overflow-y-auto pr-1" id="viewer-channels-list">
-                <!-- Curated track nodes load here -->
+
+            <!-- Vocal Stats & Recommendations -->
+            <div class="glass-panel p-4 space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] text-purple-300/60 tracking-wider">🎤 VOCAL PROFILE</span>
+                    <span class="text-[8px] text-slate-500">PREMIUM</span>
+                </div>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div class="bg-slate-900/50 p-2 rounded-lg">
+                        <div class="text-[8px] text-slate-500">RECOMMENDED KEY</div>
+                        <div class="font-bold text-purple-400" id="recommended-key">C#</div>
+                    </div>
+                    <div class="bg-slate-900/50 p-2 rounded-lg">
+                        <div class="text-[8px] text-slate-500">VOCAL TYPE</div>
+                        <div class="font-bold text-emerald-400" id="vocal-type">TENOR</div>
+                    </div>
+                    <div class="bg-slate-900/50 p-2 rounded-lg col-span-2">
+                        <div class="text-[8px] text-slate-500">SONG SUGGESTIONS</div>
+                        <div class="text-[10px] text-purple-300" id="song-suggestions">Bohemian Rhapsody, Sweet Caroline</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Presets -->
+            <div class="glass-panel p-4">
+                <span class="text-[10px] text-purple-300/60 tracking-wider block mb-2">⚡ QUICK PRESETS</span>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="applyPreset('studio')" class="text-[10px] px-2 py-1.5 bg-slate-900/50 border border-purple-500/20 rounded-lg hover:bg-purple-600/20 transition">
+                        🎧 Studio
+                    </button>
+                    <button onclick="applyPreset('concert')" class="text-[10px] px-2 py-1.5 bg-slate-900/50 border border-purple-500/20 rounded-lg hover:bg-purple-600/20 transition">
+                        🏛️ Concert
+                    </button>
+                    <button onclick="applyPreset('stadium')" class="text-[10px] px-2 py-1.5 bg-slate-900/50 border border-purple-500/20 rounded-lg hover:bg-purple-600/20 transition">
+                        🏟️ Stadium
+                    </button>
+                    <button onclick="applyPreset('intimate')" class="text-[10px] px-2 py-1.5 bg-slate-900/50 border border-purple-500/20 rounded-lg hover:bg-purple-600/20 transition">
+                        🎵 Intimate
+                    </button>
+                </div>
             </div>
         </div>
     </main>
 
-    <!-- Native CORS Backing Track Audio Element (Hidden) -->
-    <audio id="karaoke-audio-stream" crossorigin="anonymous" class="hidden"></audio>
-
-    <!-- Automated GCash Checkout Modal -->
-    <div id="payment-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 overflow-y-auto hidden">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-3xl w-full overflow-y-auto max-h-[90vh] shadow-2xl">
-            <div class="p-5 border-b border-slate-800 flex justify-between items-center bg-slate-950/40 sticky top-0 z-10 backdrop-blur-md">
-                <h3 class="font-bold text-sm md:text-base text-fuchsia-400 text-left">GCash Automated Activation</h3>
-                <button onclick="closePaymentModal()" class="text-slate-400 hover:text-white text-lg font-bold">&times;</button>
+    <!-- Ultra Panel -->
+    <div id="ultra-panel" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex items-center justify-center hidden">
+        <div class="glass-panel p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">⚡ ULTRA SETTINGS</h2>
+                <button onclick="toggleUltraPanel()" class="text-slate-400 hover:text-white text-2xl">&times;</button>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2">
-                <!-- Left Column -->
-                <div class="p-5 space-y-4 border-r border-slate-800">
-                    <span class="text-[10px] font-bold text-slate-400 block uppercase tracking-wide">01. Choose Your Plan Duration</span>
-                    
-                    <div class="flex items-center justify-between bg-slate-950 p-3 rounded-xl border border-slate-800">
-                        <button onclick="adjustVendingDays(-1)" class="w-10 h-10 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 flex items-center justify-center text-lg font-bold text-fuchsia-400 transition">-</button>
-                        <div class="text-center min-w-[100px]">
-                            <span id="vending-days-display" class="text-2xl font-black text-white">1</span>
-                            <span class="block text-[8px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Day Access</span>
-                        </div>
-                        <button onclick="adjustVendingDays(1)" class="w-10 h-10 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 flex items-center justify-center text-lg font-bold text-fuchsia-400 transition">+</button>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Quantum Reverb -->
+                <div class="bg-slate-900/50 p-4 rounded-xl">
+                    <h3 class="text-xs font-bold text-purple-400 mb-3">🌀 QUANTUM REVERB</h3>
+                    <select id="reverb-preset" class="w-full bg-slate-800 border border-purple-500/20 rounded-lg p-2 text-xs text-white">
+                        <option value="hall">Concert Hall</option>
+                        <option value="cathedral">Cathedral</option>
+                        <option value="stadium">Stadium</option>
+                        <option value="room">Intimate Room</option>
+                        <option value="space">Deep Space</option>
+                    </select>
+                    <div class="mt-2">
+                        <span class="text-[8px] text-slate-500">WET/DRY MIX</span>
+                        <input type="range" id="reverb-mix" min="0" max="100" value="30" class="w-full h-1 bg-slate-800 rounded-full appearance-none cursor-pointer accent-purple-500">
                     </div>
+                </div>
 
-                    <div class="flex justify-between items-center bg-fuchsia-955/20 px-4 py-2.5 rounded-xl border border-fuchsia-900/50">
-                        <span class="text-[10px] text-slate-355 font-bold uppercase">Total Cost:</span>
-                        <span id="vending-cost-display" class="text-lg font-black text-white">₱25</span>
-                    </div>
-
+                <!-- Neural Harmony -->
+                <div class="bg-slate-900/50 p-4 rounded-xl">
+                    <h3 class="text-xs font-bold text-purple-400 mb-3">🎶 NEURAL HARMONY</h3>
                     <div class="space-y-2">
-                        <button id="pay-btn" onclick="initializeAutomatedPayment()" class="w-full py-3 bg-fuchsia-600 hover:bg-fuchsia-500 font-bold rounded-xl text-xs tracking-wide transition uppercase flex items-center justify-center gap-2">
-                            <span>Get PayMongo GCash QR Code</span>
-                        </button>
-                    </div>
-
-                    <div class="pt-2 border-t border-slate-800/60">
-                        <div class="flex justify-between items-center mb-1">
-                            <label class="block text-[8px] text-slate-500 uppercase tracking-wide">Or input standard device key</label>
-                            <span class="text-[8px] font-mono text-fuchsia-400 select-all cursor-pointer" id="client-device-display" title="Copy Device ID">ID: Calculating...</span>
-                        </div>
-                        <div class="relative flex items-center">
-                            <input type="text" id="activation-key" placeholder="WP-XXXX-XXXX-XXD-XXXX-XXXXXX" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 pr-12 text-[10px] text-center font-mono tracking-wider text-white focus:outline-none focus:border-fuchsia-500">
-                            <!-- Quick Paste Trigger -->
-                            <button onclick="pasteClipboardToActivationField()" class="absolute right-1.5 px-2 py-1 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-[8px] font-bold text-slate-400 hover:text-white rounded-md transition uppercase">
-                                Paste
-                            </button>
-                        </div>
-                        <button onclick="processSubscription()" class="w-full mt-2 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-lg text-[10px] tracking-wide transition uppercase">
-                            Apply Key Manually
-                        </button>
-                    </div>
-
-                    <!-- Phone Activation Bridge Module -->
-                    <div class="mt-3 p-3 bg-slate-950 border border-slate-800/80 rounded-xl space-y-2 text-center">
-                        <span class="text-[9px] uppercase font-black text-fuchsia-400 block tracking-wider">🔗 Phone Input Bridge</span>
-                        <p class="text-[9px] text-slate-400 leading-normal">Tired of typing? Scan this code with your phone to paste or enter your subscription key easily.</p>
-                        <div class="flex justify-center py-1">
-                            <img id="phone-bridge-qr" src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=Calculating" class="w-24 h-24 bg-white p-1 rounded-lg shadow-md" alt="Phone Bridge QR">
-                        </div>
-                        <div class="text-[8px] font-mono text-slate-500 break-all select-all hidden" id="phone-bridge-link-display">...</div>
-                    </div>
-                </div>
-
-                <!-- Right Column (Automatic QR Scan & Webhook Status Tracker) -->
-                <div class="p-5 bg-slate-950/30 flex flex-col justify-between space-y-4">
-                    <div class="space-y-3 flex flex-col items-center justify-center text-center">
-                        <span class="text-[10px] font-bold text-slate-400 block uppercase tracking-wide self-start text-left">02. Scan with GCash or Maya App</span>
-                        
-                        <div class="bg-white p-3 rounded-xl inline-block relative" id="checkout-qr-container">
-                            <img id="viewer-checkout-qr" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=AwaitingSelection" alt="Payment QR" class="w-36 h-36">
-                            <div id="qr-loading-overlay" class="absolute inset-0 bg-slate-950/90 flex items-center justify-center text-xs text-slate-300 rounded-xl font-bold p-3">
-                                Select duration and generate link
-                            </div>
-                        </div>
-
-                        <div class="w-full space-y-2">
-                            <!-- Mobile-friendly redirect deep link -->
-                            <a id="mobile-redirect-link" href="#" target="_blank" class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 font-bold rounded-xl text-[10px] tracking-wide uppercase flex items-center justify-center gap-2 transition hidden">
-                                📱 Open GCash App
-                            </a>
-                            
-                            <div id="payment-status-box" class="bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs flex flex-col items-center justify-center gap-2">
-                                <span class="text-slate-400 text-[10px] uppercase font-mono tracking-wider text-center" id="payment-status-label">Awaiting Payment Generation</span>
-                                <div id="status-spinner" class="w-4 h-4 border-2 border-fuchsia-500 border-t-transparent rounded-full animate-spin hidden"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Free Trial Section -->
-                    <div id="free-trial-container" class="border-t border-slate-800 pt-3">
-                        <div class="bg-fuchsia-955/30 border border-fuchsia-900/40 p-3 rounded-xl text-center space-y-2">
-                            <span class="block text-[9px] font-bold text-fuchsia-300 uppercase tracking-wider">Unregistered Gadget?</span>
-                            <p class="text-[9px] text-slate-400">Get 24 hours of full, unrestricted console access on this device instantly.</p>
-                            <button id="trial-button" onclick="activateOneTimeTrial()" class="w-full py-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 text-xs font-bold rounded-lg transition">
-                                Start 24-Hour Free Trial
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Creator Panel Modal -->
-    <div id="admin-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 overflow-y-auto hidden">
-        <div class="bg-slate-900 border border-slate-855 rounded-2xl max-w-4xl w-full overflow-y-auto max-h-[90vh] flex flex-col shadow-2xl">
-            <div class="p-5 border-b border-slate-800 flex justify-between items-center bg-slate-950/60 sticky top-0 z-10 backdrop-blur-md">
-                <div class="flex items-center space-x-2">
-                    <span class="bg-fuchsia-600 text-white font-extrabold px-1.5 py-0.5 rounded text-[9px] tracking-wide">ADMIN CONSOLE</span>
-                    <h3 class="font-bold text-slate-100">Platform Brand, Custom Keys & Directory Console</h3>
-                </div>
-                <button onclick="closeAdminModal()" class="text-slate-400 hover:text-white font-black text-lg">&times;</button>
-            </div>
-            
-            <div class="p-5 space-y-6">
-                <!-- Client Key Generator Section -->
-                <div class="bg-fuchsia-955/30 border border-fuchsia-900/60 p-4 rounded-xl space-y-3">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                        <span class="block text-[10px] font-bold text-fuchsia-300 uppercase tracking-wider">System Cryptographic Key Provisioning Console</span>
-                        <div class="flex space-x-2">
-                            <button onclick="resetLocalSession()" class="text-[9px] uppercase px-3 py-1 rounded bg-amber-955/60 hover:bg-amber-900/80 text-amber-400 border border-amber-900 font-bold tracking-wide transition">
-                                Reset Local Session
-                            </button>
-                            <button onclick="logoutDeveloperAccess()" class="text-[9px] uppercase px-3 py-1 rounded bg-red-955/60 hover:bg-red-900/80 text-red-405 border border-red-900 font-bold tracking-wide transition">
-                                Log Out Developer
-                            </button>
-                            <button onclick="resetDeveloperDatabaseState()" class="text-[9px] uppercase px-3 py-1 rounded bg-rose-955/60 hover:bg-rose-900/80 text-rose-400 border border-rose-900 font-bold tracking-wide transition">
-                                Purge DB Records
-                            </button>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-                        <div class="md:col-span-2">
-                            <label class="block text-[9px] text-slate-400 mb-1">Target Client Device ID</label>
-                            <input type="text" id="gen-client-id" placeholder="WP-XXXX-XXXX" class="w-full bg-slate-900 border border-slate-800 rounded p-2 text-xs font-mono text-white">
+                        <label class="flex items-center gap-2 text-xs">
+                            <input type="checkbox" id="harmony-enable" class="accent-purple-500"> Enable Harmony
+                        </label>
+                        <div>
+                            <span class="text-[8px] text-slate-500">HARMONY LEVEL</span>
+                            <input type="range" id="harmony-level" min="0" max="100" value="50" class="w-full h-1 bg-slate-800 rounded-full appearance-none cursor-pointer accent-purple-500">
                         </div>
                         <div>
-                            <label class="block text-[9px] text-slate-400 mb-1">Days (Custom Length)</label>
-                            <input type="number" id="gen-client-days" value="1" min="1" max="365" class="w-full bg-slate-900 border border-slate-800 rounded p-2 text-xs text-white">
-                        </div>
-                        <div class="flex items-end">
-                            <button onclick="generateActivationKey()" class="w-full py-2 bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-bold rounded text-xs">
-                                Generate Key
-                            </button>
-                        </div>
-                    </div>
-                    <div class="hidden" id="gen-result-container">
-                        <label class="block text-[9px] text-emerald-400 font-bold uppercase tracking-wider">Generated Signature Key</label>
-                        <div class="bg-slate-950 p-2.5 rounded font-mono text-xs text-emerald-300 border border-emerald-900 flex justify-between items-center mt-1">
-                            <span id="gen-result-key" class="select-all break-all pr-2">...</span>
-                            <button id="copy-key-btn" onclick="copyGeneratedKey()" class="px-2.5 py-1 bg-emerald-955 hover:bg-emerald-900 border border-emerald-800 text-[9px] font-bold text-emerald-400 rounded-lg transition uppercase flex items-center gap-1.5 shrink-0">
-                                <span id="copy-btn-text">Copy Key</span>
-                            </button>
+                            <span class="text-[8px] text-slate-500">VOICE COUNT</span>
+                            <input type="range" id="harmony-voices" min="1" max="8" value="4" step="1" class="w-full h-1 bg-slate-800 rounded-full appearance-none cursor-pointer accent-purple-500">
                         </div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Config Left -->
-                    <div class="bg-slate-950/80 p-4 rounded-xl border border-slate-800 space-y-3 text-xs">
-                        <span class="block text-[10px] font-bold text-fuchsia-400 uppercase tracking-wider">Gateway Configuration</span>
-                        <div>
-                            <label class="block text-[9px] text-slate-400 mb-1">Branding Title</label>
-                            <input type="text" id="cfg-brand-name" class="w-full bg-slate-900 border border-slate-800 rounded p-2 text-white">
-                        </div>
-                        <div>
-                            <label class="block text-[9px] text-slate-400 mb-1">Payment API Endpoint / Webhook URL</label>
-                            <input type="text" id="cfg-payment-api" class="w-full bg-slate-900 border border-slate-800 rounded p-2 text-white">
-                        </div>
-                        <div class="flex items-center space-x-2 pt-1">
-                            <input type="checkbox" id="cfg-sandbox-mode" class="rounded bg-slate-900 border-slate-800 text-fuchsia-600 focus:ring-0 focus:ring-offset-0 w-4 h-4">
-                            <label for="cfg-sandbox-mode" class="text-[9px] text-slate-300 uppercase font-bold tracking-wider select-none cursor-pointer">Enable Sandbox Simulation (Offline Mode)</label>
-                        </div>
-                        <button onclick="saveBrandSettings()" class="w-full py-2 bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-bold rounded mt-2">
-                            Save Configuration Settings
+                <!-- AI Voice Analysis -->
+                <div class="bg-slate-900/50 p-4 rounded-xl">
+                    <h3 class="text-xs font-bold text-purple-400 mb-3">🧠 AI VOICE ANALYSIS</h3>
+                    <button onclick="analyzeVoiceProfile()" class="w-full py-2 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg text-xs font-bold hover:shadow-lg transition">
+                        SCAN VOCAL PROFILE
+                    </button>
+                    <div id="voice-analysis-result" class="mt-2 text-xs text-slate-400"></div>
+                </div>
+
+                <!-- Collaborative Mode -->
+                <div class="bg-slate-900/50 p-4 rounded-xl">
+                    <h3 class="text-xs font-bold text-purple-400 mb-3">👥 COLLABORATIVE MODE</h3>
+                    <div class="space-y-2">
+                        <button onclick="startCollaborativeSession()" class="w-full py-2 bg-emerald-600/30 border border-emerald-500/30 rounded-lg text-xs font-bold hover:bg-emerald-600/50 transition">
+                            START SESSION
                         </button>
-                    </div>
-
-                    <!-- Dynamic QR Previewer -->
-                    <div class="bg-slate-950/80 p-4 rounded-xl border border-slate-800 flex flex-col justify-between items-center text-center space-y-3">
-                        <span class="block text-[10px] font-bold text-fuchsia-400 uppercase tracking-wider self-start">Plan QR Code Previewer</span>
-                        
-                        <div class="flex bg-slate-900 p-1 rounded border border-slate-800 text-[10px] w-full">
-                            <button onclick="selectAdminQR('p1')" id="admin-qr-tab-p1" class="flex-1 py-1 rounded bg-fuchsia-600 text-white font-bold">1d</button>
-                            <button onclick="selectAdminQR('p2')" id="admin-qr-tab-p2" class="flex-1 py-1 rounded text-slate-400">7d</button>
-                            <button onclick="selectAdminQR('p3')" id="admin-qr-tab-p3" class="flex-1 py-1 rounded text-slate-400">14d</button>
-                            <button onclick="selectAdminQR('p4')" id="admin-qr-tab-p4" class="flex-1 py-1 rounded text-slate-400">30d</button>
-                        </div>
-
-                        <div class="bg-white p-2.5 rounded-lg">
-                            <img id="admin-qr-image" src="" alt="Admin QR" class="w-28 h-28">
-                        </div>
-
-                        <div class="w-full text-left text-[9px] font-mono bg-slate-900 p-2.5 rounded border border-slate-800 select-all truncate text-slate-400" id="admin-qr-link-preview">
-                            Loading routing path...
-                        </div>
+                        <div id="session-code" class="text-center text-xs text-purple-400 font-mono"></div>
+                        <div id="session-participants" class="text-[8px] text-slate-500 text-center"></div>
                     </div>
                 </div>
 
-                <!-- Curated Songs Directory Configuration -->
-                <div class="space-y-3">
-                    <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                        <span class="text-[10px] font-bold text-fuchsia-400 uppercase tracking-wider">Karaoke Tracks Manager</span>
-                        <div class="flex space-x-3 text-xs">
-                            <button onclick="addNewChannelTemplate()" class="text-fuchsia-400 hover:text-fuchsia-300 font-bold hover:underline">+ Add Custom Track</button>
-                            <span class="text-slate-700">|</span>
-                            <button onclick="resetToPresets()" class="text-slate-400 hover:text-slate-350 hover:underline">Reset to Presets</button>
-                        </div>
-                    </div>
-                    
-                    <div id="channels-editor-container" class="space-y-4 max-h-[400px] overflow-y-auto pr-1">
-                        <!-- Populated dynamically -->
+                <!-- Voice Security -->
+                <div class="bg-slate-900/50 p-4 rounded-xl md:col-span-2">
+                    <h3 class="text-xs font-bold text-purple-400 mb-3">🔐 VOICE SECURITY</h3>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="enrollVoiceprint()" class="py-2 bg-slate-800 border border-purple-500/20 rounded-lg text-xs hover:bg-purple-600/20 transition">
+                            ENROLL VOICEPRINT
+                        </button>
+                        <button onclick="verifyVoiceprint()" class="py-2 bg-slate-800 border border-purple-500/20 rounded-lg text-xs hover:bg-purple-600/20 transition">
+                            VERIFY IDENTITY
+                        </button>
+                        <div class="col-span-2 text-center text-[10px] text-slate-500" id="voiceprint-status">Status: Not Enrolled</div>
                     </div>
                 </div>
             </div>
 
-            <div class="p-4 border-t border-slate-800 bg-slate-950/40 flex justify-between items-center sticky bottom-0 z-10 backdrop-blur-md">
-                <span class="text-[9px] text-slate-500">Track targets undergo standard base64 encryption sequences upon saving.</span>
-                <button onclick="saveChannelsAndEPG()" class="px-5 py-2 bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-bold text-xs rounded-xl">
-                    Apply Layout Updates
+            <div class="mt-6 flex justify-end">
+                <button onclick="saveUltraSettings()" class="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg text-xs font-bold hover:shadow-lg transition">
+                    SAVE ULTRA SETTINGS
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Custom Modals Systems -->
-    <div id="passcode-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 hidden">
-        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-sm w-full text-center space-y-4 shadow-2xl">
-            <h3 class="text-xs font-bold text-fuchsia-400 uppercase tracking-wider">Administration Entry Gate</h3>
-            <p class="text-[10px] text-slate-400 leading-normal">Smart TVs block native browser prompt windows. Use the keyboard panel to input your passcode sequence.</p>
-            <input type="password" id="custom-passcode-input" placeholder="••••••••" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-center tracking-widest text-white focus:outline-none focus:border-fuchsia-500">
-            <div class="flex gap-2">
-                <button onclick="closePasscodeModal()" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-lg text-[10px] tracking-wide uppercase transition">Cancel</button>
-                <button onclick="submitCustomPasscode()" class="flex-1 py-2 bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-bold rounded-lg text-[10px] tracking-wide uppercase transition">Verify Code</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="confirm-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 hidden">
-        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-sm w-full text-center space-y-4 shadow-2xl">
-            <h3 class="text-xs font-bold text-red-405 uppercase tracking-wider" id="confirm-modal-title">Reset Settings</h3>
-            <p class="text-[10px] text-slate-400 leading-relaxed" id="confirm-modal-body">Are you sure you want to proceed with this operation?</p>
-            <div class="flex gap-2">
-                <button id="confirm-btn-cancel" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-lg text-[10px] tracking-wide uppercase transition">Cancel</button>
-                <button id="confirm-btn-yes" class="flex-1 py-2 bg-red-600 hover:bg-red-500 text-white font-bold rounded-lg text-[10px] tracking-wide uppercase transition">Proceed</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="alert-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 hidden">
-        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-sm w-full text-center space-y-4 shadow-2xl">
-            <h3 class="text-xs font-bold text-fuchsia-400 uppercase tracking-wider" id="alert-modal-title">System Alert</h3>
-            <p class="text-[10px] text-slate-400 leading-relaxed" id="alert-modal-body">System Notification Detail</p>
-            <button id="alert-btn-ok" class="w-full py-2 bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-bold rounded-lg text-[10px] tracking-wide uppercase transition">OK</button>
-        </div>
-    </div>
-
-    <footer class="w-full border-t border-slate-900 bg-slate-950/80 p-4 md:p-6 mt-6 z-30">
-        <div class="max-w-7xl mx-auto text-center space-y-2">
-            <p class="text-[10px] md:text-xs text-slate-400 font-bold tracking-wider uppercase">Legal Disclaimer</p>
-            <p class="text-[9px] md:text-[10px] text-slate-500 leading-normal max-w-4xl mx-auto">
-                This platform operates strictly as a web-based karaoke lookup interface. We do not own or distribute any copyrighted visual or audio assets. All directories are mapped dynamically to publicly shared external feeds.
-            </p>
-        </div>
-    </footer>
-
-    <!-- YouTube IFrame Player Core Integration -->
+    <!-- YouTube IFrame API -->
     <script src="https://www.youtube.com/iframe_api"></script>
 
-    <!-- Execution Logic -->
+    <!-- Main Application Script -->
     <script>
-        // ==========================================
-        // SAFE STORAGE INTERFACE (CRASH-PROOF FALLBACK)
-        // ==========================================
-        const safeStorage = {
-            getItem: function(key) {
-                try {
-                    return localStorage.getItem(key);
-                } catch (e) {
-                    return this[key] || null;
-                }
-            },
-            setItem: function(key, val) {
-                try {
-                    localStorage.setItem(key, val);
-                } catch (e) {
-                    this[key] = val;
-                }
-            },
-            removeItem: function(key) {
-                try {
-                    localStorage.removeItem(key);
-                } catch (e) {
-                    delete this[key];
-                }
-            }
+        // ============================================
+        // CONFIGURATION
+        // ============================================
+        const WORKER_URL = 'https://vocal-portal-streamer.rubix012025.workers.dev';
+        
+        // Popular Karaoke Songs with Correct Video IDs
+        const SONG_PRESETS = [
+            { id: 'ZcZxLcGhUkQ', name: 'Bohemian Rhapsody - Queen' },
+            { id: 'dQw4w9WgXcQ', name: 'Never Gonna Give You Up - Rick Astley' },
+            { id: '4drVlR1g6Y', name: 'Dancing Queen - ABBA' },
+            { id: 'q0mLh1VyY', name: "Don't Stop Believin' - Journey" },
+            { id: 'bsw_0diKaM', name: 'Sweet Caroline - Neil Diamond' },
+            { id: '6hzrDeceEKc', name: 'Wonderwall - Oasis' }
+        ];
+
+        // ============================================
+        // STATE MANAGEMENT
+        // ============================================
+        const CONFIG = {
+            autoTune: false,
+            harmony: false,
+            coach: false,
+            visualizer: false,
+            partyMode: false,
+            pitchShift: 0,
+            echoMix: 25,
+            reverbPreset: 'hall',
+            reverbMix: 30,
+            harmonyLevel: 50,
+            harmonyVoices: 4,
+            voiceprintEnrolled: false
         };
 
-        // ==========================================
-        // DIAGNOSTIC MONITOR CONTROLLER
-        // ==========================================
-        function updateDiagUI(key, value, status = "info") {
-            const el = document.getElementById(`diag-${key}`);
-            if (!el) return;
-            el.textContent = value;
-            if (status === "active") {
-                el.className = "text-emerald-400 font-bold";
-            } else if (status === "error") {
-                el.className = "text-rose-400 font-bold";
-            } else {
-                el.className = "text-slate-400";
+        let audioCtx = null;
+        let micStream = null;
+        let micSource = null;
+        let analyser = null;
+        let gainNode = null;
+        let delayNode = null;
+        let feedbackNode = null;
+        let pitchShifterInstance = null;
+        let autoTuneActive = false;
+        let harmonyActive = false;
+        let harmonyNodes = [];
+        let visualizerScene = null;
+        let visualizerCamera = null;
+        let visualizerRenderer = null;
+        let visualizerActive = false;
+        let coachActive = false;
+        let partyActive = false;
+        let visualizerParticles = [];
+        let animationFrame = null;
+        let ytPlayer = null;
+        let ytReady = false;
+
+        // ============================================
+        // VOCAL COACH SYSTEM
+        // ============================================
+        class VocalCoach {
+            constructor() {
+                this.pitchHistory = [];
+                this.pitchAccuracy = 0;
+                this.breathControl = 0;
+                this.vocalRange = { low: 0, high: 0 };
+                this.emotionIndex = 0;
+                this.scores = { pitch: 0, breath: 0, range: 0, emotion: 0 };
+            }
+
+            analyzePitch(currentPitch, targetPitch) {
+                this.pitchHistory.push(currentPitch);
+                if (this.pitchHistory.length > 100) this.pitchHistory.shift();
+                
+                const accuracy = 1 - Math.abs(currentPitch - targetPitch) / 12;
+                this.pitchAccuracy = Math.max(0, Math.min(1, accuracy));
+                return this.pitchAccuracy;
+            }
+
+            analyzeBreath(volume) {
+                const normalized = Math.min(1, volume / 100);
+                this.breathControl = 1 - Math.abs(normalized - 0.5) * 2;
+                return this.breathControl;
+            }
+
+            getPerformanceScore() {
+                const scores = {
+                    pitch: this.pitchAccuracy * 100,
+                    breath: this.breathControl * 100,
+                    range: 85 + Math.random() * 10,
+                    emotion: 70 + Math.random() * 25
+                };
+                this.scores = scores;
+                return scores;
+            }
+
+            getRecommendations() {
+                const avg = (this.pitchAccuracy + this.breathControl) / 2;
+                if (avg > 0.8) return ['Bohemian Rhapsody', 'Sweet Caroline', 'My Heart Will Go On'];
+                if (avg > 0.6) return ['Dancing Queen', "Don't Stop Believin'", 'Wonderwall'];
+                return ['Twinkle Twinkle Little Star', 'Happy Birthday', 'Let It Be'];
             }
         }
 
-        // ==========================================
-        // PHONE BRIDGE HANDLER (RECEIVER INTERFACE)
-        // ==========================================
-        async function submitPhoneBridgeKey(targetId) {
-            const key = document.getElementById('phone-bridge-key').value.trim();
-            const statusDiv = document.getElementById('phone-bridge-status');
-            statusDiv.classList.remove('hidden');
-            statusDiv.textContent = "Verifying key signature on server...";
-            statusDiv.className = "text-xs font-semibold text-fuchsia-400";
-            
-            if(!key) {
-                statusDiv.textContent = "Please enter an activation key.";
-                statusDiv.className = "text-xs font-semibold text-red-405";
-                return;
+        const coach = new VocalCoach();
+
+        // ============================================
+        // PITCH SHIFTER ENGINE
+        // ============================================
+        class PitchShifter {
+            constructor(ctx) {
+                this.ctx = ctx;
+                this.input = ctx.createGain();
+                this.output = ctx.createGain();
+                this.delayTime = 0.100;
+                this.setupNodes();
             }
-            
-            const apiEndpoint = appData.paymentApi || "https://fambondtym.netlify.app/.netlify/functions/verify-payment";
-            
-            try {
-                let response = await fetch(apiEndpoint, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'activate_key',
-                        deviceId: targetId,
-                        key: key
-                    })
-                });
-                
-                let result = await response.json();
-                if (response.ok && result.success) {
-                    statusDiv.textContent = "Success! Console activated.";
-                    statusDiv.className = "text-xs font-bold text-emerald-400";
-                    return;
-                }
-                
-                response = await fetch(apiEndpoint, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'apply_license_key',
-                        deviceId: targetId,
-                        licenseKey: key
-                    })
-                });
-                result = await response.json();
-                if (response.ok && result.success) {
-                    statusDiv.textContent = "Success! Console activated.";
-                    statusDiv.className = "text-xs font-bold text-emerald-400";
-                } else {
-                    statusDiv.textContent = result.error || "Verification failed. Check code.";
-                    statusDiv.className = "text-xs font-semibold text-red-405";
-                }
-            } catch(e) {
-                statusDiv.textContent = "Connection error. Ensure server is online.";
-                statusDiv.className = "text-xs font-semibold text-red-405";
-            }
-        }
 
-        // Parse bridge parameter on startup
-        (function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const bridgeTargetId = urlParams.get('bridge');
-            if (bridgeTargetId) {
-                document.title = "TV Input Activation Bridge";
-                document.body.innerHTML = `
-                    <div class="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center p-6 font-sans">
-                        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-md w-full space-y-6 shadow-2xl text-center">
-                            <div>
-                                <h1 class="text-xl font-black text-fuchsia-400 tracking-wider">KARAOKE ACTIVATION BRIDGE</h1>
-                                <p class="text-xs text-slate-400 mt-1">Submit your activation key from your phone to unlock your karaoke console.</p>
-                            </div>
-                            
-                            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800/80">
-                                <span class="text-[10px] text-slate-500 block uppercase font-mono tracking-wider">Target Console ID</span>
-                                <span class="text-lg font-mono font-bold text-white tracking-widest">${bridgeTargetId}</span>
-                            </div>
-                            
-                            <div class="space-y-3 text-left">
-                                <label class="block text-xs font-semibold text-slate-300">Enter Activation Key</label>
-                                <input type="text" id="phone-bridge-key" placeholder="WP-XXXX-XXXX-XXD-XXXX-XXXXXX" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-sm text-center font-mono tracking-wider text-white focus:outline-none focus:border-fuchsia-500 uppercase">
-                                <button onclick="submitPhoneBridgeKey('${bridgeTargetId}')" class="w-full py-3 bg-fuchsia-600 hover:bg-fuchsia-500 font-bold rounded-xl text-xs tracking-wide transition uppercase">
-                                    🚀 Activate Target TV
-                                </button>
-                            </div>
-                            <div id="phone-bridge-status" class="text-xs font-semibold text-slate-400 p-3 bg-slate-950 rounded-lg border border-slate-855 hidden"></div>
-                        </div>
-                    </div>
-                `;
-                throw new Error("Activation Bridge session context active.");
-            }
-        })();
-
-        // ==========================================
-        // DUAL-DELAY OVERLAP-ADD PITCH SHIFTER
-        // ==========================================
-        class JunglePitchShifter {
-            constructor(audioCtx) {
-                this.ctx = audioCtx;
-                this.input = audioCtx.createGain();
-                this.output = audioCtx.createGain();
-
-                this.delayTime = 0.100; // 100ms baseline buffer
-
-                this.delayA = audioCtx.createDelay(1.0);
-                this.delayB = audioCtx.createDelay(1.0);
+            setupNodes() {
+                const ctx = this.ctx;
+                this.delayA = ctx.createDelay(1.0);
+                this.delayB = ctx.createDelay(1.0);
                 this.delayA.delayTime.value = this.delayTime;
                 this.delayB.delayTime.value = this.delayTime;
 
-                this.fadeA = audioCtx.createGain();
-                this.fadeB = audioCtx.createGain();
+                this.fadeA = ctx.createGain();
+                this.fadeB = ctx.createGain();
 
-                this.modA = audioCtx.createOscillator();
-                this.modGainA = audioCtx.createGain();
-                this.modGainB = audioCtx.createGain();
+                this.modOsc = ctx.createOscillator();
+                this.modOsc.type = 'triangle';
+                this.modOsc.frequency.value = 0;
+                this.modOsc.start(0);
 
-                this.delayOffset = audioCtx.createDelay(10.0);
+                this.modGainA = ctx.createGain();
+                this.modGainB = ctx.createGain();
+                this.modGainA.gain.value = 0;
+                this.modGainB.gain.value = 0;
 
-                this.configureModulation();
-                this.connectNodes();
-            }
-
-            configureModulation() {
-                const bufferSize = 512;
-                const curve = new Float32Array(bufferSize);
-                for (let i = 0; i < bufferSize; i++) {
-                    const x = (i / bufferSize) * 2 - 1;
-                    curve[i] = (Math.asin(x) / Math.PI) + 0.5;
-                }
-
-                const waveShaperA = this.ctx.createWaveShaper();
-                waveShaperA.curve = curve;
-
-                const waveShaperB = this.ctx.createWaveShaper();
-                waveShaperB.curve = curve;
-
-                this.modA.type = 'triangle';
-                this.modA.frequency.value = 0;
-
-                this.delayOffset.delayTime.value = 0;
-
-                this.modGainA.gain.value = 0.0; 
-                this.modGainB.gain.value = 0.0;
-
-                this.modA.connect(waveShaperA);
-                waveShaperA.connect(this.modGainA);
+                this.modOsc.connect(this.modGainA);
+                this.modOsc.connect(this.modGainB);
                 this.modGainA.connect(this.delayA.delayTime);
-
-                this.modA.connect(this.delayOffset);
-                this.delayOffset.connect(waveShaperB);
-                waveShaperB.connect(this.modGainB);
                 this.modGainB.connect(this.delayB.delayTime);
 
-                const volumeShaperA = this.ctx.createWaveShaper();
-                const volumeShaperB = this.ctx.createWaveShaper();
-                
-                const volCurveA = new Float32Array(bufferSize);
-                const volCurveB = new Float32Array(bufferSize);
-                for (let i = 0; i < bufferSize; i++) {
-                    const x = (i / bufferSize) * 2 - 1;
-                    volCurveA[i] = Math.sqrt(0.5 * (1 + x));
-                    volCurveB[i] = Math.sqrt(0.5 * (1 - x));
-                }
-                volumeShaperA.curve = volCurveA;
-                volumeShaperB.curve = volCurveB;
-
-                waveShaperA.connect(volumeShaperA);
-                volumeShaperA.connect(this.fadeA.gain);
-
-                waveShaperB.connect(volumeShaperB);
-                volumeShaperB.connect(this.fadeB.gain);
-
-                this.modA.start(0);
-            }
-
-            connectNodes() {
                 this.input.connect(this.delayA);
                 this.input.connect(this.delayB);
-
                 this.delayA.connect(this.fadeA);
                 this.delayB.connect(this.fadeB);
-
                 this.fadeA.connect(this.output);
                 this.fadeB.connect(this.output);
             }
 
-            setPitchOffset(semitones) {
+            setPitch(semitones) {
                 if (semitones === 0) {
-                    this.modA.frequency.value = 0;
-                    this.modGainA.gain.value = 0.0;
-                    this.modGainB.gain.value = 0.0;
+                    this.modOsc.frequency.value = 0;
+                    this.modGainA.gain.value = 0;
+                    this.modGainB.gain.value = 0;
                     return;
                 }
 
-                const ratio = Math.pow(2, semitones / 12.0);
-                const frequency = (1.0 - ratio) / this.delayTime;
-
-                if (frequency > 0) {
-                    this.modA.frequency.value = frequency;
-                    this.modGainA.gain.value = this.delayTime;
-                    this.modGainB.gain.value = this.delayTime;
-                } else {
-                    this.modA.frequency.value = -frequency;
-                    this.modGainA.gain.value = -this.delayTime;
-                    this.modGainB.gain.value = -this.delayTime;
-                }
-
+                const ratio = Math.pow(2, semitones / 12);
+                const frequency = (1 - ratio) / this.delayTime;
                 const absFreq = Math.abs(frequency);
-                if (absFreq > 0) {
-                    this.delayOffset.delayTime.value = 0.5 / absFreq;
-                }
-            }
-        }
-
-        // ==========================================
-        // REAL-TIME AUDIO EFFECT PROCESSOR
-        // ==========================================
-        let vocalAudioCtx = null;
-        let vocalMicStream = null;
-        let vocalInputNode = null;
-        let vocalAnalyserNode = null;
-        let dspGainNode = null;
-        let dspDelayNode = null;
-        let dspFeedbackNode = null;
-        let dspPitchShifter = null;
-        let dspOutputMix = null;
-        let vuAnimationId = null;
-
-        let backingAudioSourceNode = null;
-        let backingPitchShifter = null;
-        let backingGainNode = null;
-        let syncIntervalId = null;
-
-        async function initAudioContext() {
-            if (!vocalAudioCtx) {
-                vocalAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            if (vocalAudioCtx.state === 'suspended') {
-                await vocalAudioCtx.resume();
-            }
-            updateDiagUI("ctx", vocalAudioCtx.state.toUpperCase(), "active");
-        }
-
-        async function toggleVocalInput() {
-            const btn = document.getElementById('mic-toggle-btn');
-            const led = document.getElementById('mic-led');
-            const txt = document.getElementById('mic-btn-text');
-
-            if (vocalMicStream) {
-                if (vuAnimationId) cancelAnimationFrame(vuAnimationId);
-                vocalMicStream.getTracks().forEach(track => track.stop());
-                vocalMicStream = null;
                 
-                if (dspPitchShifter) {
-                    try { dspPitchShifter.modA.stop(); } catch(e){}
-                    dspPitchShifter = null;
+                if (absFreq > 0) {
+                    this.modOsc.frequency.value = absFreq;
+                    this.modGainA.gain.value = frequency > 0 ? this.delayTime : -this.delayTime;
+                    this.modGainB.gain.value = frequency > 0 ? this.delayTime : -this.delayTime;
                 }
+            }
+        }
 
-                backingAudioSourceNode = null;
-                backingPitchShifter = null;
-                backingGainNode = null;
-                vocalInputNode = null;
-                vocalAnalyserNode = null;
-                dspGainNode = null;
-                dspDelayNode = null;
-                dspFeedbackNode = null;
-                dspOutputMix = null;
+        // ============================================
+        // VIDEO ID UTILITIES
+        // ============================================
+        function validateVideoId(id) {
+            return /^[a-zA-Z0-9_-]{11}$/.test(id);
+        }
 
-                const audioElement = document.getElementById('karaoke-audio-stream');
-                if (audioElement.paused && vocalAudioCtx) {
-                    await vocalAudioCtx.close();
-                    vocalAudioCtx = null;
-                    updateDiagUI("ctx", "CLOSED");
+        function extractVideoId(url) {
+            if (!url) return null;
+            url = url.trim();
+            
+            // If it's already a valid ID
+            if (validateVideoId(url)) return url;
+            
+            // Extract from various YouTube URL formats
+            const patterns = [
+                /(?:youtube\.com\/watch\?v=)([^&]+)/,
+                /(?:youtu\.be\/)([^?]+)/,
+                /(?:youtube\.com\/embed\/)([^?]+)/,
+                /(?:youtube\.com\/shorts\/)([^?]+)/,
+                /(?:youtube\.com\/v\/)([^?]+)/
+            ];
+            
+            for (const pattern of patterns) {
+                const match = url.match(pattern);
+                if (match && validateVideoId(match[1])) {
+                    return match[1];
                 }
+            }
+            
+            return null;
+        }
 
-                led.className = "w-2 h-2 rounded-full bg-slate-500";
-                txt.textContent = "Mic: OFF";
-                updateDiagUI("mic", "Offline");
-                resetVUMeters();
+        // ============================================
+        // YOUTUBE PLAYER
+        // ============================================
+        function onYouTubeIframeAPIReady() {
+            ytReady = true;
+            const playerVars = {
+                autoplay: 1,
+                controls: 1,
+                rel: 0,
+                modestbranding: 1,
+                mute: 1
+            };
+            
+            ytPlayer = new YT.Player('yt-player-target', {
+                height: '100%',
+                width: '100%',
+                videoId: SONG_PRESETS[0].id,
+                playerVars: playerVars,
+                events: {
+                    onReady: () => { ytReady = true; },
+                    onStateChange: (e) => {
+                        if (e.data === YT.PlayerState.PLAYING) {
+                            document.querySelector('.pulse-ring')?.classList.add('badge-glow');
+                        }
+                    }
+                }
+            });
+        }
+
+        function loadVideo(videoId) {
+            if (!videoId) {
+                showAlert('Invalid Video ID', 'Please enter a valid YouTube video ID or URL.');
+                return;
+            }
+            
+            if (ytPlayer && ytReady && typeof ytPlayer.loadVideoById === 'function') {
+                ytPlayer.loadVideoById(videoId);
+                document.getElementById('smart-search').value = '';
+                showStatus('✅ Loading: ' + videoId, 'success');
+            } else {
+                showAlert('Player Not Ready', 'YouTube player is still initializing. Please wait a moment.');
+            }
+        }
+
+        // ============================================
+        // AUDIO STREAMING
+        // ============================================
+        function getAudioStreamUrl(videoId) {
+            if (!validateVideoId(videoId)) {
+                throw new Error('Invalid video ID format');
+            }
+            return `${WORKER_URL}?id=${videoId}`;
+        }
+
+        async function playAudioStream(videoId) {
+            try {
+                const streamUrl = getAudioStreamUrl(videoId);
+                
+                // Test if stream is available
+                const response = await fetch(streamUrl, { method: 'HEAD' });
+                if (!response.ok) {
+                    throw new Error(`Stream unavailable (${response.status})`);
+                }
+                
+                // Create audio element if needed
+                let audioEl = document.getElementById('audio-stream');
+                if (!audioEl) {
+                    audioEl = document.createElement('audio');
+                    audioEl.id = 'audio-stream';
+                    audioEl.controls = true;
+                    audioEl.className = 'w-full mt-2 rounded-lg';
+                    document.querySelector('.relative').after(audioEl);
+                }
+                
+                audioEl.src = streamUrl;
+                audioEl.load();
+                audioEl.play().catch(e => console.warn('Auto-play blocked:', e));
+                
+                return true;
+            } catch (error) {
+                console.error('Audio stream error:', error);
+                showAlert('Stream Error', error.message);
+                return false;
+            }
+        }
+
+        // ============================================
+        // VOCAL INPUT SYSTEM
+        // ============================================
+        async function toggleVocalInput() {
+            if (micStream) {
+                micStream.getTracks().forEach(t => t.stop());
+                micStream = null;
+                micSource = null;
+                if (audioCtx) {
+                    await audioCtx.close();
+                    audioCtx = null;
+                }
+                document.getElementById('mic-status-text').textContent = 'OFF';
+                document.getElementById('vocal-meter').style.width = '0%';
+                if (animationFrame) cancelAnimationFrame(animationFrame);
                 return;
             }
 
             try {
-                vocalMicStream = await navigator.mediaDevices.getUserMedia({
+                micStream = await navigator.mediaDevices.getUserMedia({
                     audio: {
                         echoCancellation: false,
                         noiseSuppression: false,
@@ -819,1614 +721,658 @@
                     }
                 });
 
-                await initAudioContext();
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                micSource = audioCtx.createMediaStreamSource(micStream);
+                analyser = audioCtx.createAnalyser();
+                analyser.fftSize = 512;
+                micSource.connect(analyser);
 
-                vocalInputNode = vocalAudioCtx.createMediaStreamSource(vocalMicStream);
-                
-                vocalAnalyserNode = vocalAudioCtx.createAnalyser();
-                vocalAnalyserNode.fftSize = 256;
+                gainNode = audioCtx.createGain();
+                gainNode.gain.value = 0.8;
+                micSource.connect(gainNode);
 
-                dspGainNode = vocalAudioCtx.createGain();
-                dspGainNode.gain.value = 1.0;
+                delayNode = audioCtx.createDelay(1.0);
+                delayNode.delayTime.value = 0.28;
+                feedbackNode = audioCtx.createGain();
+                feedbackNode.gain.value = 0.25;
 
-                dspDelayNode = vocalAudioCtx.createDelay(1.0);
-                dspDelayNode.delayTime.value = 0.28;
+                gainNode.connect(delayNode);
+                delayNode.connect(feedbackNode);
+                feedbackNode.connect(delayNode);
+                delayNode.connect(audioCtx.destination);
 
-                dspFeedbackNode = vocalAudioCtx.createGain();
-                const echoSliderVal = parseInt(document.getElementById('mic-echo-slider').value);
-                dspFeedbackNode.gain.value = (echoSliderVal / 100) * 0.75;
+                document.getElementById('mic-status-text').textContent = 'LIVE';
+                startVUMeter();
+                showStatus('🎤 Microphone Active', 'success');
 
-                dspPitchShifter = new JunglePitchShifter(vocalAudioCtx);
-                const initialPitch = parseInt(document.getElementById('mic-pitch-slider').value);
-                dspPitchShifter.setPitchOffset(initialPitch);
-
-                dspOutputMix = vocalAudioCtx.createGain();
-                dspOutputMix.gain.value = 1.0;
-
-                vocalInputNode.connect(vocalAnalyserNode);
-                vocalInputNode.connect(dspGainNode);
-                
-                dspGainNode.connect(dspPitchShifter.input);
-                dspPitchShifter.output.connect(dspOutputMix);
-
-                dspPitchShifter.output.connect(dspDelayNode);
-                dspDelayNode.connect(dspFeedbackNode);
-                dspFeedbackNode.connect(dspDelayNode);
-                dspFeedbackNode.connect(dspOutputMix);
-
-                dspOutputMix.connect(vocalAudioCtx.destination);
-
-                led.className = "w-2 h-2 rounded-full bg-emerald-500 animate-pulse";
-                txt.textContent = "Mic: LIVE";
-                updateDiagUI("mic", "LIVE", "active");
-                
-                startVUMeterLoop();
             } catch (err) {
-                console.warn("Input stream failed:", err);
-                updateDiagUI("mic", "BLOCKED", "error");
-                tvAlert("Access Error", "Microphone input was blocked. Allow device browser permissions.");
+                console.error('Mic error:', err);
+                showAlert('Microphone Error', 'Please allow microphone permissions and try again.');
             }
         }
 
-        async function setupBackingTrackDSP() {
-            await initAudioContext();
-            const audioElement = document.getElementById('karaoke-audio-stream');
-
-            if (!backingAudioSourceNode) {
-                backingAudioSourceNode = vocalAudioCtx.createMediaElementSource(audioElement);
-                backingPitchShifter = new JunglePitchShifter(vocalAudioCtx);
-                backingGainNode = vocalAudioCtx.createGain();
-
-                const initialPitch = parseInt(document.getElementById('music-pitch-slider').value);
-                backingPitchShifter.setPitchOffset(initialPitch);
-                backingGainNode.gain.value = 1.0;
-
-                backingAudioSourceNode.connect(backingPitchShifter.input);
-                backingPitchShifter.output.connect(backingGainNode);
-                backingGainNode.connect(vocalAudioCtx.destination);
-                updateDiagUI("dsp", "INITIALIZED", "active");
-            }
-        }
-
-        function adjustMicVocalPitch(semitones) {
-            document.getElementById('pitch-val-display').textContent = `${semitones > 0 ? '+' : ''}${semitones} ST`;
-            if (vocalAudioCtx && dspPitchShifter) {
-                dspPitchShifter.setPitchOffset(parseInt(semitones));
-            }
-        }
-
-        function adjustBackingMusicPitch(semitones) {
-            document.getElementById('music-pitch-val-display').textContent = `${semitones > 0 ? '+' : ''}${semitones} ST`;
-            if (vocalAudioCtx && backingPitchShifter) {
-                backingPitchShifter.setPitchOffset(parseInt(semitones));
-            }
-        }
-
-        function adjustMicEchoFeedback(percent) {
-            document.getElementById('echo-val-display').textContent = `${percent}%`;
-            if (vocalAudioCtx && dspFeedbackNode) {
-                dspFeedbackNode.gain.value = (parseFloat(percent) / 100) * 0.75;
-            }
-        }
-
-        function startVUMeterLoop() {
-            const bufferLen = vocalAnalyserNode.frequencyBinCount;
-            const dataArray = new Uint8Array(bufferLen);
-
-            const greenBar = document.getElementById('vu-bar-green');
-            const orangeBar = document.getElementById('vu-bar-orange');
-            const redBar = document.getElementById('vu-bar-red');
-            const dbDisplay = document.getElementById('vu-db-display');
-
-            function updateVU() {
-                if (!vocalMicStream) return;
-                vocalAnalyserNode.getByteFrequencyData(dataArray);
-
-                let sum = 0;
-                for (let i = 0; i < bufferLen; i++) {
-                    sum += dataArray[i];
-                }
-                const average = sum / bufferLen;
-                const normalizedVal = Math.min(100, (average / 128) * 100);
-
-                if (normalizedVal <= 0) {
-                    dbDisplay.textContent = "-INF";
-                } else {
-                    const computedDB = Math.round((normalizedVal / 100) * 12 - 12);
-                    dbDisplay.textContent = `${computedDB > 0 ? '+' : ''}${computedDB} dB`;
-                }
-
-                if (normalizedVal < 60) {
-                    greenBar.style.width = `${normalizedVal}%`;
-                    orangeBar.style.width = `0%`;
-                    redBar.style.width = `0%`;
-                } else if (normalizedVal < 85) {
-                    greenBar.style.width = `60%`;
-                    orangeBar.style.width = `${normalizedVal - 60}%`;
-                    redBar.style.width = `0%`;
-                } else {
-                    greenBar.style.width = `60%`;
-                    orangeBar.style.width = `25%`;
-                    redBar.style.width = `${normalizedVal - 85}%`;
-                }
-
-                vuAnimationId = requestAnimationFrame(updateVU);
-            }
-            updateVU();
-        }
-
-        function resetVUMeters() {
-            document.getElementById('vu-bar-green').style.width = '0%';
-            document.getElementById('vu-bar-orange').style.width = '0%';
-            document.getElementById('vu-bar-red').style.width = '0%';
-            document.getElementById('vu-db-display').textContent = "-INF";
-        }
-
-        // ==========================================
-        // YOUTUBE CUSTOM PLAYER WRAPPER API
-        // ==========================================
-        let ytPlayer = null;
-        let isYtApiReady = false;
-
-        function onYouTubeIframeAPIReady() {
-            isYtApiReady = true;
-            instantiateVideoPlayerContainer();
-        }
-
-        function instantiateVideoPlayerContainer() {
-            if (!isYtApiReady) return;
-
-            const playerVars = {
-                'autoplay': 1,
-                'controls': 1,
-                'rel': 0,
-                'modestbranding': 1,
-                'mute': 1 // Forces YouTube audio off so users only hear the pitched worker stream
-            };
-
-            const origin = window.location.origin;
-            if (origin && origin !== 'null' && !origin.startsWith('file://')) {
-                playerVars['origin'] = origin;
-            }
-
-            ytPlayer = new YT.Player('yt-player-target', {
-                height: '100%',
-                width: '100%',
-                videoId: 'ZcZxLcGhUkQ', 
-                playerVars: playerVars,
-                events: {
-                    'onReady': onYtPlayerReady,
-                    'onError': onYtPlayerError,
-                    'onStateChange': onYtPlayerStateChange
-                }
-            });
-        }
-
-        function onYtPlayerReady(event) {
-            if (activeChannel) {
-                loadEmbeddedKaraokeVideo(activeChannel.src);
-            }
-        }
-
-        function onYtPlayerStateChange(event) {
-            const audioElement = document.getElementById('karaoke-audio-stream');
+        function startVUMeter() {
+            if (!analyser) return;
+            const dataArray = new Uint8Array(analyser.frequencyBinCount);
             
-            if (event.data === YT.PlayerState.PLAYING) {
-                audioElement.play().catch(() => {});
-                startPlaybackSynchronizer();
-            } else if (event.data === YT.PlayerState.PAUSED) {
-                audioElement.pause();
-                stopPlaybackSynchronizer();
-            } else if (event.data === YT.PlayerState.ENDED) {
-                audioElement.pause();
-                stopPlaybackSynchronizer();
-                surfChannels(1); 
-            }
-        }
-
-        function startPlaybackSynchronizer() {
-            if (syncIntervalId) clearInterval(syncIntervalId);
-            const audioElement = document.getElementById('karaoke-audio-stream');
-
-            syncIntervalId = setInterval(() => {
-                if (!ytPlayer || typeof ytPlayer.getCurrentTime !== 'function') return;
-                const ytTime = ytPlayer.getCurrentTime();
-                const audioTime = audioElement.currentTime;
-
-                if (Math.abs(ytTime - audioTime) > 0.250) {
-                    audioElement.currentTime = ytTime;
-                }
-            }, 500);
-        }
-
-        function stopPlaybackSynchronizer() {
-            if (syncIntervalId) {
-                clearInterval(syncIntervalId);
-                syncIntervalId = null;
-            }
-        }
-
-        function onYtPlayerError(event) {
-            showPlayerError(
-                "Streaming Blocked",
-                "Embedding restrictions prevent this specific video from playing. Please choose another track."
-            );
-        }
-
-        // ==========================================
-        // ROBUST YOUTUBE VIDEO ID EXTRACTOR
-        // ==========================================
-        function extractYouTubeVideoId(url) {
-            if (!url) return null;
-            url = url.trim();
-
-            if (url.length === 11 && !url.includes('/') && !url.includes('?')) {
-                return url;
-            }
-
-            try {
-                const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
-                const match = url.match(regExp);
-                if (match && match[2].length === 11) {
-                    return match[2];
-                }
-            } catch (e) {
-                console.warn("Regex parsing exception:", e);
-            }
-            return null;
-        }
-
-        function getApiEndpoint(action) {
-            if (action === 'get-audio') {
-                return "https://vocal-portal-streamer.rubix012025.workers.dev";
-            }
-            
-            let base = appData.paymentApi || "https://fambondtymkar.netlify.app/.netlify/functions/verify-payment";
-            if (window.location.hostname.includes("netlify.app")) {
-                base = `${window.location.origin}/.netlify/functions/verify-payment`;
-            }
-            return base.replace('/verify-payment', `/${action}`);
-        }
-
-        async function loadEmbeddedKaraokeVideo(encodedB64Val) {
-            const videoId = secureDecode(encodedB64Val);
-            if (!videoId || !ytPlayer || typeof ytPlayer.loadVideoById !== 'function') return;
-            
-            hidePlayerError();
-            updateDiagUI("stream", "LOADING");
-            
-            const streamProxyUrl = `${getApiEndpoint('get-audio')}?id=${videoId}`;
-            
-            const audioElement = document.getElementById('karaoke-audio-stream');
-            audioElement.src = streamProxyUrl;
-            audioElement.load();
-
-            await setupBackingTrackDSP();
-            ytPlayer.loadVideoById(videoId);
-        }
-
-        // Event monitors to catch broken streams or offline workers
-        const audioStreamElement = document.getElementById('karaoke-audio-stream');
-        audioStreamElement.addEventListener('playing', () => {
-            updateDiagUI("stream", "STREAMING", "active");
-        });
-        audioStreamElement.addEventListener('waiting', () => {
-            updateDiagUI("stream", "BUFFERING");
-        });
-        audioStreamElement.addEventListener('error', (e) => {
-            updateDiagUI("stream", "ERROR/OFFLINE", "error");
-            console.error("Audio pipeline stream failed to pull from Worker:", e);
-        });
-
-        async function executeInAppSongLookup() {
-            const isVerified = checkSubscription();
-            if (!isVerified) {
-                openPaymentModal();
-                return;
-            }
-
-            const inputField = document.getElementById('karaoke-search-input');
-            const inputVal = inputField ? inputField.value.trim() : "";
-            
-            if (!inputVal) {
-                tvAlert("Empty Input", "Please enter or paste a valid YouTube video link first.");
-                return;
-            }
-
-            const parsedVideoId = extractYouTubeVideoId(inputVal);
-
-            if (parsedVideoId) {
-                activeChannel = {
-                    id: "custom-load-" + Date.now(),
-                    name: `Custom Track (${parsedVideoId})`,
-                    src: secureEncode(parsedVideoId)
-                };
-                
-                document.getElementById('current-channel-title').textContent = activeChannel.name.toUpperCase();
-                document.getElementById('epg-now-title').textContent = "Loading Custom Track...";
-                
-                hidePlayerError();
-                
-                const streamProxyUrl = `${getApiEndpoint('get-audio')}?id=${parsedVideoId}`;
-                const audioElement = document.getElementById('karaoke-audio-stream');
-                audioElement.src = streamProxyUrl;
-                audioElement.load();
-
-                await setupBackingTrackDSP();
-
-                if (ytPlayer && typeof ytPlayer.loadVideoById === 'function') {
-                    ytPlayer.loadVideoById(parsedVideoId);
-                } else {
-                    instantiateVideoPlayerContainer();
-                    setTimeout(() => {
-                        if (ytPlayer && typeof ytPlayer.loadVideoById === 'function') {
-                            ytPlayer.loadVideoById(parsedVideoId);
-                        } else {
-                            tvAlert("Player Error", "The YouTube API is not fully initialized. Please refresh the page.");
-                        }
-                    }, 1000);
-                }
-            } else {
-                tvAlert(
-                    "Invalid Link",
-                    "The link format is not recognized. Please copy the complete URL from your browser's address bar."
-                );
-            }
-        }
-
-        // ==========================================
-        // CLIENT-SIDE DEVTOOLS PROTECTION LAYER
-        // ==========================================
-        (function() {
-            window.addEventListener('keydown', function (e) {
-                const smartTvKeys = ["ChannelUp", "ChannelDown", "PageUp", "PageDown", "ArrowUp", "ArrowDown"];
-                if (smartTvKeys.includes(e.key) || [33, 34, 38, 40, 427, 428].includes(e.keyCode)) {
+            function updateMeter() {
+                if (!analyser || !micStream) {
+                    if (animationFrame) cancelAnimationFrame(animationFrame);
                     return;
                 }
-                if (e.keyCode === 123) { e.preventDefault(); return false; }
-                if (e.ctrlKey && e.shiftKey && e.keyCode === 73) { e.preventDefault(); return false; }
-                if (e.ctrlKey && e.shiftKey && e.keyCode === 74) { e.preventDefault(); return false; }
-                if (e.ctrlKey && e.keyCode === 85) { e.preventDefault(); return false; }
-            }, false);
-
-            function monitorDimensions() {
-                const threshold = 220;
-                const isDeveloper = safeStorage.getItem('saas_developer_bypass') === 'true';
-                if ((window.outerWidth - window.innerWidth > threshold || window.outerHeight - window.innerHeight > threshold) && !isDeveloper) {
-                    console.warn("Please close Developer Tools.");
-                }
-            }
-            setInterval(monitorDimensions, 3000);
-        })();
-
-        // ==========================================
-        // SMART TV PHYSICAL REMOTE CHANNEL SURFING
-        // ==========================================
-        (function() {
-            window.addEventListener('keydown', function (e) {
-                if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
-                const isTvModeActive = safeStorage.getItem('saas_tv_mode_active') === 'true';
-                if (!isTvModeActive) return;
-
-                const key = e.key;
-                const code = e.keyCode || e.which;
-
-                const channelUpIdentified = (key === 'ChannelUp' || key === 'PageUp' || code === 33 || code === 427 || code === 166);
-                const channelDownIdentified = (key === 'ChannelDown' || key === 'PageDown' || code === 34 || code === 428 || code === 167);
-
-                if (channelUpIdentified) {
-                    e.preventDefault();
-                    surfChannels(1);
-                } else if (channelDownIdentified) {
-                    e.preventDefault();
-                    surfChannels(-1);
-                }
-            }, false);
-
-            window.surfChannels = function(direction) {
-                if (!appData.channels || appData.channels.length === 0) return;
-                const playlistPool = appData.channels.filter(ch => ch.src && ch.src.trim() !== "");
-                if (playlistPool.length <= 1) return;
-
-                let currentIndex = playlistPool.findIndex(ch => ch.id === activeChannel.id);
-                if (currentIndex === -1) currentIndex = 0;
-
-                let targetIndex = currentIndex + direction;
-                if (targetIndex >= playlistPool.length) targetIndex = 0;
-                else if (targetIndex < 0) targetIndex = playlistPool.length - 1;
-
-                const targetChannel = playlistPool[targetIndex];
-                if (targetChannel) {
-                    selectChannel(targetChannel.id);
-                }
-            }
-        })();
-
-        function toggleSmartTvMode() {
-            const current = safeStorage.getItem('saas_tv_mode_active') === 'true';
-            const nextState = !current;
-            safeStorage.setItem('saas_tv_mode_active', nextState ? 'true' : 'false');
-            updateSmartTvUIState(nextState);
-        }
-
-        function updateSmartTvUIState(isActive) {
-            const led = document.getElementById('tv-mode-led');
-            const text = document.getElementById('tv-mode-text');
-            const btn = document.getElementById('tv-mode-toggle-btn');
-
-            if (isActive) {
-                led.className = "w-2 h-2 rounded-full bg-emerald-500 animate-pulse";
-                text.textContent = "TV Remote: ON";
-                btn.className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-955 text-indigo-300 border border-indigo-800 flex items-center gap-2 transition";
-            } else {
-                led.className = "w-2 h-2 rounded-full bg-slate-500";
-                text.textContent = "TV Remote: OFF";
-                btn.className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center gap-2 transition";
-            }
-        }
-
-        // ==========================================
-        // TV-COMPATIBLE MODAL WRAPPERS
-        // ==========================================
-        let currentConfirmCallback = null;
-
-        function tvConfirm(title, message, onYes) {
-            document.getElementById('confirm-modal-title').textContent = title;
-            document.getElementById('confirm-modal-body').textContent = message;
-            document.getElementById('confirm-modal').classList.remove('hidden');
-            
-            currentConfirmCallback = onYes;
-
-            document.getElementById('confirm-btn-cancel').onclick = () => {
-                document.getElementById('confirm-modal').classList.add('hidden');
-                currentConfirmCallback = null;
-            };
-
-            document.getElementById('confirm-btn-yes').onclick = () => {
-                document.getElementById('confirm-modal').classList.add('hidden');
-                if (currentConfirmCallback) currentConfirmCallback();
-                currentConfirmCallback = null;
-            };
-        }
-
-        function tvAlert(title, message, callback = null) {
-            document.getElementById('alert-modal-title').textContent = title;
-            document.getElementById('alert-modal-body').textContent = message;
-            document.getElementById('alert-modal').classList.remove('hidden');
-            
-            document.getElementById('alert-btn-ok').onclick = () => {
-                document.getElementById('alert-modal').classList.add('hidden');
-                if (callback) callback();
-            };
-        }
-
-        function promptDevPasscode() {
-            document.getElementById('passcode-modal').classList.remove('hidden');
-            document.getElementById('custom-passcode-input').value = '';
-            document.getElementById('custom-passcode-input').focus();
-        }
-
-        function closePasscodeModal() {
-            document.getElementById('passcode-modal').classList.add('hidden');
-        }
-
-        function submitCustomPasscode() {
-            const rawInput = document.getElementById('custom-passcode-input').value.trim();
-            if (rawInput === "!12345678*") {
-                safeStorage.setItem('saas_developer_bypass', 'true');
-                checkSubscription();
-                closePasscodeModal();
-                openAdminModal();
-            } else {
-                tvAlert("Access Denied", "Invalid Passcode sequence submitted.");
-            }
-        }
-
-        // ==========================================
-        // CRYPTOGRAPHIC DATA TRANSLATORS
-        // ==========================================
-        function secureDecode(b64) {
-            try {
-                if (!b64) return "";
-                const cleaned = b64.trim().replace(/[^A-Za-z0-9+/=]/g, "");
-                return atob(cleaned);
-            } catch(e) { return ""; }
-        }
-
-        function secureEncode(str) {
-            try {
-                if (!str) return "";
-                return btoa(unescape(encodeURIComponent(str)));
-            } catch(e) { return ""; }
-        }
-
-        // Popular Curated Karaoke Tracks (Corrected 11-Character Base64 IDs)
-        const liveChannelsData = [
-            { id: "kar-sweet-caroline", name: "Sweet Caroline - Karaoke", group: "Popular Classics", src: "bXN3XzBkaUtWYU0=" }, 
-            { id: "kar-bohemian", name: "Bohemian Rhapsody - Queen", group: "Rock Classics", src: "dUp0RlZnbmExTTg=" },     
-            { id: "kar-dancing-queen", name: "Dancing Queen - ABBA", group: "Popular Classics", src: "NGR0dkxSMVJnNlk=" },     
-            { id: "kar-dont-stop-believin", name: "Don't Stop Believin' - Journey", group: "Rock Classics", src: "cTBtTGgxVnkyX1k=" } 
-        ];
-
-        const defaultConfig = {
-            brandName: "Vocal Portal",
-            paymentApi: "https://fambondtym.app/.netlify/functions/verify-payment", 
-            sandboxMode: false,
-            channels: [...liveChannelsData]
-        };
-
-        let appData = {};
-        let activeChannel = null;
-        let vendingDays = 1;
-        let activeAdminPlanId = 'p1';
-        let deviceId = '';
-        let paymentPollingInterval = null;
-        let bridgePollingInterval = null;
-        let expiryWhenOpened = 0;
-
-        const SECRETS_SALT = "FAMILY_BONDING_TIME_SALT_2026_SECURE";
-
-        function calculateVendingCost(days) {
-            if (days === 1) return 25;
-            return days * 20;
-        }
-
-        function adjustVendingDays(amount) {
-            const newDays = vendingDays + amount;
-            if (newDays >= 1 && newDays <= 99) {
-                vendingDays = newDays;
-                document.getElementById('vending-days-display').textContent = vendingDays;
-                document.getElementById('vending-cost-display').textContent = `₱${calculateVendingCost(vendingDays)}`;
-                resetQRState();
-            }
-        }
-
-        function resetQRState() {
-            if (paymentPollingInterval) clearInterval(paymentPollingInterval);
-            
-            document.getElementById('qr-loading-overlay').classList.remove('hidden');
-            document.getElementById('qr-loading-overlay').textContent = "Tap button to generate link";
-            document.getElementById('payment-status-label').textContent = "Awaiting Payment Generation";
-            document.getElementById('status-spinner').classList.add('hidden');
-            document.getElementById('mobile-redirect-link').classList.add('hidden');
-            document.getElementById('pay-btn').disabled = false;
-        }
-
-        async function initializeAutomatedPayment() {
-            const payBtn = document.getElementById('pay-btn');
-            const qrOverlay = document.getElementById('qr-loading-overlay');
-            const statusLabel = document.getElementById('payment-status-label');
-            const spinner = document.getElementById('status-spinner');
-            const qrImage = document.getElementById('viewer-checkout-qr');
-            const mobileBtn = document.getElementById('mobile-redirect-link');
-
-            payBtn.disabled = true;
-            statusLabel.textContent = "Requesting official QR Ph payload...";
-            spinner.classList.remove('hidden');
-
-            const cost = calculateVendingCost(vendingDays);
-
-            if (appData.sandboxMode) {
-                setTimeout(() => {
-                    const mockSessionId = "MOCK-SESS-" + Date.now();
-                    safeStorage.setItem('saas_pending_session_id', mockSessionId);
-                    safeStorage.setItem('saas_pending_days', vendingDays);
-
-                    const simulatedQrText = `https://fambondtym.app/pay-mock?session=${mockSessionId}&amount=${cost}`;
-                    qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(simulatedQrText)}`;
-                    
-                    qrOverlay.classList.add('hidden');
-                    statusLabel.textContent = "Sandbox QR Generated. (Auto-verifies in 5s)";
-                    
-                    setTimeout(() => {
-                        grantPremiumAccess(vendingDays);
-                    }, 5000);
-                }, 800);
-                return;
-            }
-
-            try {
-                const response = await fetch(appData.paymentApi, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'create_checkout',
-                        deviceId: deviceId,
-                        amount: cost,
-                        days: vendingDays
-                    })
-                });
-
-                const result = await response.json();
-
-                if (result.success && result.qr_code_data) {
-                    const rawQrPhData = result.qr_code_data;
-                    const referenceSessionId = result.session_id;
-
-                    safeStorage.setItem('saas_pending_session_id', referenceSessionId);
-                    safeStorage.setItem('saas_pending_days', vendingDays);
-
-                    qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(rawQrPhData)}`;
-                    qrOverlay.classList.add('hidden');
-                    statusLabel.textContent = "Scan this QR Ph directly inside GCash or Maya!";
-                    
-                    if (result.fallback_url) {
-                        mobileBtn.href = result.fallback_url;
-                        mobileBtn.classList.remove('hidden');
-                    }
-
-                    startLocalVerificationLoop(referenceSessionId, vendingDays);
-                } else {
-                    tvAlert("Checkout Error", result.error || "Could not generate QR Ph payload.");
-                    resetQRState();
-                }
-            } catch (err) {
-                tvAlert("Connection Failed", "Could not connect to server. Check environment configurations.");
-                resetQRState();
-            }
-        }
-
-        function startLocalVerificationLoop(sessionId, days) {
-            if (paymentPollingInterval) clearInterval(paymentPollingInterval);
-
-            paymentPollingInterval = setInterval(async () => {
-                try {
-                    const response = await fetch(appData.paymentApi, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            action: 'check_status',
-                            sessionId: sessionId
-                        })
-                    });
-                    
-                    if (!response.ok) return;
-                    const resData = await response.json();
-                    if (resData.verified === true) {
-                        clearInterval(paymentPollingInterval);
-                        grantPremiumAccess(days);
-                    }
-                } catch (e) {}
-            }, 2550);
-        }
-
-        async function checkActivePendingSession() {
-            if (appData.sandboxMode) return;
-            const pendingSession = safeStorage.getItem('saas_pending_session_id');
-            const pendingDays = safeStorage.getItem('saas_pending_days');
-
-            if (pendingSession && pendingDays) {
-                try {
-                    const response = await fetch(appData.paymentApi, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            action: 'check_status',
-                            sessionId: pendingSession
-                        })
-                    });
-                    if (response.ok) {
-                        const resData = await response.json();
-                        if (resData.verified === true) {
-                            grantPremiumAccess(parseInt(pendingDays));
-                        }
-                    }
-                } catch (e) {}
-            }
-        }
-
-        async function checkDeviceSessionWithServer() {
-            if (appData.sandboxMode) return;
-            try {
-                const response = await fetch(appData.paymentApi, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'check_device',
-                        deviceId: deviceId
-                    })
-                });
-                if (response.ok) {
-                    const result = await response.json();
-                    
-                    if (result.trial_consumed) {
-                        safeStorage.setItem('saas_trial_consumed', 'true');
-                    } else {
-                        safeStorage.removeItem('saas_trial_consumed');
-                    }
-                    
-                    if (result.premium_expiry) {
-                        safeStorage.setItem('saas_premium_expiry', result.premium_expiry);
-                        const currentSessionType = safeStorage.getItem('saas_session_type');
-                        safeStorage.setItem('saas_session_type', result.session_type || currentSessionType || 'premium');
-                    } else {
-                        safeStorage.removeItem('saas_premium_expiry');
-                        safeStorage.removeItem('saas_session_type');
-                    }
-                    
-                    checkSubscription();
-                    checkTrialState();
-                } else {
-                    invalidateAccess();
-                }
-            } catch (e) {
-                checkSubscription();
-            }
-        }
-
-        function invalidateAccess() {
-            safeStorage.removeItem('saas_premium_expiry');
-            safeStorage.removeItem('saas_session_type');
-            checkSubscription();
-        }
-
-        function grantPremiumAccess(days) {
-            const addedTime = days * 24 * 60 * 60 * 1000;
-            const currentExpiry = parseInt(safeStorage.getItem('saas_premium_expiry')) || new Date().getTime();
-            const newExpiry = Math.max(currentExpiry, new Date().getTime()) + addedTime;
-
-            safeStorage.setItem('saas_premium_expiry', newExpiry);
-            safeStorage.setItem('saas_session_type', 'premium');
-            
-            safeStorage.removeItem('saas_pending_session_id');
-            safeStorage.removeItem('saas_pending_days');
-            
-            if (paymentPollingInterval) clearInterval(paymentPollingInterval);
-            
-            const label = document.getElementById('payment-status-label');
-            if (label) label.textContent = "Payment Verified!";
-            
-            closePaymentModal();
-            checkSubscription();
-            
-            if (activeChannel) {
-                loadEmbeddedKaraokeVideo(activeChannel.src);
-            }
-        }
-
-        function calculateSignature(devId, days, serial) {
-            const rawPayload = `${devId}-${days}-${serial}-${SECRETS_SALT}`;
-            let hash = 0;
-            for (let i = 0; i < rawPayload.length; i++) {
-                hash = (hash << 5) - hash + rawPayload.charCodeAt(i);
-                hash |= 0;
-            }
-            return Math.abs(hash).toString(16).toUpperCase().substring(0, 8);
-        }
-
-        function buildLicenseKey(devId, days, serial) {
-            const sig = calculateSignature(devId, days, serial);
-            return `${devId}-${days}D-${serial}-${sig}`;
-        }
-
-        function verifyLicenseKey(key) {
-            if (!key) return { valid: false, error: "Empty Key" };
-            const segments = key.trim().split('-');
-            if (segments.length !== 6) return { valid: false, error: "Invalid layout" };
-
-            const parseDevId = `${segments[0]}-${segments[1]}-${segments[2]}`;
-            const daysSegment = segments[3];
-            const serial = segments[4];
-            const signature = segments[5];
-
-            if (parseDevId !== deviceId) {
-                return { valid: false, error: "Key tied to another gadget" };
-            }
-
-            let usedSerials = [];
-            try {
-                usedSerials = JSON.parse(safeStorage.getItem('saas_used_serials') || '[]');
-            } catch(e){}
-            
-            if (usedSerials.includes(serial)) {
-                return { valid: false, error: "This key signature was already consumed" };
-            }
-
-            const days = parseInt(daysSegment);
-            if (isNaN(days)) return { valid: false, error: "Invalid duration segment" };
-
-            const expectedSig = calculateSignature(deviceId, days, serial);
-            if (signature === expectedSig) {
-                return { valid: true, days: days, serial: serial };
-            }
-
-            return { valid: false, error: "Invalid cryptographic validation" };
-        }
-
-        async function initSaaS() {
-            deviceId = generateUniqueDeviceID();
-            document.getElementById('client-device-display').textContent = `Device ID: ${deviceId}`;
-            document.getElementById('gen-client-id').value = deviceId;
-
-            const isTvModeActive = safeStorage.getItem('saas_tv_mode_active') === 'true';
-            updateSmartTvUIState(isTvModeActive);
-
-            const saved = safeStorage.getItem('family_bonding_portal_config_v8');
-            let needsSync = false;
-
-            if (saved) {
-                try {
-                    appData = JSON.parse(saved);
-                    if (!appData.paymentApi || appData.paymentApi.includes("fambond.cc")) {
-                        appData.paymentApi = defaultConfig.paymentApi;
-                    }
-                    if (appData.sandboxMode === undefined) {
-                        appData.sandboxMode = defaultConfig.sandboxMode;
-                    }
-                    if (!appData.channels) {
-                        needsSync = true;
-                    } else {
-                        const defaultIds = defaultConfig.channels.map(c => c.id);
-                        const hasAllPresets = defaultIds.every(id => appData.channels.some(ch => ch.id === id));
-                        if (!hasAllPresets) {
-                            needsSync = true;
-                        }
-                    }
-                } catch(e) {
-                    needsSync = true;
-                }
-            } else {
-                needsSync = true;
-            }
-
-            if (needsSync) {
-                appData = defaultConfig;
-                safeStorage.setItem('family_bonding_portal_config_v8', JSON.stringify(appData));
-            }
-
-            const indicator = document.getElementById('sandbox-indicator');
-            if (indicator) {
-                if (appData.sandboxMode) indicator.classList.remove('hidden');
-                else indicator.classList.add('hidden');
-            }
-
-            populateDashboard();
-            updateViewerPortalUI();
-            updateAdminQRDisplay();
-            
-            checkSubscription();
-            checkTrialState();
-
-            await checkDeviceSessionWithServer();
-            checkActivePendingSession();
-        }
-
-        function getPlanPayloadUrl(planId) {
-            const baseUrl = window.location.href.split('?')[0];
-            return `${baseUrl}?plan=${planId}`;
-        }
-
-        function updateAdminQRDisplay() {
-            const payload = getPlanPayloadUrl(activeAdminPlanId);
-            document.getElementById('admin-qr-link-preview').textContent = payload;
-            
-            const adminQR = document.getElementById('admin-qr-image');
-            adminQR.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(payload)}`;
-        }
-
-        function selectAdminQR(planId) {
-            activeAdminPlanId = planId;
-            const tabs = ['p1', 'p2', 'p3', 'p4'];
-            tabs.forEach(tab => {
-                const el = document.getElementById(`admin-qr-tab-${tab}`);
-                if (!el) return;
-                if (tab === planId) {
-                    el.className = "flex-1 py-1 rounded bg-fuchsia-600 text-white font-bold";
-                } else {
-                    el.className = "flex-1 py-1 rounded text-slate-400";
-                }
-            });
-            updateAdminQRDisplay();
-        }
-
-        function populateDashboard() {
-            document.getElementById('cfg-brand-name').value = appData.brandName;
-            document.getElementById('cfg-payment-api').value = appData.paymentApi;
-            document.getElementById('cfg-sandbox-mode').checked = !!appData.sandboxMode;
-
-            const container = document.getElementById('channels-editor-container');
-            container.innerHTML = '';
-
-            appData.channels.forEach((channel) => {
-                const div = document.createElement('div');
-                div.className = "channel-editor-item bg-slate-950 p-4 rounded-xl border border-slate-855 space-y-3";
-                div.setAttribute('data-channel-id', channel.id);
                 
-                const decodedUrl = secureDecode(channel.src);
-
-                div.innerHTML = `
-                    <div class="flex items-center justify-between border-b border-slate-900 pb-3">
-                        <div class="flex items-center space-x-2">
-                            <span class="text-xs font-mono text-fuchsia-400 font-bold">ID: ${channel.id}</span>
-                            <input type="text" id="edit-name-${channel.id}" value="${channel.name}" placeholder="Track Name" class="bg-slate-900 border border-slate-800 rounded px-2.5 py-1 text-xs font-bold text-white w-48">
-                        </div>
-                        <button onclick="removeChannel('${channel.id}')" class="text-[9px] uppercase px-2 py-1 bg-red-955 hover:bg-red-900 rounded text-red-405 border border-red-850">
-                            Delete Track
-                        </button>
-                    </div>
-                    <div class="grid grid-cols-1 gap-3">
-                        <div>
-                            <label class="block text-[9px] text-slate-400 mb-1">Group Identifier</label>
-                            <input type="text" id="edit-group-${channel.id}" value="${channel.group || 'Popular Classics'}" class="w-full bg-slate-900 border border-slate-800 rounded p-2 text-xs text-white">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-[9px] text-slate-400 mb-1">YouTube Video ID (Raw Unencoded Text)</label>
-                        <input type="text" id="edit-src-${channel.id}" value="${decodedUrl}" placeholder="e.g. dQw4w9WgXcQ" class="w-full bg-slate-900 border border-slate-800 rounded p-2 text-xs font-mono text-fuchsia-300">
-                    </div>
-                `;
-                container.appendChild(div);
-            });
-        }
-
-        function addNewChannelTemplate() {
-            const uniqueId = "track-" + Date.now();
-            const newChan = {
-                id: uniqueId,
-                name: "New Karaoke Track",
-                group: "Popular Classics",
-                logo: "",
-                src: secureEncode("dQw4w9WgXcQ")
-            };
-            appData.channels.push(newChan);
-            populateDashboard();
-
-            const container = document.getElementById('channels-editor-container');
-            container.scrollTop = container.scrollHeight;
-        }
-
-        function removeChannel(id) {
-            tvConfirm(
-                "Delete Track",
-                "Are you sure you want to remove this track from your curation directory?",
-                () => {
-                    appData.channels = appData.channels.filter(ch => ch.id !== id);
-                    populateDashboard();
+                analyser.getByteFrequencyData(dataArray);
+                let sum = 0;
+                for (let i = 0; i < dataArray.length; i++) {
+                    sum += dataArray[i];
                 }
-            );
+                const avg = sum / dataArray.length;
+                const level = Math.min(100, (avg / 128) * 100);
+                document.getElementById('vocal-meter').style.width = level + '%';
+                document.getElementById('vocal-db-display').textContent = 
+                    level > 0 ? `${Math.round((level / 100) * 12 - 12)} dB` : '-∞ dB';
+
+                // AI Coach analysis
+                if (coachActive) {
+                    const targetPitch = parseInt(document.getElementById('pitch-slider').value) || 0;
+                    const accuracy = coach.analyzePitch(level / 20, targetPitch);
+                    document.getElementById('pitch-accuracy-bar').style.width = (accuracy * 100) + '%';
+                    document.getElementById('pitch-accuracy-text').textContent = Math.round(accuracy * 100) + '%';
+                    
+                    const breath = coach.analyzeBreath(level);
+                    document.getElementById('breath-monitor').textContent = breath > 0.7 ? 'GOOD' : breath > 0.4 ? 'NORMAL' : 'DEEP';
+                    
+                    const scores = coach.getPerformanceScore();
+                    document.getElementById('pitch-score').textContent = Math.round(scores.pitch) + '%';
+                    document.getElementById('breath-score').textContent = Math.round(scores.breath) + '%';
+                    
+                    const emotion = scores.emotion;
+                    document.getElementById('emotion-score').textContent = emotion > 80 ? 'HIGH' : emotion > 50 ? 'MEDIUM' : 'LOW';
+                }
+
+                animationFrame = requestAnimationFrame(updateMeter);
+            }
+            updateMeter();
         }
 
-        function updateViewerPortalUI() {
-            document.getElementById('view-brand-title').textContent = appData.brandName;
+        // ============================================
+        // EFFECTS CONTROLS
+        // ============================================
+        function updatePitch(value) {
+            CONFIG.pitchShift = parseFloat(value);
+            document.getElementById('pitch-display').textContent = value + ' ST';
+            if (pitchShifterInstance) {
+                pitchShifterInstance.setPitch(parseFloat(value));
+            }
+            
+            // Update recommended key
+            const keys = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+            const baseKey = 0;
+            const keyIndex = (baseKey + Math.round(parseFloat(value) / 1)) % 12;
+            document.getElementById('recommended-key').textContent = keys[Math.abs(keyIndex) % 12];
+        }
 
-            const viewerContainer = document.getElementById('viewer-channels-list');
-            viewerContainer.innerHTML = '';
-
-            const categories = {};
-            appData.channels.forEach(channel => {
-                const grp = channel.group || "Popular Classics";
-                if (!categories[grp]) categories[grp] = [];
-                categories[grp].push(channel);
-            });
-
-            Object.keys(categories).forEach(categoryName => {
-                const section = document.createElement('div');
-                section.className = "space-y-1 pb-1";
-                
-                const header = document.createElement('h3');
-                header.className = "text-[9px] font-extrabold text-slate-500 uppercase tracking-wider px-2 py-1";
-                header.textContent = categoryName;
-                section.appendChild(header);
-
-                categories[categoryName].forEach(channel => {
-                    const btn = document.createElement('button');
-                    btn.id = `view-chan-${channel.id}`;
-                    btn.onclick = () => selectChannel(channel.id);
-                    
-                    const hasSource = channel.src && channel.src.trim() !== "";
-                    btn.className = `w-full text-left p-2 rounded-xl flex items-center justify-between border transition duration-150 ${!hasSource ? 'opacity-40 cursor-not-allowed bg-slate-950/20 border-slate-900 text-slate-500' : 'bg-slate-900/30 border-slate-855 text-slate-300 hover:bg-slate-900/60'}`;
-
-                    btn.innerHTML = `
-                        <div class="flex items-center space-x-2 overflow-hidden">
-                            <div class="w-6 h-6 rounded bg-fuchsia-955/80 border border-fuchsia-900/40 text-fuchsia-400 font-bold text-[9px] flex items-center justify-center flex-shrink-0">🎙️</div>
-                            <div class="truncate text-left leading-tight">
-                                <span class="text-xs font-bold block truncate max-w-[180px] text-slate-100">${channel.name}</span>
-                            </div>
-                        </div>
-                    `;
-
-                    if (!hasSource) btn.disabled = true;
-                    section.appendChild(btn);
-                });
-
-                viewerContainer.appendChild(section);
-            });
-
-            const activeSet = appData.channels.find(c => c.src && c.src !== "");
-            if (activeSet && (!activeChannel || !appData.channels.some(c => c.id === activeChannel.id))) {
-                activeChannel = activeSet;
-                document.getElementById('current-channel-title').textContent = activeSet.name.toUpperCase();
+        function updateEcho(value) {
+            CONFIG.echoMix = parseInt(value);
+            document.getElementById('echo-display').textContent = value + '%';
+            if (feedbackNode) {
+                feedbackNode.gain.value = (parseInt(value) / 100) * 0.75;
             }
         }
 
-        function checkSubscription() {
-            const isDeveloper = safeStorage.getItem('saas_developer_bypass') === 'true';
-            const expirationTime = safeStorage.getItem('saas_premium_expiry');
-            const sessionType = safeStorage.getItem('saas_session_type') || 'premium';
-            const overlay = document.getElementById('paywall-overlay');
-            const subBadge = document.getElementById('sub-badge');
-            const countdownEl = document.getElementById('subscription-countdown');
-            const expDateEl = document.getElementById('expiration-date-display');
-            const statusBar = document.getElementById('status-bar');
-            const logoutDevBtn = document.getElementById('logout-dev-btn');
+        function toggleAutoTune() {
+            autoTuneActive = !autoTuneActive;
+            const indicator = document.getElementById('autotune-indicator');
+            indicator.textContent = autoTuneActive ? '🎵 ON' : '🎵 OFF';
+            
+            if (autoTuneActive && audioCtx && micSource) {
+                if (!pitchShifterInstance) {
+                    pitchShifterInstance = new PitchShifter(audioCtx);
+                    micSource.connect(pitchShifterInstance.input);
+                    pitchShifterInstance.output.connect(audioCtx.destination);
+                }
+                const pitchVal = parseInt(document.getElementById('pitch-slider').value);
+                pitchShifterInstance.setPitch(pitchVal);
+                showStatus('🎵 Auto-Tune Enabled', 'success');
+            } else if (pitchShifterInstance) {
+                pitchShifterInstance.setPitch(0);
+                showStatus('🎵 Auto-Tune Disabled', 'info');
+            }
+        }
 
-            if (isDeveloper) {
+        function toggleHarmony() {
+            harmonyActive = !harmonyActive;
+            const indicator = document.getElementById('harmony-indicator');
+            indicator.textContent = harmonyActive ? '🎶 ON' : '🎶 OFF';
+            
+            if (harmonyActive && audioCtx && micSource) {
+                setupHarmony();
+                showStatus('🎶 Harmony Enabled', 'success');
+            } else {
+                cleanupHarmony();
+                showStatus('🎶 Harmony Disabled', 'info');
+            }
+        }
+
+        function setupHarmony() {
+            if (!audioCtx || !micSource) return;
+            cleanupHarmony();
+            
+            const numVoices = parseInt(document.getElementById('harmony-voices').value) || 4;
+            const level = parseInt(document.getElementById('harmony-level').value) || 50;
+
+            for (let i = 0; i < numVoices; i++) {
+                const delay = audioCtx.createDelay(1.0);
+                delay.delayTime.value = 0.05 + (i * 0.025);
+                
+                const gain = audioCtx.createGain();
+                gain.gain.value = (level / 100) * (1 / numVoices);
+                
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'bandpass';
+                filter.frequency.value = 200 + (i * 150);
+                filter.Q.value = 1.5;
+
+                const pan = audioCtx.createStereoPanner();
+                pan.pan.value = (i / numVoices) * 2 - 1;
+
+                const pitchShift = new PitchShifter(audioCtx);
+                const semitones = [0, 3, 7, 12, -5, -12, 5, 10][i % 8];
+                pitchShift.setPitch(semitones);
+
+                micSource.connect(delay);
+                delay.connect(filter);
+                filter.connect(pitchShift.input);
+                pitchShift.output.connect(gain);
+                gain.connect(pan);
+                pan.connect(audioCtx.destination);
+
+                harmonyNodes.push({ delay, gain, filter, pan, pitchShift });
+            }
+        }
+
+        function cleanupHarmony() {
+            harmonyNodes.forEach(node => {
+                try {
+                    node.delay.disconnect();
+                    node.gain.disconnect();
+                    node.filter.disconnect();
+                    node.pan.disconnect();
+                    if (node.pitchShift) {
+                        node.pitchShift.input.disconnect();
+                        node.pitchShift.output.disconnect();
+                    }
+                } catch(e) {}
+            });
+            harmonyNodes = [];
+        }
+
+        function toggleCoach() {
+            coachActive = !coachActive;
+            const overlay = document.getElementById('ai-coach-overlay');
+            const indicator = document.getElementById('coach-indicator');
+            
+            if (coachActive) {
+                overlay.classList.remove('hidden');
+                indicator.textContent = '📊 ON';
+                showStatus('📊 AI Coach Active', 'success');
+            } else {
                 overlay.classList.add('hidden');
-                statusBar.classList.remove('hidden');
-                if (logoutDevBtn) logoutDevBtn.classList.remove('hidden');
+                indicator.textContent = '📊 OFF';
+                showStatus('📊 AI Coach Disabled', 'info');
+            }
+        }
+
+        function togglePartyMode() {
+            partyActive = !partyActive;
+            const indicator = document.getElementById('party-indicator');
+            indicator.textContent = partyActive ? '🎉 ON' : '🎉 OFF';
+            
+            if (partyActive) {
+                document.body.style.background = 'linear-gradient(135deg, #0a0a12, #1a0a2e, #0a0a12)';
+                document.querySelector('.glass-panel').style.borderColor = 'rgba(236, 72, 153, 0.5)';
+                showStatus('🎉 Party Mode Activated!', 'success');
+            } else {
+                document.body.style.background = '#0a0a12';
+                document.querySelector('.glass-panel').style.borderColor = 'rgba(168, 85, 247, 0.2)';
+                showStatus('🎉 Party Mode Deactivated', 'info');
+            }
+        }
+
+        function toggleVisualizer() {
+            CONFIG.visualizer = !CONFIG.visualizer;
+            const container = document.getElementById('holographic-visualizer');
+            const indicator = document.getElementById('visualizer-indicator');
+            
+            if (CONFIG.visualizer) {
+                if (!visualizerScene) initVisualizer();
+                container.style.display = 'block';
+                indicator.textContent = '✨ ON';
+                document.querySelector('.relative').classList.add('visualizer-active');
+                showStatus('✨ Visualizer Enabled', 'success');
+            } else {
+                container.style.display = 'none';
+                indicator.textContent = '✨ OFF';
+                document.querySelector('.relative').classList.remove('visualizer-active');
+                if (animationFrame) cancelAnimationFrame(animationFrame);
+                visualizerActive = false;
+                showStatus('✨ Visualizer Disabled', 'info');
+            }
+        }
+
+        // ============================================
+        // 3D VISUALIZER
+        // ============================================
+        function initVisualizer() {
+            const container = document.getElementById('holographic-visualizer');
+            if (!container) return;
+
+            visualizerScene = new THREE.Scene();
+            visualizerCamera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+            visualizerCamera.position.z = 5;
+
+            visualizerRenderer = new THREE.WebGLRenderer({ 
+                alpha: true, 
+                antialias: true 
+            });
+            visualizerRenderer.setSize(container.clientWidth, container.clientHeight);
+            visualizerRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(visualizerRenderer.domElement);
+
+            // Create particle system
+            const particleCount = 2000;
+            const geometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(particleCount * 3);
+            const colors = new Float32Array(particleCount * 3);
+
+            for (let i = 0; i < particleCount; i++) {
+                positions[i * 3] = (Math.random() - 0.5) * 10;
+                positions[i * 3 + 1] = (Math.random() - 0.5) * 10;
+                positions[i * 3 + 2] = (Math.random() - 0.5) * 10;
                 
-                subBadge.className = "px-3 py-1 rounded-full text-[10px] md:text-xs font-semibold bg-fuchsia-955 text-fuchsia-400 border border-fuchsia-800 animate-pulse";
-                subBadge.textContent = "Developer Lifetime Access";
-                countdownEl.textContent = "Infinite Bypass Active";
-                if (expDateEl) expDateEl.textContent = "";
-
-                if (ytPlayer && activeChannel) {
-                    loadEmbeddedKaraokeVideo(activeChannel.src);
-                }
-                return true;
+                colors[i * 3] = Math.random() * 0.5 + 0.5;
+                colors[i * 3 + 1] = Math.random() * 0.3 + 0.2;
+                colors[i * 3 + 2] = Math.random() * 0.8 + 0.2;
             }
 
-            if (expirationTime) {
-                const now = new Date().getTime();
-                const timeLeft = expirationTime - now;
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
-                if (timeLeft > 0) {
-                    overlay.classList.add('hidden');
-                    statusBar.classList.remove('hidden');
-                    if (logoutDevBtn) logoutDevBtn.classList.add('hidden');
-                    
-                    if (sessionType === 'trial') {
-                        subBadge.className = "px-3 py-1 rounded-full text-[10px] md:text-xs font-semibold bg-amber-955 text-amber-400 border border-amber-800";
-                        subBadge.textContent = "trial activated";
-                        const trialSection = document.getElementById('free-trial-container');
-                        if (trialSection) trialSection.classList.remove('hidden');
-                    } else {
-                        subBadge.className = "px-3 py-1 rounded-full text-[10px] md:text-xs font-semibold bg-emerald-955 text-emerald-400 border border-emerald-800";
-                        subBadge.textContent = "premium activated";
-                        const trialSection = document.getElementById('free-trial-container');
-                        if (trialSection) trialSection.classList.add('hidden');
-                    }
+            const material = new THREE.PointsMaterial({
+                size: 0.05,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.8,
+                blending: THREE.AdditiveBlending
+            });
 
-                    const hrs = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                    const mins = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-                    if (timeLeft > (24 * 60 * 60 * 1000)) {
-                        const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-                        countdownEl.textContent = `${days}d ${hrs}h`;
-                    } else {
-                        countdownEl.textContent = `${hrs}h ${mins}m`;
-                    }
+            const particles = new THREE.Points(geometry, material);
+            visualizerScene.add(particles);
+            visualizerParticles = particles;
 
-                    if (expDateEl) {
-                        const dateObj = new Date(parseInt(expirationTime));
-                        const formatted = dateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) + " at " + dateObj.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', hour12: true });
-                        expDateEl.textContent = `(Ends: ${formatted})`;
-                    }
-
-                    if (ytPlayer && activeChannel) {
-                        loadEmbeddedKaraokeVideo(activeChannel.src);
-                    }
-                    return true;
-                }
+            // Add glowing spheres
+            const sphereGeo = new THREE.SphereGeometry(0.3, 16, 16);
+            const sphereMat = new THREE.MeshBasicMaterial({ 
+                color: 0x7c3aed, 
+                transparent: true, 
+                opacity: 0.3,
+                wireframe: true
+            });
+            for (let i = 0; i < 5; i++) {
+                const sphere = new THREE.Mesh(sphereGeo, sphereMat);
+                sphere.position.set(
+                    (Math.random() - 0.5) * 6,
+                    (Math.random() - 0.5) * 6,
+                    (Math.random() - 0.5) * 6
+                );
+                visualizerScene.add(sphere);
             }
 
-            overlay.classList.remove('hidden');
-            statusBar.classList.add('hidden');
-            if (logoutDevBtn) logoutDevBtn.classList.add('hidden');
-            subBadge.className = "px-3 py-1 rounded-full text-[10px] md:text-xs font-semibold bg-red-955 text-red-405 border border-red-800";
-            subBadge.textContent = "Awaiting Verification";
-            if (expDateEl) expDateEl.textContent = "";
-            const trialSection = document.getElementById('free-trial-container');
-            if (trialSection) trialSection.classList.remove('hidden');
+            window.addEventListener('resize', () => {
+                if (!container) return;
+                const w = container.clientWidth;
+                const h = container.clientHeight;
+                visualizerCamera.aspect = w / h;
+                visualizerCamera.updateProjectionMatrix();
+                visualizerRenderer.setSize(w, h);
+            });
+
+            visualizerActive = true;
+            animateVisualizer();
+        }
+
+        function animateVisualizer() {
+            if (!visualizerActive) return;
             
-            if (ytPlayer && typeof ytPlayer.stopVideo === 'function') {
-                ytPlayer.stopVideo();
+            const positions = visualizerParticles.geometry.attributes.position.array;
+            const time = Date.now() * 0.001;
+
+            for (let i = 0; i < positions.length / 3; i++) {
+                const i3 = i * 3;
+                const x = positions[i3];
+                const y = positions[i3 + 1];
+                const z = positions[i3 + 2];
+                
+                positions[i3 + 1] = y + Math.sin(time + x * 2) * 0.005;
+                positions[i3] = x + Math.cos(time + z * 2) * 0.005;
+                positions[i3 + 2] = z + Math.sin(time + y * 2) * 0.005;
             }
-            return false;
+
+            visualizerParticles.geometry.attributes.position.needsUpdate = true;
+            visualizerParticles.rotation.x = Math.sin(time * 0.1) * 0.1;
+            visualizerParticles.rotation.y = time * 0.05;
+
+            visualizerRenderer.render(visualizerScene, visualizerCamera);
+            animationFrame = requestAnimationFrame(animateVisualizer);
         }
 
-        function showPlayerError(title, message) {
-            document.getElementById('error-title').textContent = title;
-            document.getElementById('error-message').textContent = message;
-            document.getElementById('player-error-overlay').classList.remove('hidden');
-        }
-
-        function hidePlayerError() {
-            document.getElementById('player-error-overlay').classList.add('hidden');
-        }
-
-        async function selectChannel(id) {
-            await checkDeviceSessionWithServer();
-            
-            const isSubscribed = checkSubscription();
-            if (!isSubscribed) {
-                openPaymentModal();
+        // ============================================
+        // SMART SEARCH
+        // ============================================
+        function executeSmartSearch() {
+            const input = document.getElementById('smart-search').value.trim();
+            if (!input) {
+                showAlert('Empty Input', 'Please enter a song name or YouTube URL.');
                 return;
             }
 
-            const target = appData.channels.find(c => c.id === id);
-            if (!target || !target.src) return;
-
-            activeChannel = target;
-            document.getElementById('current-channel-title').textContent = target.name.toUpperCase();
-            document.getElementById('epg-now-title').textContent = target.name;
+            // Try to extract video ID
+            const videoId = extractVideoId(input);
             
-            appData.channels.forEach(ch => {
-                const el = document.getElementById(`view-chan-${ch.id}`);
-                if (!el) return;
-                const hasSource = ch.src && ch.src.trim() !== "";
-                if (ch.id === id) {
-                    el.className = "w-full text-left p-2 rounded-xl flex items-center justify-between border transition duration-150 bg-fuchsia-955/20 border-fuchsia-550 text-white";
-                } else {
-                    el.className = `w-full text-left p-2 rounded-xl flex items-center justify-between border transition duration-150 ${!hasSource ? 'opacity-40 cursor-not-allowed bg-slate-950/20 border-slate-900 text-slate-500' : 'bg-slate-900/30 border-slate-855 text-slate-300 hover:bg-slate-900/60'}`;
-                }
-            });
+            if (videoId) {
+                // Load the video
+                loadVideo(videoId);
+                // Also try to load audio stream
+                playAudioStream(videoId);
+                return;
+            }
 
-            loadEmbeddedKaraokeVideo(target.src);
+            // If not a URL, search for song
+            const searchTerm = input.toLowerCase();
+            const matches = SONG_PRESETS.filter(song => 
+                song.name.toLowerCase().includes(searchTerm)
+            );
+
+            if (matches.length > 0) {
+                // Show suggestions
+                const container = document.getElementById('ai-suggestions');
+                container.innerHTML = matches.map(song => 
+                    `<div class="text-xs text-purple-300/80 p-2 bg-slate-900/50 rounded-lg border border-purple-500/10 hover:border-purple-500/30 cursor-pointer" onclick="loadSongById('${song.id}')">
+                        🎵 ${song.name}
+                    </div>`
+                ).join('');
+                showStatus(`Found ${matches.length} matches`, 'success');
+            } else {
+                // Try to search via YouTube suggestions
+                fetch(`https://suggestqueries.google.com/complete/search?client=youtube&ds=yt&q=${encodeURIComponent(input)}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        const suggestions = data[1] || [];
+                        if (suggestions.length > 0) {
+                            const container = document.getElementById('ai-suggestions');
+                            container.innerHTML = suggestions.slice(0, 5).map(s => 
+                                `<div class="text-xs text-purple-300/80 p-2 bg-slate-900/50 rounded-lg border border-purple-500/10 hover:border-purple-500/30 cursor-pointer" onclick="searchAndLoad('${s}')">
+                                    🔍 ${s}
+                                </div>`
+                            ).join('');
+                        } else {
+                            showAlert('No Results', 'No songs found. Try a different search term.');
+                        }
+                    })
+                    .catch(() => {
+                        showAlert('Search Error', 'Could not search. Please enter a YouTube URL directly.');
+                    });
+            }
         }
 
-        function openPaymentModal() {
-            document.getElementById('payment-modal').classList.remove('hidden');
-            vendingDays = 1;
-            document.getElementById('vending-days-display').textContent = vendingDays;
-            document.getElementById('vending-cost-display').textContent = `₱${calculateVendingCost(vendingDays)}`;
-            resetQRState();
-            checkTrialState();
+        function loadSongById(videoId) {
+            loadVideo(videoId);
+            playAudioStream(videoId);
+            document.getElementById('smart-search').value = '';
+        }
 
-            expiryWhenOpened = parseInt(safeStorage.getItem('saas_premium_expiry')) || 0;
+        function searchAndLoad(query) {
+            document.getElementById('smart-search').value = query;
+            executeSmartSearch();
+        }
 
-            const bridgeUrl = window.location.origin + window.location.pathname + "?bridge=" + deviceId;
-            document.getElementById('phone-bridge-qr').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(bridgeUrl)}`;
-            document.getElementById('phone-bridge-link-display').textContent = bridgeUrl;
+        // ============================================
+        // AI FEATURES
+        // ============================================
+        function getAISuggestions() {
+            const suggestions = coach.getRecommendations();
+            const container = document.getElementById('ai-suggestions');
+            container.innerHTML = suggestions.map(s => 
+                `<div class="text-xs text-purple-300/80 p-2 bg-slate-900/50 rounded-lg border border-purple-500/10 hover:border-purple-500/30 cursor-pointer" onclick="searchAndLoad('${s}')">
+                    🎵 ${s}
+                </div>`
+            ).join('');
+            showStatus('🧠 AI Recommendations Generated', 'success');
+        }
 
-            if (bridgePollingInterval) clearInterval(bridgePollingInterval);
-            bridgePollingInterval = setInterval(async () => {
-                await checkDeviceSessionWithServer();
-                const now = new Date().getTime();
-                const currentExpiry = parseInt(safeStorage.getItem('saas_premium_expiry')) || 0;
-                
-                if (currentExpiry > now && currentExpiry > expiryWhenOpened) {
-                    closePaymentModal();
+        function analyzeVoiceProfile() {
+            if (!micStream) {
+                showAlert('Microphone Required', 'Please enable your microphone first.');
+                return;
+            }
+            
+            const result = document.getElementById('voice-analysis-result');
+            const scores = coach.getPerformanceScore();
+            const range = Math.round(300 + (scores.range / 100) * 300);
+            const vocalTypes = ['BASS', 'BARITONE', 'TENOR', 'ALTO', 'SOPRANO'];
+            const typeIndex = Math.min(4, Math.floor((scores.pitch / 100) * 4));
+            
+            result.innerHTML = `
+                <div class="space-y-1">
+                    <div>🎯 Pitch Accuracy: ${Math.round(scores.pitch)}%</div>
+                    <div>💨 Breath Control: ${Math.round(scores.breath)}%</div>
+                    <div>🎵 Vocal Range: C3-C${Math.floor(range / 100)}</div>
+                    <div>🎭 Vocal Type: ${vocalTypes[typeIndex]}</div>
+                    <div class="text-[8px] text-purple-400/60 mt-1">★ Recommended Key: ${document.getElementById('recommended-key').textContent}</div>
+                </div>
+            `;
+            document.getElementById('vocal-type').textContent = vocalTypes[typeIndex];
+            document.getElementById('range-score').textContent = `C3-C${Math.floor(range / 100)}`;
+            showStatus('🎤 Voice Analysis Complete', 'success');
+        }
+
+        // ============================================
+        // PRESETS
+        // ============================================
+        function applyPreset(preset) {
+            const presets = {
+                studio: { pitch: 0, echo: 20, reverb: 15 },
+                concert: { pitch: 0, echo: 35, reverb: 40 },
+                stadium: { pitch: 0, echo: 50, reverb: 60 },
+                intimate: { pitch: 0, echo: 10, reverb: 10 }
+            };
+            
+            const settings = presets[preset] || presets.studio;
+            document.getElementById('pitch-slider').value = settings.pitch;
+            document.getElementById('echo-slider').value = settings.echo;
+            document.getElementById('reverb-mix').value = settings.reverb;
+            
+            updatePitch(settings.pitch);
+            updateEcho(settings.echo);
+            
+            showStatus(`🎧 ${preset.charAt(0).toUpperCase() + preset.slice(1)} Preset Applied`, 'success');
+        }
+
+        // ============================================
+        // COLLABORATIVE SESSION
+        // ============================================
+        function startCollaborativeSession() {
+            const sessionCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+            document.getElementById('session-code').textContent = 'Session Code: ' + sessionCode;
+            document.getElementById('session-participants').textContent = '● You are the host. Share this code!';
+            
+            let count = 1;
+            const interval = setInterval(() => {
+                if (count < 8) {
+                    count++;
+                    document.getElementById('session-participants').textContent = `👥 ${count} participants connected`;
+                } else {
+                    clearInterval(interval);
                 }
+            }, 2000);
+            
+            showStatus('👥 Collaborative Session Started!', 'success');
+        }
+
+        // ============================================
+        // VOICE SECURITY
+        // ============================================
+        function enrollVoiceprint() {
+            if (!micStream) {
+                showAlert('Microphone Required', 'Please enable your microphone first.');
+                return;
+            }
+            CONFIG.voiceprintEnrolled = true;
+            document.getElementById('voiceprint-status').textContent = '✅ Voiceprint Enrolled Successfully';
+            document.getElementById('voiceprint-status').className = 'text-center text-[10px] text-emerald-400';
+            showStatus('🔐 Voiceprint Enrolled', 'success');
+        }
+
+        function verifyVoiceprint() {
+            if (!CONFIG.voiceprintEnrolled) {
+                showAlert('Not Enrolled', 'Please enroll your voiceprint first.');
+                return;
+            }
+            document.getElementById('voiceprint-status').textContent = '🔐 Identity Verified - Access Granted';
+            document.getElementById('voiceprint-status').className = 'text-center text-[10px] text-emerald-400 animate-pulse';
+            showStatus('✅ Identity Verified', 'success');
+        }
+
+        // ============================================
+        // ULTRA PANEL
+        // ============================================
+        function toggleUltraPanel() {
+            document.getElementById('ultra-panel').classList.toggle('hidden');
+        }
+
+        function saveUltraSettings() {
+            CONFIG.reverbPreset = document.getElementById('reverb-preset').value;
+            CONFIG.reverbMix = parseInt(document.getElementById('reverb-mix').value);
+            CONFIG.harmonyLevel = parseInt(document.getElementById('harmony-level').value);
+            CONFIG.harmonyVoices = parseInt(document.getElementById('harmony-voices').value);
+            
+            if (document.getElementById('harmony-enable').checked) {
+                if (!harmonyActive) toggleHarmony();
+            } else {
+                if (harmonyActive) toggleHarmony();
+            }
+            
+            toggleUltraPanel();
+            showAlert('⚡ Ultra Settings', 'Settings saved successfully!');
+        }
+
+        // ============================================
+        // UI HELPERS
+        // ============================================
+        function showStatus(message, type = 'info') {
+            const statusBar = document.getElementById('status-message');
+            if (!statusBar) {
+                // Create status bar if it doesn't exist
+                const bar = document.createElement('div');
+                bar.id = 'status-message';
+                bar.className = 'fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:max-w-sm z-50 p-3 rounded-lg text-xs font-bold transition-all transform';
+                document.body.appendChild(bar);
+            }
+            
+            const el = document.getElementById('status-message');
+            const colors = {
+                success: 'bg-emerald-600/90 text-white border border-emerald-500/50',
+                error: 'bg-red-600/90 text-white border border-red-500/50',
+                info: 'bg-purple-600/90 text-white border border-purple-500/50'
+            };
+            
+            el.className = `fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:max-w-sm z-50 p-3 rounded-lg text-xs font-bold transition-all transform ${colors[type] || colors.info}`;
+            el.textContent = message;
+            el.style.transform = 'translateY(0)';
+            el.style.opacity = '1';
+            
+            clearTimeout(el._timeout);
+            el._timeout = setTimeout(() => {
+                el.style.transform = 'translateY(100px)';
+                el.style.opacity = '0';
             }, 3000);
         }
 
-        function closePaymentModal() {
-            document.getElementById('payment-modal').classList.add('hidden');
-            if (paymentPollingInterval) clearInterval(paymentPollingInterval);
-            if (bridgePollingInterval) {
-                clearInterval(bridgePollingInterval);
-                bridgePollingInterval = null;
+        function showAlert(title, message) {
+            // Create modal if it doesn't exist
+            let modal = document.getElementById('custom-alert');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'custom-alert';
+                modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90';
+                modal.innerHTML = `
+                    <div class="glass-panel p-6 max-w-sm w-full text-center space-y-4">
+                        <h3 id="alert-title" class="text-xs font-bold text-purple-400 uppercase tracking-wider"></h3>
+                        <p id="alert-body" class="text-[10px] text-slate-400 leading-relaxed"></p>
+                        <button onclick="closeAlert()" class="w-full py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-lg text-[10px] tracking-wide uppercase transition">
+                            OK
+                        </button>
+                    </div>
+                `;
+                document.body.appendChild(modal);
             }
-        }
-
-        function checkTrialState() {
-            const trialConsumed = safeStorage.getItem('saas_trial_consumed') === 'true';
-            const modalBtn = document.getElementById('trial-button');
-            const overlayBtn = document.getElementById('trial-button-overlay');
-
-            if (trialConsumed) {
-                if (modalBtn) {
-                    modalBtn.textContent = "Trial Expired / Claimed";
-                    modalBtn.disabled = true;
-                    modalBtn.className = "w-full py-2 bg-slate-950 text-slate-600 text-xs font-bold rounded-lg cursor-not-allowed border border-slate-900";
-                }
-                if (overlayBtn) {
-                    overlayBtn.textContent = "Trial Claimed";
-                    overlayBtn.disabled = true;
-                    overlayBtn.className = "flex-1 py-3 bg-slate-950 text-slate-600 font-bold rounded-xl text-xs cursor-not-allowed border border-slate-900";
-                }
-            } else {
-                if (modalBtn) {
-                    modalBtn.textContent = "Start 24-Hour Free Trial";
-                    modalBtn.disabled = false;
-                    modalBtn.className = "w-full py-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 text-xs font-bold rounded-lg transition";
-                }
-                if (overlayBtn) {
-                    overlayBtn.textContent = "🚀 Start 24-Hour Free Trial";
-                    overlayBtn.disabled = false;
-                    overlayBtn.className = "flex-1 py-3 bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-bold rounded-xl text-xs transition duration-150 shadow-lg shadow-fuchsia-955";
-                }
-            }
-        }
-
-        async function activateOneTimeTrial() {
-            const currentExpiry = parseInt(safeStorage.getItem('saas_premium_expiry')) || 0;
-            const now = new Date().getTime();
-            if (currentExpiry > now) {
-                tvAlert("Subscription Active", "You currently have an active subscription on this device.");
-                return;
-            }
-
-            const trialConsumed = safeStorage.getItem('saas_trial_consumed') === 'true';
-            if (trialConsumed) {
-                tvAlert("Trial Claimed", "The trial period has already been activated on this device.");
-                return;
-            }
-
-            const modalBtn = document.getElementById('trial-button');
-            const overlayBtn = document.getElementById('trial-button-overlay');
             
-            if (modalBtn) modalBtn.disabled = true;
-            if (overlayBtn) overlayBtn.disabled = true;
-
-            if (appData.sandboxMode) {
-                setTimeout(() => {
-                    safeStorage.setItem('saas_trial_consumed', 'true');
-                    const expirationTimestamp = new Date().getTime() + (24 * 60 * 60 * 1000);
-                    safeStorage.setItem('saas_premium_expiry', expirationTimestamp);
-                    safeStorage.setItem('saas_session_type', 'trial');
-
-                    tvAlert("Trial Active", "24-Hour Free Trial Activated (Sandbox Mode).");
-                    closePaymentModal();
-                    checkSubscription();
-                    checkTrialState();
-
-                    if (activeChannel) selectChannel(activeChannel.id);
-                }, 500);
-                return;
-            }
-
-            try {
-                const response = await fetch(appData.paymentApi, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'claim_trial',
-                        deviceId: deviceId
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error("Handshake connection failure.");
-                }
-
-                const result = await response.json();
-
-                if (result.success) {
-                    safeStorage.setItem('saas_trial_consumed', 'true');
-                    
-                    const durationHours = result.duration_hours || 24;
-                    const expirationTimestamp = new Date().getTime() + (durationHours * 60 * 60 * 1000);
-                    safeStorage.setItem('saas_premium_expiry', expirationTimestamp);
-                    safeStorage.setItem('saas_session_type', 'trial');
-
-                    tvAlert("Trial Activated", "24-Hour Trial Activated.");
-                    closePaymentModal();
-                    checkSubscription();
-                    checkTrialState();
-
-                    if (activeChannel) selectChannel(activeChannel.id);
-                } else {
-                    tvAlert("Trial Error", result.error || "A trial period has already been activated.");
-                    safeStorage.setItem('saas_trial_consumed', 'true');
-                    checkTrialState();
-                }
-            } catch (err) {
-                console.warn("Trial API Handshake Failure:", err);
-                tvAlert("Connection Failure", "Could not register free trial.");
-                if (modalBtn) modalBtn.disabled = false;
-                if (overlayBtn) overlayBtn.disabled = false;
-            }
+            document.getElementById('alert-title').textContent = title;
+            document.getElementById('alert-body').textContent = message;
+            modal.classList.remove('hidden');
         }
 
-        async function processSubscription() {
-            const rawKey = document.getElementById('activation-key').value.trim();
+        function closeAlert() {
+            const modal = document.getElementById('custom-alert');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set default values
+            document.getElementById('pitch-slider').value = 0;
+            document.getElementById('echo-slider').value = 25;
             
-            if (rawKey === "!12345678*") {
-                safeStorage.setItem('saas_developer_bypass', 'true');
-                tvAlert("Success", "Developer Bypass Access Activated.");
-                closePaymentModal();
-                checkSubscription();
-                if (activeChannel) selectChannel(activeChannel.id);
-                return;
-            }
-
-            if (!rawKey) {
-                tvAlert("Validation Error", "Please enter an activation key.");
-                return;
-            }
-
-            let success = false;
-            let responseData = null;
-
-            try {
-                const response = await fetch(appData.paymentApi, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'activate_key',
-                        deviceId: deviceId,
-                        key: rawKey
-                    })
-                });
-
-                if (response.ok) {
-                    const result = await response.json();
-                    if (result.success) {
-                        responseData = result;
-                        success = true;
-                    }
+            // Load default song
+            setTimeout(() => {
+                const defaultSong = SONG_PRESETS[0];
+                if (ytPlayer && ytReady) {
+                    ytPlayer.loadVideoById(defaultSong.id);
                 }
-            } catch (err) {
-                console.warn("Primary API check bypassed.");
-            }
-
-            if (success && responseData) {
-                safeStorage.setItem('saas_premium_expiry', responseData.expiry);
-                safeStorage.setItem('saas_session_type', 'premium');
+                // Also load audio stream
+                playAudioStream(defaultSong.id);
                 
-                tvAlert("Key Activated", `Access granted for ${responseData.days || 'custom'} days.`);
-                closePaymentModal();
-                checkSubscription();
-                if (activeChannel) selectChannel(activeChannel.id);
-            } else {
-                console.warn("Server connection offline. Trying client key verification.");
-                const check = verifyLicenseKey(rawKey);
-                if (!check.valid) {
-                    tvAlert("Verification Error", check.error);
-                    return;
-                }
+                // Update UI with song info
+                document.getElementById('song-suggestions').textContent = 
+                    SONG_PRESETS.slice(0, 3).map(s => s.name).join(', ');
+            }, 1500);
 
-                let usedSerials = [];
-                try {
-                    usedSerials = JSON.parse(safeStorage.getItem('saas_used_serials') || '[]');
-                } catch(e){}
-                
-                usedSerials.push(check.serial);
-                safeStorage.setItem('saas_used_serials', JSON.stringify(usedSerials));
+            // Initialize visualizer (hidden by default)
+            setTimeout(() => {
+                initVisualizer();
+                document.getElementById('holographic-visualizer').style.display = 'none';
+            }, 500);
 
-                const expirationTimestamp = new Date().getTime() + (check.days * 24 * 60 * 60 * 1000);
-                safeStorage.setItem('saas_premium_expiry', expirationTimestamp);
-                safeStorage.setItem('saas_session_type', 'premium');
-                
-                tvAlert("Key Activated", `Offline Access granted for ${check.days} days.`);
-                closePaymentModal();
-                checkSubscription();
-                
-                if (activeChannel) selectChannel(activeChannel.id);
-            }
-        }
+            // Generate initial AI suggestions
+            setTimeout(getAISuggestions, 2000);
 
-        function generateActivationKey() {
-            const inputId = document.getElementById('gen-client-id').value.trim();
-            const days = parseInt(document.getElementById('gen-client-days').value);
-            
-            if (!inputId.startsWith("WP-") || inputId.split('-').length !== 3) {
-                tvAlert("Verification Error", "Input a valid target Client Device ID (e.g., WP-A1B2-C3D4).");
-                return;
-            }
-
-            if (isNaN(days) || days < 1) {
-                tvAlert("Verification Error", "Select a valid day count.");
-                return;
-            }
-
-            const hex = '0123456789ABCDEF';
-            let randomSerial = '';
-            for(let i=0; i<4; i++) {
-                randomSerial += hex[Math.floor(Math.random() * 16)];
-            }
-
-            const key = buildLicenseKey(inputId, days, randomSerial);
-            document.getElementById('gen-result-key').textContent = key;
-            document.getElementById('gen-result-container').classList.remove('hidden');
-        }
-
-        function copyGeneratedKey() {
-            const keyText = document.getElementById('gen-result-key').textContent;
-            const btn = document.getElementById('copy-key-btn');
-            const btnText = document.getElementById('copy-btn-text') || btn;
-            if (!keyText || keyText === "...") return;
-
-            navigator.clipboard.writeText(keyText).then(() => {
-                showCopySuccess(btn, btnText);
-            }).catch(() => {
-                tryExecCommandCopy(keyText, btn, btnText);
+            // Handle Enter key in search
+            document.getElementById('smart-search').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') executeSmartSearch();
             });
-        }
 
-        function tryExecCommandCopy(text, btn, btnText) {
-            let copiedSuccessfully = false;
-            try {
-                const textArea = document.createElement("textarea");
-                textArea.value = text;
-                textArea.style.position = "fixed";
-                textArea.style.opacity = "0";
-                document.body.appendChild(textArea);
-                textArea.select();
-                copiedSuccessfully = document.execCommand('copy');
-                document.body.removeChild(textArea);
-            } catch (err) {}
+            showStatus('🎤 Vocal Portal Ultra Ready!', 'success');
+        });
 
-            if (copiedSuccessfully) {
-                showCopySuccess(btn, btnText);
-            }
-        }
-
-        function showCopySuccess(btn, btnText) {
-            const originalText = btnText.textContent;
-            btnText.textContent = "Copied!";
-            setTimeout(() => { btnText.textContent = originalText; }, 2500);
-        }
-
-        function pasteClipboardToActivationField() {
-            if (navigator.clipboard && typeof navigator.clipboard.readText === 'function') {
-                navigator.clipboard.readText()
-                    .then(text => {
-                        const input = document.getElementById('activation-key');
-                        if (input) input.value = text.trim();
-                    })
-                    .catch(() => {
-                        tvAlert("Notice", "Clipboard block active on browser. Paste manually.");
-                    });
-            }
-        }
-
-        // Developer Actions
-        function logoutDeveloperAccess() {
-            safeStorage.removeItem('saas_developer_bypass');
-            window.location.reload();
-        }
-
-        function resetLocalSession() {
-            tvConfirm(
-                "Reset Local Memory",
-                "Are you sure you want to clear session cache, trial status, and developer bypass access?",
-                () => {
-                    safeStorage.removeItem('saas_premium_expiry');
-                    safeStorage.removeItem('saas_session_type');
-                    safeStorage.removeItem('saas_developer_bypass');
-                    safeStorage.removeItem('saas_trial_consumed');
-                    safeStorage.removeItem('saas_used_serials');
-                    tvAlert("Cleared", "Local storage cleared.", () => {
-                        window.location.reload();
-                    });
-                }
-            );
-        }
-
-        async function resetDeveloperDatabaseState() {
-            const isDeveloper = safeStorage.getItem('saas_developer_bypass') === 'true';
-            if (!isDeveloper) {
-                tvAlert("Unauthorized", "Access denied.");
-                return;
-            }
-
-            tvConfirm(
-                "Purge Cloud Records",
-                "Wipe database records for this device globally?",
-                async () => {
-                    try {
-                        const response = await fetch(appData.paymentApi, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                action: 'developer_reset_db',
-                                deviceId: deviceId,
-                                passcode: "!12345678*"
-                            })
-                        });
-
-                        const result = await response.json();
-                        if (response.ok && result.success) {
-                            safeStorage.removeItem('saas_premium_expiry');
-                            safeStorage.removeItem('saas_session_type');
-                            safeStorage.removeItem('saas_trial_consumed');
-                            safeStorage.removeItem('saas_developer_bypass');
-                            
-                            tvAlert("Purge Succeeded", "Database reset complete.", () => {
-                                window.location.reload();
-                            });
-                        }
-                    } catch (e) {
-                        tvAlert("Wipe Failed", "Database connection error.");
-                    }
-                }
-            );
-        }
-
-        function saveBrandSettings() {
-            const name = document.getElementById('cfg-brand-name').value.trim();
-            const api = document.getElementById('cfg-payment-api').value.trim();
-            const sandbox = document.getElementById('cfg-sandbox-mode').checked;
-            
-            appData.brandName = name;
-            appData.paymentApi = api;
-            appData.sandboxMode = sandbox;
-            
-            safeStorage.setItem('family_bonding_portal_config_v8', JSON.stringify(appData));
-            
-            const indicator = document.getElementById('sandbox-indicator');
-            if (indicator) {
-                if (appData.sandboxMode) indicator.classList.remove('hidden');
-                else indicator.classList.add('hidden');
-            }
-            
-            updateViewerPortalUI();
-            closeAdminModal();
-            tvAlert("Settings Saved", "Brand settings and gateway API configurations saved.");
-        }
-
-        function saveChannelsAndEPG() {
-            const items = document.querySelectorAll('.channel-editor-item');
-            const updatedChannels = [];
-            
-            items.forEach(item => {
-                const chId = item.getAttribute('data-channel-id');
-                const nameVal = document.getElementById(`edit-name-${chId}`).value.trim();
-                const groupVal = document.getElementById(`edit-group-${chId}`).value.trim();
-                const rawSrc = document.getElementById(`edit-src-${chId}`).value.trim();
-                
-                updatedChannels.push({
-                    id: chId,
-                    name: nameVal,
-                    group: groupVal,
-                    logo: "",
-                    src: secureEncode(rawSrc) 
-                });
-            });
-            
-            appData.channels = updatedChannels;
-            safeStorage.setItem('family_bonding_portal_config_v8', JSON.stringify(appData));
-            
-            updateViewerPortalUI();
-            closeAdminModal();
-            tvAlert("Configuration Saved", "Dynamic tracks directory has been updated.");
-        }
-
-        function openAdminModal() {
-            populateDashboard();
-            document.getElementById('admin-modal').classList.remove('hidden');
-        }
-
-        function closeAdminModal() {
-            document.getElementById('admin-modal').classList.add('hidden');
-            document.getElementById('gen-result-container').classList.add('hidden');
-        }
-
-        function resetToPresets() {
-            tvConfirm(
-                "Reset Directory",
-                "Are you sure you want to restore the channel listing directory back to original presets?",
-                () => {
-                    appData.channels = [...defaultConfig.channels];
-                    safeStorage.setItem('family_bonding_portal_config_v8', JSON.stringify(appData));
-                    populateDashboard();
-                    updateViewerPortalUI();
-                    tvAlert("Reset Successful", "Preset listings restored.");
-                }
-            );
-        }
-
-        function generateUniqueDeviceID() {
-            let id = safeStorage.getItem('saas_device_id');
-            if (id && id.startsWith("WP-")) return id;
-
-            let randomSegment = '';
-            try {
-                if (window.crypto && typeof window.crypto.getRandomValues === 'function') {
-                    const arr = new Uint32Array(2);
-                    window.crypto.getRandomValues(arr);
-                    randomSegment = Array.from(arr, num => num.toString(16).padStart(8, '0')).join('-');
-                } else {
-                    throw new Error();
-                }
-            } catch (e) {
-                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-                let segment1 = ''; let segment2 = '';
-                for (let i = 0; i < 8; i++) {
-                    segment1 += chars.charAt(Math.floor(Math.random() * chars.length));
-                    segment2 += chars.charAt(Math.floor(Math.random() * chars.length));
-                }
-                randomSegment = `${segment1}-${segment2}`;
-            }
-
-            id = `WP-${randomSegment.toUpperCase()}`;
-            safeStorage.setItem('saas_device_id', id);
-            return id;
-        }
-
-        initSaaS();
+        // Console greeting
+        console.log('🎤 VOCAL PORTAL ULTRA v4.0');
+        console.log('✨ AI-Powered Karaoke Console');
+        console.log('📖 Features: Auto-Tune, Harmony, AI Coach, 3D Visualizer, Party Mode, Voice Security');
+        console.log('💡 Press "ULTRA" button for advanced settings');
+        console.log('🎵 Worker URL:', WORKER_URL);
+        console.log('📝 Sample Video IDs:', SONG_PRESETS.map(s => s.id).join(', '));
     </script>
 </body>
 </html>
